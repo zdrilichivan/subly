@@ -207,7 +207,7 @@ struct OnboardingView: View {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color(.systemBackground))
+                        .fill(Color(.secondarySystemGroupedBackground))
                 )
                 .padding(.horizontal, 48)
                 .focused($isNameFieldFocused)

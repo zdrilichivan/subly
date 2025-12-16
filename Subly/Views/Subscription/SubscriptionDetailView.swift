@@ -121,7 +121,7 @@ struct SubscriptionDetailView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.05), radius: 10)
         )
     }
@@ -183,7 +183,7 @@ struct SubscriptionDetailView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 
@@ -202,7 +202,7 @@ struct SubscriptionDetailView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 

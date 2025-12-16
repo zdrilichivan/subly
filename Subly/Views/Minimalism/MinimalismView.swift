@@ -108,7 +108,7 @@ struct MinimalismView: View {
                     .padding(14)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(.systemBackground))
+                            .fill(Color(.secondarySystemGroupedBackground))
                     )
                 }
             }
@@ -154,7 +154,7 @@ struct MinimalismView: View {
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color(.systemBackground))
+                        .fill(Color(.secondarySystemGroupedBackground))
                 )
             }
         }
@@ -181,7 +181,7 @@ struct MinimalismView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 }

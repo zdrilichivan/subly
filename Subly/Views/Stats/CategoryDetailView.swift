@@ -109,7 +109,7 @@ struct CategoryDetailView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
         )
     }
@@ -236,7 +236,7 @@ struct CategoryDetailView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 

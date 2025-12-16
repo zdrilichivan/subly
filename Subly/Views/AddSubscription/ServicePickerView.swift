@@ -81,7 +81,7 @@ struct ServicePickerView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
         }
-        .background(Color(.systemBackground))
+        .background(Color(.secondarySystemGroupedBackground))
     }
 
     // MARK: - Search Field

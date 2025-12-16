@@ -14,8 +14,7 @@ extension View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
+                    .fill(Color(.secondarySystemGroupedBackground))
             )
     }
 

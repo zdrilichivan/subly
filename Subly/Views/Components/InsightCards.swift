@@ -67,8 +67,7 @@ struct SpendingComparisonCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 }
@@ -125,8 +124,7 @@ struct SpendingCarouselCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+                .fill(Color(.secondarySystemGroupedBackground))
         )
         .onReceive(timer) { _ in
             withAnimation(.easeInOut(duration: 0.5)) {
@@ -313,8 +311,7 @@ struct MinimalismScoreCard: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 }

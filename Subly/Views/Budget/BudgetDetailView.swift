@@ -146,7 +146,7 @@ struct BudgetDetailView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 
@@ -203,7 +203,7 @@ struct BudgetDetailView: View {
             .padding(.horizontal, 16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
+                    .fill(Color(.secondarySystemGroupedBackground))
             )
         }
     }
@@ -263,7 +263,7 @@ struct BudgetDetailView: View {
                         .padding(12)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(.systemBackground))
+                                .fill(Color(.secondarySystemGroupedBackground))
                         )
                     }
                     .buttonStyle(PlainButtonStyle())

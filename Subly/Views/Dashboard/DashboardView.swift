@@ -144,7 +144,7 @@ struct DashboardView: View {
             .padding(.vertical, 6)
             .background(
                 Capsule()
-                    .fill(Color(.systemBackground))
+                    .fill(Color(.secondarySystemGroupedBackground))
                     .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
             )
         }
@@ -297,7 +297,7 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.systemBackground))
+                .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.05), radius: 8)
         )
     }
