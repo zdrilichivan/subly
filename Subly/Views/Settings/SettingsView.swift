@@ -367,6 +367,34 @@ struct SettingsView: View {
                 }
             }
 
+            // Privacy Policy
+            Link(destination: URL(string: "https://ivanzdrilich.notion.site/Privacy-Policy-Subly-1794cb9eea2180b2bd18c80ab5ea58e9")!) {
+                HStack {
+                    Image(systemName: "hand.raised.fill")
+                        .foregroundColor(.appPrimary)
+                    Text("Privacy Policy")
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundColor(Color(.tertiaryLabel))
+                }
+            }
+
+            // Supporto
+            Link(destination: URL(string: "mailto:ivanzdrilich@gmail.com?subject=Supporto%20Subly")!) {
+                HStack {
+                    Image(systemName: "envelope.fill")
+                        .foregroundColor(.appPrimary)
+                    Text("Contatta supporto")
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundColor(Color(.tertiaryLabel))
+                }
+            }
+
             HStack {
                 Text("Versione")
                 Spacer()

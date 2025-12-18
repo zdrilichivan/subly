@@ -185,9 +185,9 @@ struct DashboardView: View {
 
     private var formattedDate: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "it_IT")
+        formatter.locale = Locale.current
         formatter.dateFormat = "EEEE d MMMM"
-        return formatter.string(from: Date())
+        return formatter.string(from: Date()).uppercased()
     }
 
     private var greetingText: String {
@@ -195,11 +195,11 @@ struct DashboardView: View {
         let name = userName.isEmpty ? "!" : ", \(userName)!"
         switch hour {
         case 6..<12:
-            return "Buongiorno\(name)"
+            return String(localized: "Buongiorno") + name
         case 12..<18:
-            return "Buon pomeriggio\(name)"
+            return String(localized: "Buon pomeriggio") + name
         default:
-            return "Buonasera\(name)"
+            return String(localized: "Buonasera") + name
         }
     }
 
@@ -215,14 +215,14 @@ struct DashboardView: View {
     private var statsCardsSection: some View {
         HStack(spacing: 12) {
             StatCard(
-                title: "Mensile",
+                title: String(localized: "Mensile"),
                 value: viewModel.totalMonthlyCost.currencyFormatted,
                 icon: "calendar",
                 color: .appPrimary
             )
 
             StatCard(
-                title: "Annuale",
+                title: String(localized: "Annuale"),
                 value: viewModel.totalYearlyCost.currencyFormatted,
                 icon: "calendar.badge.clock",
                 color: .appSecondary
@@ -280,7 +280,7 @@ struct DashboardView: View {
                 .font(.headline)
                 .foregroundColor(.secondary)
 
-            Text("Aggiungi il tuo primo abbonamento per iniziare a tracciare le tue spese")
+            Text("Inizia a tracciare i tuoi abbonamenti esistenti per tenere sotto controllo le spese")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -288,7 +288,7 @@ struct DashboardView: View {
             Button {
                 showingAddSheet = true
             } label: {
-                Label("Aggiungi abbonamento", systemImage: "plus")
+                Label("Traccia abbonamento", systemImage: "plus")
             }
             .buttonStyle(PrimaryButtonStyle())
             .padding(.horizontal, 40)

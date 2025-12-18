@@ -14,7 +14,15 @@ struct ServiceLogoView: View {
 
     var body: some View {
         Group {
-            if let logoURL = getLogoURL() {
+            // Prima controlla se esiste un'icona locale negli Assets
+            if let localImage = UIImage(named: serviceName) {
+                Image(uiImage: localImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.2))
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+            } else if let logoURL = getLogoURL() {
                 AsyncImage(url: logoURL) { phase in
                     switch phase {
                     case .empty:
@@ -86,8 +94,8 @@ struct ServiceLogoView: View {
         guard let domain = serviceDomains[serviceName] ?? guessDomain() else {
             return nil
         }
-        // Usa Google Favicon service (sempre funzionante)
-        return URL(string: "https://www.google.com/s2/favicons?domain=\(domain)&sz=128")
+        // Usa Google Favicon service con dimensione massima
+        return URL(string: "https://www.google.com/s2/favicons?domain=\(domain)&sz=256")
     }
 
     private func guessDomain() -> String? {

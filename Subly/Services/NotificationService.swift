@@ -161,8 +161,12 @@ class NotificationService: NSObject, ObservableObject {
             content.body = "\(subscription.displayName) - \(subscription.cost.currencyFormatted)"
         }
 
-        let trigger = UNCalendarNotificationTrigger(
-            dateMatching: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate),
+        // Usa TimeInterval invece di Calendar per evitare l'icona calendario
+        let timeInterval = triggerDate.timeIntervalSinceNow
+        guard timeInterval > 0 else { return }
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: timeInterval,
             repeats: false
         )
 

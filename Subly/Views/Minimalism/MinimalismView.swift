@@ -40,7 +40,7 @@ struct MinimalismView: View {
                 .padding()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Minimalismo")
+            .navigationTitle(String(localized: "Minimalismo"))
         }
     }
 
@@ -52,12 +52,12 @@ struct MinimalismView: View {
                 .font(.system(size: 44))
                 .foregroundColor(.green)
 
-            Text("Meno abbonamenti,\npiù libertà")
+            Text(String(localized: "Meno abbonamenti,\npiù libertà"))
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
 
-            Text("Il minimalismo digitale non significa rinunciare a tutto, ma scegliere consapevolmente cosa merita il tuo tempo e denaro.")
+            Text(String(localized: "Il minimalismo digitale non significa rinunciare a tutto, ma scegliere consapevolmente cosa merita il tuo tempo e denaro."))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -74,7 +74,7 @@ struct MinimalismView: View {
                 Image(systemName: "lightbulb.fill")
                     .foregroundColor(.green)
 
-                Text("Con \(viewModel.totalYearlyCost.currencyFormatted)/anno potresti...")
+                Text(String(localized: "Con \(viewModel.totalYearlyCost.currencyFormatted)/anno potresti..."))
                     .font(.headline)
             }
 
@@ -123,7 +123,7 @@ struct MinimalismView: View {
                 Image(systemName: "book.fill")
                     .foregroundColor(.green)
 
-                Text("Consigli per il minimalismo digitale")
+                Text(String(localized: "Consigli per il minimalismo digitale"))
                     .font(.headline)
             }
 
@@ -168,7 +168,7 @@ struct MinimalismView: View {
                 .font(.title)
                 .foregroundColor(.secondary.opacity(0.5))
 
-            Text("La semplicità è la sofisticatezza suprema.")
+            Text(String(localized: "La semplicità è la sofisticatezza suprema."))
                 .font(.body)
                 .italic()
                 .multilineTextAlignment(.center)

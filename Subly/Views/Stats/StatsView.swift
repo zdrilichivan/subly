@@ -44,7 +44,7 @@ struct StatsView: View {
                 .padding()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Statistiche")
+            .navigationTitle(String(localized: "Statistiche"))
         }
     }
 
@@ -54,7 +54,7 @@ struct StatsView: View {
         VStack(spacing: 16) {
             // Title
             HStack {
-                Text("Spese per categoria")
+                Text(String(localized: "Spese per categoria"))
                     .font(.headline)
                 Spacer()
             }
@@ -80,7 +80,7 @@ struct StatsView: View {
                     Text(viewModel.totalMonthlyCost.currencyFormatted)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
 
-                    Text("al mese")
+                    Text(String(localized: "al mese"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -149,7 +149,7 @@ struct StatsView: View {
 
                     VStack(alignment: .trailing, spacing: 8) {
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text("Spesa attuale")
+                            Text(String(localized: "Spesa attuale"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             Text(status.current.currencyFormatted)
@@ -158,7 +158,7 @@ struct StatsView: View {
                         }
 
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text("Budget")
+                            Text(String(localized: "Budget"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             Text(status.limit.currencyFormatted)
@@ -189,7 +189,7 @@ struct StatsView: View {
 
     private var overviewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Panoramica")
+            Text(String(localized: "Panoramica"))
                 .font(.headline)
 
             LazyVGrid(columns: [
@@ -197,28 +197,28 @@ struct StatsView: View {
                 GridItem(.flexible())
             ], spacing: 12) {
                 MiniStatCard(
-                    title: "Abbonamenti attivi",
+                    title: String(localized: "Abbonamenti attivi"),
                     value: "\(viewModel.activeSubscriptions.count)",
                     icon: "creditcard.fill",
                     color: .appPrimary
                 )
 
                 MiniStatCard(
-                    title: "Spesa mensile",
+                    title: String(localized: "Spesa mensile"),
                     value: viewModel.totalMonthlyCost.currencyFormatted,
                     icon: "calendar",
                     color: .green
                 )
 
                 MiniStatCard(
-                    title: "Spesa annuale",
+                    title: String(localized: "Spesa annuale"),
                     value: viewModel.totalYearlyCost.currencyFormatted,
                     icon: "calendar.badge.clock",
                     color: .purple
                 )
 
                 MiniStatCard(
-                    title: "Rinnovi prossimi 7gg",
+                    title: String(localized: "Rinnovi prossimi 7gg"),
                     value: "\(viewModel.upcomingRenewals.count)",
                     icon: "bell.fill",
                     color: .orange
@@ -231,7 +231,7 @@ struct StatsView: View {
 
     private var categoryBreakdownSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Dettaglio categorie")
+            Text(String(localized: "Dettaglio categorie"))
                 .font(.headline)
 
             VStack(spacing: 4) {
@@ -288,13 +288,13 @@ struct StatsView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "bell.fill")
                         .foregroundColor(.orange)
-                    Text("Prossimi rinnovi")
+                    Text(String(localized: "Prossimi rinnovi"))
                         .font(.headline)
                 }
 
                 Spacer()
 
-                Text("7 giorni")
+                Text(String(localized: "7 giorni"))
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 8)
@@ -356,7 +356,7 @@ struct StatsView: View {
 
     private func suggestionsSection(suggestions: [SavingSuggestion]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Suggerimenti", systemImage: "lightbulb.fill")
+            Label(String(localized: "Suggerimenti"), systemImage: "lightbulb.fill")
                 .font(.headline)
                 .foregroundColor(.orange)
 
@@ -425,7 +425,7 @@ struct CategoryRow: View {
                         .fontWeight(.medium)
                         .foregroundColor(.primary)
 
-                    Text("\(count) abbonament\(count == 1 ? "o" : "i")")
+                    Text(count == 1 ? String(localized: "1 abbonamento") : String(localized: "\(count) abbonamenti"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -439,7 +439,7 @@ struct CategoryRow: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
 
-                    Text("/mese")
+                    Text(String(localized: "/mese"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

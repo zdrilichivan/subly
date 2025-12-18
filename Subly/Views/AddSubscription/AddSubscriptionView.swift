@@ -48,7 +48,7 @@ struct AddSubscriptionView: View {
                     budgetImpactSection(impact: impact)
                 }
             }
-            .navigationTitle("Nuovo Abbonamento")
+            .navigationTitle("Traccia Abbonamento")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -83,12 +83,18 @@ struct AddSubscriptionView: View {
                     showingPaywall = false
                 }
             }
-            .alert("Abbonamento aggiunto", isPresented: $showingSuccessAlert) {
+            .onChange(of: showingPaywall) { _, isShowing in
+                // Se chiude il paywall senza aver sbloccato, torna indietro
+                if !isShowing && !storeService.canAddSubscription(currentCount: viewModel.activeSubscriptions.count) {
+                    dismiss()
+                }
+            }
+            .alert("Abbonamento tracciato", isPresented: $showingSuccessAlert) {
                 Button("OK") {
                     dismiss()
                 }
             } message: {
-                Text("L'abbonamento è stato aggiunto correttamente. Riceverai notifiche prima del rinnovo.")
+                Text("L'abbonamento è ora tracciato. Riceverai notifiche prima di ogni rinnovo.")
             }
             .onChange(of: selectedService) { _, newService in
                 if let service = newService {
@@ -140,6 +146,8 @@ struct AddSubscriptionView: View {
             }
         } header: {
             Text("Servizio")
+        } footer: {
+            Text("Seleziona un abbonamento che già possiedi per tracciarlo.")
         }
     }
 
@@ -245,6 +253,12 @@ struct AddSubscriptionView: View {
     // MARK: - Actions
 
     private func saveSubscription() {
+        // Controllo sicurezza: verifica limite abbonamenti
+        guard storeService.canAddSubscription(currentCount: viewModel.activeSubscriptions.count) else {
+            showingPaywall = true
+            return
+        }
+
         guard let service = selectedService,
               let costValue = Double(cost.replacingOccurrences(of: ",", with: ".")) else {
             return

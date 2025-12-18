@@ -96,7 +96,7 @@ extension Double {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "EUR"
-        formatter.locale = Locale(identifier: "it_IT")
+        formatter.locale = Locale.current
         return formatter.string(from: NSNumber(value: self)) ?? "€\(self)"
     }
 
@@ -110,7 +110,7 @@ extension Date {
     var shortFormatted: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
-        formatter.locale = Locale(identifier: "it_IT")
+        formatter.locale = Locale.current
         return formatter.string(from: self)
     }
 
@@ -122,12 +122,14 @@ extension Date {
         guard let days = components.day else { return shortFormatted }
 
         switch days {
+        case ..<0:
+            return String(localized: "Scaduto")
         case 0:
-            return "Oggi"
+            return String(localized: "Oggi")
         case 1:
-            return "Domani"
+            return String(localized: "Domani")
         case 2...7:
-            return "Tra \(days) giorni"
+            return String(localized: "Tra \(days) giorni")
         default:
             return shortFormatted
         }

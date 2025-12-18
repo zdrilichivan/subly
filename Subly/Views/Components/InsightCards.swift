@@ -22,14 +22,14 @@ struct SpendingComparisonCard: View {
                     .font(.subheadline)
                     .foregroundColor(.green)
 
-                Text("Cosa potresti fare")
+                Text(String(localized: "Cosa potresti fare"))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.green)
 
                 Spacer()
 
-                Text(yearlyCost.currencyFormatted + "/anno")
+                Text(yearlyCost.currencyFormatted + String(localized: "/anno"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -59,7 +59,7 @@ struct SpendingComparisonCard: View {
             }
 
             // Motivational text
-            Text("I tuoi abbonamenti ti costano quanto \(comparison.description.lowercased()). Ne vale la pena?")
+            Text(String(localized: "I tuoi abbonamenti ti costano quanto \(comparison.description.lowercased()). Ne vale la pena?"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .italic()
@@ -89,14 +89,14 @@ struct SpendingCarouselCard: View {
                     .font(.subheadline)
                     .foregroundColor(.green)
 
-                Text("Cosa potresti fare")
+                Text(String(localized: "Cosa potresti fare"))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.green)
 
                 Spacer()
 
-                Text(yearlyCost.currencyFormatted + "/anno")
+                Text(yearlyCost.currencyFormatted + String(localized: "/anno"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -158,7 +158,7 @@ struct SpendingCarouselCard: View {
                 Spacer()
             }
 
-            Text("Ne vale la pena continuare a pagare?")
+            Text(String(localized: "Ne vale la pena continuare a pagare?"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .italic()
@@ -244,7 +244,7 @@ struct MinimalismScoreCard: View {
         VStack(spacing: 16) {
             // Header
             HStack {
-                Text("Il tuo punteggio")
+                Text(String(localized: "Il tuo punteggio"))
                     .font(.headline)
 
                 Spacer()
@@ -290,7 +290,7 @@ struct MinimalismScoreCard: View {
                     Text("\(score.subscriptionCount)")
                         .font(.title3)
                         .fontWeight(.bold)
-                    Text("Abbonamenti")
+                    Text(String(localized: "Abbonamenti"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -302,7 +302,7 @@ struct MinimalismScoreCard: View {
                     Text(score.monthlyCost.currencyFormatted)
                         .font(.title3)
                         .fontWeight(.bold)
-                    Text("Al mese")
+                    Text(String(localized: "Al mese"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -327,14 +327,14 @@ struct RethinkSectionCard: View {
                 Image(systemName: "brain.head.profile")
                     .foregroundColor(.purple)
 
-                Text("Ripensaci")
+                Text(String(localized: "Ripensaci"))
                     .font(.headline)
 
                 Spacer()
             }
 
             if questions.isEmpty {
-                Text("Ottimo! Non abbiamo suggerimenti per te al momento.")
+                Text(String(localized: "Ottimo! Non abbiamo suggerimenti per te al momento."))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .padding(.vertical, 8)
@@ -375,13 +375,13 @@ struct CancellationHelpCard: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Ti aiutiamo a cancellare")
+                        Text(String(localized: "Ti aiutiamo a cancellare"))
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
 
                         if !isExpanded {
-                            Text("Tocca per scoprire come")
+                            Text(String(localized: "Tocca per scoprire come"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -396,7 +396,7 @@ struct CancellationHelpCard: View {
 
                 if isExpanded {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Come funziona:")
+                        Text(String(localized: "Come funziona:"))
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
@@ -406,7 +406,7 @@ struct CancellationHelpCard: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
-                            Text("Tocca un abbonamento dalla lista qui sopra")
+                            Text(String(localized: "Tocca un abbonamento dalla lista qui sopra"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -416,7 +416,7 @@ struct CancellationHelpCard: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
-                            Text("Nella pagina di dettaglio troverai il pulsante \"Cancella abbonamento\"")
+                            Text(String(localized: "Nella pagina di dettaglio troverai il pulsante \"Cancella abbonamento\""))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -426,12 +426,12 @@ struct CancellationHelpCard: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
-                            Text("Verrai portato direttamente alla pagina di cancellazione del servizio")
+                            Text(String(localized: "Verrai portato direttamente alla pagina di cancellazione del servizio"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
 
-                        Text("Semplice, veloce, senza stress!")
+                        Text(String(localized: "Semplice, veloce, senza stress!"))
                             .font(.caption)
                             .italic()
                             .foregroundColor(.blue)

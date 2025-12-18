@@ -80,14 +80,7 @@ struct Subscription: Identifiable, Codable, Equatable {
 
     /// Descrizione del ciclo di fatturazione
     var billingCycleDescription: String {
-        switch billingCycle {
-        case .weekly:
-            return "Settimanale"
-        case .monthly:
-            return "Mensile"
-        case .yearly:
-            return "Annuale"
-        }
+        billingCycle.displayName
     }
 
     /// Giorni fino al prossimo rinnovo
@@ -136,22 +129,22 @@ enum BillingCycle: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .weekly:
-            return "Settimanale"
+            return String(localized: "Settimanale")
         case .monthly:
-            return "Mensile"
+            return String(localized: "Mensile")
         case .yearly:
-            return "Annuale"
+            return String(localized: "Annuale")
         }
     }
 
     var shortName: String {
         switch self {
         case .weekly:
-            return "/sett"
+            return "/" + String(localized: "sett")
         case .monthly:
-            return "/mese"
+            return "/" + String(localized: "mese")
         case .yearly:
-            return "/anno"
+            return "/" + String(localized: "anno")
         }
     }
 }
@@ -171,23 +164,23 @@ enum ServiceCategory: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .streaming:
-            return "Streaming Video"
+            return String(localized: "Streaming Video")
         case .music:
-            return "Musica"
+            return String(localized: "Musica")
         case .software:
-            return "Software"
+            return String(localized: "Software")
         case .fitness:
-            return "Fitness"
+            return String(localized: "Fitness")
         case .cloud:
-            return "Cloud Storage"
+            return String(localized: "Cloud Storage")
         case .news:
-            return "News & Media"
+            return String(localized: "News & Media")
         case .gaming:
-            return "Gaming"
+            return String(localized: "Gaming")
         case .phone:
-            return "Telefonia"
+            return String(localized: "Telefonia")
         case .other:
-            return "Altro"
+            return String(localized: "Altro")
         }
     }
 
