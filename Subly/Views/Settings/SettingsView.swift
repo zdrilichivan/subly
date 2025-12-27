@@ -13,7 +13,6 @@ struct SettingsView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @StateObject private var notificationService = NotificationService.shared
     @StateObject private var budgetService = BudgetService.shared
-    @StateObject private var storeService = StoreService.shared
     @AppStorage("userName") private var userName = ""
     @AppStorage("userProfileImageData") private var profileImageData: Data?
 
@@ -21,22 +20,24 @@ struct SettingsView: View {
     @State private var showingResetAlert = false
     @State private var showingProfileSheet = false
     @State private var showingOnboarding = false
-    @State private var showingPaywall = false
-    @State private var showingRestoreAlert = false
-    @State private var restoreMessage = ""
     @State private var budgetLimitText = ""
     @State private var nameInput = ""
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
+
+    // MARK: - Computed Properties
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) (\(build))"
+    }
 
     var body: some View {
         NavigationStack {
             List {
                 // Profile Section
                 profileSection
-
-                // Subscription/Purchase Section
-                purchaseSection
 
                 // Notifications Section
                 notificationsSection
@@ -59,14 +60,6 @@ struct SettingsView: View {
             }
             .fullScreenCover(isPresented: $showingOnboarding) {
                 OnboardingPreviewView(isPresented: $showingOnboarding)
-            }
-            .sheet(isPresented: $showingPaywall) {
-                PaywallView()
-            }
-            .alert("Ripristino acquisti", isPresented: $showingRestoreAlert) {
-                Button("OK") { }
-            } message: {
-                Text(restoreMessage)
             }
             .alert("Ripristina app", isPresented: $showingResetAlert) {
                 Button("Annulla", role: .cancel) { }
@@ -119,24 +112,9 @@ struct SettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 6) {
-                            Text(userName.isEmpty ? "Aggiungi profilo" : userName)
-                                .font(.headline)
-                                .foregroundColor(.primary)
-
-                            if storeService.isUnlocked {
-                                Text("PRO")
-                                    .font(.caption2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(
-                                        Capsule()
-                                            .fill(Color.green)
-                                    )
-                            }
-                        }
+                        Text(userName.isEmpty ? "Aggiungi profilo" : userName)
+                            .font(.headline)
+                            .foregroundColor(.primary)
 
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark.icloud.fill")
@@ -154,120 +132,6 @@ struct SettingsView: View {
                         .foregroundColor(Color(.tertiaryLabel))
                 }
                 .padding(.vertical, 8)
-            }
-        }
-    }
-
-    // MARK: - Purchase Section
-
-    private var purchaseSection: some View {
-        Section {
-            if storeService.isUnlocked {
-                // Already unlocked
-                HStack {
-                    ZStack {
-                        Circle()
-                            .fill(Color.green.opacity(0.12))
-                            .frame(width: 44, height: 44)
-
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.title3)
-                            .foregroundColor(.green)
-                    }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Subly Sbloccato")
-                            .font(.headline)
-
-                        Text("Abbonamenti illimitati")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                }
-                .padding(.vertical, 4)
-            } else {
-                // Not unlocked - show usage and unlock option
-                VStack(spacing: 14) {
-                    HStack {
-                        ZStack {
-                            Circle()
-                                .fill(Color.green.opacity(0.12))
-                                .frame(width: 44, height: 44)
-
-                            Image(systemName: "lock.fill")
-                                .font(.title3)
-                                .foregroundColor(.green)
-                        }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Versione Gratuita")
-                                .font(.headline)
-
-                            Text("\(viewModel.activeSubscriptions.count)/\(StoreService.freeLimit) abbonamenti usati")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-
-                        Spacer()
-                    }
-
-                    // Usage progress bar
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color(.systemGray5))
-                                .frame(height: 8)
-
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.green)
-                                .frame(width: geometry.size.width * CGFloat(min(viewModel.activeSubscriptions.count, StoreService.freeLimit)) / CGFloat(StoreService.freeLimit), height: 8)
-                        }
-                    }
-                    .frame(height: 8)
-
-                    // Unlock button
-                    Button {
-                        showingPaywall = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "lock.open.fill")
-                            Text("Sblocca Subly")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.green)
-                        )
-                        .foregroundColor(.white)
-                        .fontWeight(.semibold)
-                    }
-
-                    // Restore purchases
-                    Button {
-                        Task {
-                            let success = await storeService.restorePurchases()
-                            restoreMessage = success ? "Acquisto ripristinato con successo!" : (storeService.errorMessage ?? "Nessun acquisto trovato")
-                            showingRestoreAlert = true
-                        }
-                    } label: {
-                        Text("Ripristina acquisti")
-                            .font(.subheadline)
-                            .foregroundColor(.appPrimary)
-                    }
-                }
-                .padding(.vertical, 8)
-            }
-        } header: {
-            Text("Subly")
-        } footer: {
-            if !storeService.isUnlocked {
-                Text("Sblocca Subly per aggiungere abbonamenti illimitati con un piccolo contributo di €0,99.")
             }
         }
     }
@@ -304,7 +168,7 @@ struct SettingsView: View {
         } header: {
             Text("Notifiche")
         } footer: {
-            Text("Riceverai notifiche 3 giorni, 1 giorno e il giorno stesso del rinnovo di ogni abbonamento.")
+            Text("3 giorni prima del rinnovo ti chiederemo se stai ancora utilizzando il servizio. Se rispondi no, ti aiuteremo a disdire. Riceverai anche promemoria 1 giorno prima e il giorno stesso.")
         }
     }
 
@@ -368,7 +232,7 @@ struct SettingsView: View {
             }
 
             // Privacy Policy
-            Link(destination: URL(string: "https://ivanzdrilich.notion.site/Privacy-Policy-Subly-1794cb9eea2180b2bd18c80ab5ea58e9")!) {
+            Link(destination: URL(string: "https://oxidized-wildebeest-640.notion.site/Privacy-Policy-2cbee015438880c88a6bd1115528dbd8")!) {
                 HStack {
                     Image(systemName: "hand.raised.fill")
                         .foregroundColor(.appPrimary)
@@ -381,8 +245,22 @@ struct SettingsView: View {
                 }
             }
 
+            // Terms of Service
+            Link(destination: URL(string: "https://oxidized-wildebeest-640.notion.site/TERMINI-E-CONDIZIONI-D-USO-Subly-2cdee015438880558071e0cbb23f3d68")!) {
+                HStack {
+                    Image(systemName: "doc.text.fill")
+                        .foregroundColor(.appPrimary)
+                    Text("Termini e Condizioni")
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption)
+                        .foregroundColor(Color(.tertiaryLabel))
+                }
+            }
+
             // Supporto
-            Link(destination: URL(string: "mailto:ivanzdrilich@gmail.com?subject=Supporto%20Subly")!) {
+            Link(destination: URL(string: "mailto:info@zdrilichwebstudios.it?subject=Supporto%20Subly")!) {
                 HStack {
                     Image(systemName: "envelope.fill")
                         .foregroundColor(.appPrimary)
@@ -398,7 +276,7 @@ struct SettingsView: View {
             HStack {
                 Text("Versione")
                 Spacer()
-                Text("1.0.0")
+                Text(appVersion)
                     .foregroundColor(.secondary)
             }
 

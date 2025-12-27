@@ -245,8 +245,8 @@ struct OnboardingView: View {
 struct OnboardingPage {
     let icon: String
     let iconColor: Color
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
 }
 
 #Preview {

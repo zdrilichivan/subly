@@ -122,8 +122,6 @@ extension Date {
         guard let days = components.day else { return shortFormatted }
 
         switch days {
-        case ..<0:
-            return String(localized: "Scaduto")
         case 0:
             return String(localized: "Oggi")
         case 1:
@@ -131,6 +129,7 @@ extension Date {
         case 2...7:
             return String(localized: "Tra \(days) giorni")
         default:
+            // Gli abbonamenti si rinnovano automaticamente, mostra sempre la data
             return shortFormatted
         }
     }

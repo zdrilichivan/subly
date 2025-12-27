@@ -11,6 +11,10 @@ struct ContentView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @State private var selectedTab = 0
 
+    // Tab indices
+    private let statsTabIndex = 1
+    private let tipsTabIndex = 2
+
     var body: some View {
         TabView(selection: $selectedTab) {
             // Tab 1: Dashboard
@@ -27,10 +31,10 @@ struct ContentView: View {
                 }
                 .tag(1)
 
-            // Tab 3: Minimalismo
-            MinimalismView()
+            // Tab 3: Money Coach
+            DailyTipsView()
                 .tabItem {
-                    Label("Minimalismo", systemImage: "leaf.fill")
+                    Label("Coach", systemImage: "lightbulb.fill")
                 }
                 .tag(2)
 
@@ -42,6 +46,14 @@ struct ContentView: View {
                 .tag(3)
         }
         .tint(.appPrimary)
+        .onChange(of: selectedTab) { oldValue, newValue in
+            // Mostra interstitial DOPO la navigazione, solo 1 volta per sessione
+            if newValue == statsTabIndex {
+                AdManager.shared.showInterstitialOncePerSession(for: .stats, delay: 2.0)
+            } else if newValue == tipsTabIndex {
+                AdManager.shared.showInterstitialOncePerSession(for: .coach, delay: 2.0)
+            }
+        }
     }
 }
 

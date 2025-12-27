@@ -10,7 +10,6 @@ import SwiftUI
 struct AddSubscriptionView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var storeService = StoreService.shared
 
     // Form State
     @State private var selectedService: Service?
@@ -21,12 +20,13 @@ struct AddSubscriptionView: View {
     @State private var notes = ""
     @State private var category: ServiceCategory = .other
     @State private var isEssential = false
+    @State private var isShared = false
+    @State private var sharedWithCount: Int = 2
 
     // UI State
     @State private var showingServicePicker = false
     @State private var isSaving = false
     @State private var showingSuccessAlert = false
-    @State private var showingPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -36,6 +36,9 @@ struct AddSubscriptionView: View {
 
                 // Cost & Billing
                 costSection
+
+                // Sharing
+                sharingSection
 
                 // Date
                 dateSection
@@ -67,27 +70,6 @@ struct AddSubscriptionView: View {
             }
             .sheet(isPresented: $showingServicePicker) {
                 ServicePickerView(selectedService: $selectedService, category: $category)
-            }
-            .sheet(isPresented: $showingPaywall) {
-                PaywallView()
-            }
-            .onAppear {
-                // Mostra paywall se ha raggiunto il limite
-                if !storeService.canAddSubscription(currentCount: viewModel.activeSubscriptions.count) {
-                    showingPaywall = true
-                }
-            }
-            .onChange(of: storeService.isUnlocked) { _, isUnlocked in
-                // Chiudi paywall se ha sbloccato
-                if isUnlocked {
-                    showingPaywall = false
-                }
-            }
-            .onChange(of: showingPaywall) { _, isShowing in
-                // Se chiude il paywall senza aver sbloccato, torna indietro
-                if !isShowing && !storeService.canAddSubscription(currentCount: viewModel.activeSubscriptions.count) {
-                    dismiss()
-                }
             }
             .alert("Abbonamento tracciato", isPresented: $showingSuccessAlert) {
                 Button("OK") {
@@ -169,6 +151,61 @@ struct AddSubscriptionView: View {
         } header: {
             Text("Costo")
         }
+    }
+
+    private var sharingSection: some View {
+        Section {
+            Toggle(isOn: $isShared) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.green.opacity(0.12))
+                            .frame(width: 36, height: 36)
+
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.green)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Condiviso con altri")
+                            .font(.subheadline)
+                        if isShared {
+                            Text("La tua quota: \(perPersonCost)")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                }
+            }
+            .tint(.green)
+
+            if isShared {
+                Stepper(value: $sharedWithCount, in: 2...10) {
+                    HStack {
+                        Text("Numero persone")
+                        Spacer()
+                        Text("\(sharedWithCount)")
+                            .fontWeight(.semibold)
+                            .foregroundColor(.appPrimary)
+                    }
+                }
+            }
+        } header: {
+            Text("Condivisione")
+        } footer: {
+            if isShared {
+                Text("Il costo verrà diviso tra \(sharedWithCount) persone. Potrai inviare richieste di pagamento agli amici.")
+            }
+        }
+    }
+
+    private var perPersonCost: String {
+        guard let costValue = Double(cost.replacingOccurrences(of: ",", with: ".")) else {
+            return "€0,00"
+        }
+        let perPerson = costValue / Double(sharedWithCount)
+        return perPerson.currencyFormatted
     }
 
     private var dateSection: some View {
@@ -253,12 +290,6 @@ struct AddSubscriptionView: View {
     // MARK: - Actions
 
     private func saveSubscription() {
-        // Controllo sicurezza: verifica limite abbonamenti
-        guard storeService.canAddSubscription(currentCount: viewModel.activeSubscriptions.count) else {
-            showingPaywall = true
-            return
-        }
-
         guard let service = selectedService,
               let costValue = Double(cost.replacingOccurrences(of: ",", with: ".")) else {
             return
@@ -274,13 +305,24 @@ struct AddSubscriptionView: View {
             nextBillingDate: nextBillingDate,
             notes: notes.isEmpty ? nil : notes,
             category: category,
-            isEssential: isEssential
+            isEssential: isEssential,
+            sharedWith: isShared ? sharedWithCount : nil
         )
 
         Task {
             await viewModel.addSubscription(subscription)
             isSaving = false
-            showingSuccessAlert = true
+
+            // Mostra interstitial dopo il salvataggio, poi mostra l'alert
+            if let viewController = UIApplication.shared.currentViewController {
+                AdManager.shared.showInterstitial(from: viewController) {
+                    DispatchQueue.main.async {
+                        self.showingSuccessAlert = true
+                    }
+                }
+            } else {
+                showingSuccessAlert = true
+            }
         }
     }
 }

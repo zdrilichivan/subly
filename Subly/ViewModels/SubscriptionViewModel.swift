@@ -129,11 +129,16 @@ class SubscriptionViewModel: ObservableObject {
            let decoded = try? JSONDecoder().decode([Subscription].self, from: data) {
             self.subscriptions = decoded.sorted { $0.nextBillingDate < $1.nextBillingDate }
             logger.info("✅ Loaded \(decoded.count) subscriptions from cache")
+
+            // Auto-rinnova le date passate (gli abbonamenti non scadono mai)
+            updateExpiredBillingDates()
         }
 
         // Then sync with CloudKit and schedule notifications
         Task {
             await syncWithCloudKit()
+            // Auto-rinnova eventuali date passate arrivate dal cloud
+            updateExpiredBillingDates(syncToCloud: true)
             await notificationService.scheduleUsageCheckNotifications(for: subscriptions)
             isLoading = false
         }
@@ -143,6 +148,44 @@ class SubscriptionViewModel: ObservableObject {
         if let encoded = try? JSONEncoder().encode(self.subscriptions) {
             userDefaults.set(encoded, forKey: Constants.UserDefaults.subscriptions)
             logger.info("✅ Saved \(self.subscriptions.count) subscriptions to cache")
+        }
+    }
+
+    /// Aggiorna automaticamente le date di rinnovo passate
+    /// Gli abbonamenti si rinnovano automaticamente, quindi la data deve sempre essere nel futuro
+    private func updateExpiredBillingDates(syncToCloud: Bool = false) {
+        var hasChanges = false
+        var updatedSubscriptions: [Subscription] = []
+        let today = Calendar.current.startOfDay(for: Date())
+
+        for i in subscriptions.indices {
+            // Solo per abbonamenti attivi con data passata
+            while subscriptions[i].isActive &&
+                  Calendar.current.startOfDay(for: subscriptions[i].nextBillingDate) < today {
+                subscriptions[i].advanceToNextBillingDate()
+                hasChanges = true
+                updatedSubscriptions.append(subscriptions[i])
+                logger.info("🔄 Auto-renewed: \(self.subscriptions[i].displayName)")
+            }
+        }
+
+        if hasChanges {
+            subscriptions.sort { $0.nextBillingDate < $1.nextBillingDate }
+            saveSubscriptions()
+            logger.info("✅ Updated expired billing dates")
+
+            // Sync updated subscriptions to CloudKit
+            if syncToCloud {
+                Task {
+                    for sub in updatedSubscriptions {
+                        do {
+                            try await cloudKitService.updateSubscription(sub)
+                        } catch {
+                            logger.error("❌ Error syncing auto-renewed subscription: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
         }
     }
 

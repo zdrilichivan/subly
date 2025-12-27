@@ -20,6 +20,7 @@ struct Subscription: Identifiable, Codable, Equatable {
     var isActive: Bool
     var category: ServiceCategory
     var isEssential: Bool
+    var sharedWith: Int?  // Numero di persone con cui è condiviso (incluso l'utente)
     var createdAt: Date
     var updatedAt: Date
 
@@ -36,6 +37,7 @@ struct Subscription: Identifiable, Codable, Equatable {
         isActive: Bool = true,
         category: ServiceCategory = .other,
         isEssential: Bool = false,
+        sharedWith: Int? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -50,6 +52,7 @@ struct Subscription: Identifiable, Codable, Equatable {
         self.isActive = isActive
         self.category = category
         self.isEssential = isEssential
+        self.sharedWith = sharedWith
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -61,8 +64,29 @@ struct Subscription: Identifiable, Codable, Equatable {
         customName?.trimmed.isNotEmpty == true ? customName! : serviceName
     }
 
-    /// Costo mensile normalizzato
+    /// Costo mensile normalizzato (considera la condivisione)
     var monthlyCost: Double {
+        let baseCost: Double
+        switch billingCycle {
+        case .weekly:
+            baseCost = cost * 4.33
+        case .monthly:
+            baseCost = cost
+        case .yearly:
+            baseCost = cost / 12
+        }
+        // Se condiviso, restituisce la quota pro-capite
+        let people = max(sharedWith ?? 1, 1)
+        return baseCost / Double(people)
+    }
+
+    /// Costo annuale normalizzato (considera la condivisione)
+    var yearlyCost: Double {
+        monthlyCost * 12
+    }
+
+    /// Costo mensile TOTALE (senza considerare la condivisione)
+    var totalMonthlyCost: Double {
         switch billingCycle {
         case .weekly:
             return cost * 4.33
@@ -73,9 +97,9 @@ struct Subscription: Identifiable, Codable, Equatable {
         }
     }
 
-    /// Costo annuale normalizzato
-    var yearlyCost: Double {
-        monthlyCost * 12
+    /// Costo annuale TOTALE (senza considerare la condivisione)
+    var totalYearlyCost: Double {
+        totalMonthlyCost * 12
     }
 
     /// Descrizione del ciclo di fatturazione
@@ -101,6 +125,17 @@ struct Subscription: Identifiable, Codable, Equatable {
     /// Se il rinnovo è oggi
     var isRenewalToday: Bool {
         daysUntilRenewal == 0
+    }
+
+    /// Se l'abbonamento è condiviso
+    var isShared: Bool {
+        (sharedWith ?? 1) > 1
+    }
+
+    /// Costo pro-capite per il ciclo di fatturazione (se condiviso)
+    var perPersonCost: Double {
+        let people = max(sharedWith ?? 1, 1)
+        return cost / Double(people)
     }
 
     // MARK: - Mutating Methods

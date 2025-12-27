@@ -10,11 +10,11 @@ import UIKit
 
 struct DashboardView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
-    @StateObject private var storeService = StoreService.shared
     @AppStorage("userName") private var userName = ""
     @AppStorage("userProfileImageData") private var profileImageData: Data?
     @State private var navigateToSettings = false
     @State private var showingAddSheet = false
+    @State private var navigateToTips = false
 
     private let insightService = InsightService.shared
 
@@ -28,6 +28,11 @@ struct DashboardView: View {
 
                         // Cards statistiche
                         statsCardsSection
+
+                        // Daily Tip Card
+                        DailyTipCard {
+                            navigateToTips = true
+                        }
 
                         // Insight: Cosa potresti fare (carousel con più suggerimenti)
                         if viewModel.activeSubscriptions.isNotEmpty {
@@ -80,6 +85,9 @@ struct DashboardView: View {
             .navigationDestination(isPresented: $navigateToSettings) {
                 SettingsView()
             }
+            .navigationDestination(isPresented: $navigateToTips) {
+                DailyTipsView()
+            }
         }
     }
 
@@ -95,23 +103,8 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
 
-                HStack(spacing: 8) {
-                    Text(greetingText)
-                        .font(.system(size: 26, weight: .bold))
-
-                    if storeService.isUnlocked {
-                        Text("PRO")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(
-                                Capsule()
-                                    .fill(Color.green)
-                            )
-                    }
-                }
+                Text(greetingText)
+                    .font(.system(size: 26, weight: .bold))
             }
 
             Spacer()

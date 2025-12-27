@@ -43,9 +43,17 @@ struct ServiceCatalog {
     // MARK: - All Services (80+)
     static let allServices: [Service] = [
         // MARK: Streaming Video
-        Service(name: "Netflix", category: .streaming, iconName: "play.tv.fill", typicalCost: 12.99, cancellationURL: "https://www.netflix.com/cancelplan"),
+        // Netflix - tutti i piani
+        Service(name: "Netflix Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 6.99, cancellationURL: "https://www.netflix.com/cancelplan"),
+        Service(name: "Netflix Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 13.99, cancellationURL: "https://www.netflix.com/cancelplan"),
+        Service(name: "Netflix Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 18.99, cancellationURL: "https://www.netflix.com/cancelplan"),
+
         Service(name: "Amazon Prime Video", category: .streaming, iconName: "play.tv.fill", typicalCost: 4.99, cancellationURL: "https://www.amazon.it/gp/video/settings"),
-        Service(name: "Disney+", category: .streaming, iconName: "play.tv.fill", typicalCost: 8.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
+
+        // Disney+ - tutti i piani
+        Service(name: "Disney+ Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 5.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
+        Service(name: "Disney+ Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 8.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
+        Service(name: "Disney+ Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 11.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
         Service(name: "NOW TV", category: .streaming, iconName: "play.tv.fill", typicalCost: 14.99, cancellationURL: "https://www.nowtv.it/account"),
         Service(name: "Sky Go", category: .streaming, iconName: "play.tv.fill", typicalCost: 29.90, cancellationURL: "https://www.sky.it/assistenza/info-disdette"),
         Service(name: "DAZN", category: .streaming, iconName: "sportscourt.fill", typicalCost: 29.99, cancellationURL: "https://www.dazn.com/it-IT/account/subscription"),
@@ -61,8 +69,16 @@ struct ServiceCatalog {
         Service(name: "YouTube Premium", category: .streaming, iconName: "play.rectangle.fill", typicalCost: 11.99, cancellationURL: "https://www.youtube.com/paid_memberships"),
 
         // MARK: Musica
-        Service(name: "Spotify", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
-        Service(name: "Apple Music", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
+        // Spotify - tutti i piani
+        Service(name: "Spotify Individual", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
+        Service(name: "Spotify Duo", category: .music, iconName: "music.note", typicalCost: 14.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
+        Service(name: "Spotify Family", category: .music, iconName: "music.note", typicalCost: 17.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
+        Service(name: "Spotify Student", category: .music, iconName: "music.note", typicalCost: 5.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
+
+        // Apple Music - tutti i piani
+        Service(name: "Apple Music Individuale", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
+        Service(name: "Apple Music Famiglia", category: .music, iconName: "music.note", typicalCost: 16.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
+        Service(name: "Apple Music Studenti", category: .music, iconName: "music.note", typicalCost: 5.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
         Service(name: "Amazon Music Unlimited", category: .music, iconName: "music.note", typicalCost: 9.99, cancellationURL: "https://www.amazon.it/music/settings"),
         Service(name: "YouTube Music", category: .music, iconName: "music.note", typicalCost: 9.99, cancellationURL: "https://www.youtube.com/paid_memberships"),
         Service(name: "Deezer", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://www.deezer.com/account/subscription"),
@@ -191,6 +207,32 @@ struct ServiceCatalog {
     // MARK: - Find by Name
     static func find(byName name: String) -> Service? {
         allServices.first { $0.name.lowercased() == name.lowercased() }
+    }
+
+    // MARK: - Find Cancellation URL (con match flessibile)
+    /// Cerca l'URL di cancellazione anche con match parziale (es. "Netflix" trova "Netflix Standard")
+    static func findCancellationURL(forService name: String) -> String? {
+        // Prima prova match esatto
+        if let exactMatch = find(byName: name), let url = exactMatch.cancellationURL {
+            return url
+        }
+
+        // Poi cerca servizi che iniziano con il nome (es. "Netflix" → "Netflix Standard")
+        let lowercasedName = name.lowercased()
+        if let partialMatch = allServices.first(where: {
+            $0.name.lowercased().hasPrefix(lowercasedName) && $0.cancellationURL != nil
+        }) {
+            return partialMatch.cancellationURL
+        }
+
+        // Infine cerca servizi il cui nome è contenuto nel nome cercato
+        if let containsMatch = allServices.first(where: {
+            lowercasedName.contains($0.name.lowercased()) && $0.cancellationURL != nil
+        }) {
+            return containsMatch.cancellationURL
+        }
+
+        return nil
     }
 
     // MARK: - Categories

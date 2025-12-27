@@ -14,8 +14,8 @@ struct ServiceLogoView: View {
 
     var body: some View {
         Group {
-            // Prima controlla se esiste un'icona locale negli Assets
-            if let localImage = UIImage(named: serviceName) {
+            // Prima controlla se esiste un'icona locale negli Assets (anche con match parziale)
+            if let localImage = getLocalImage() {
                 Image(uiImage: localImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -88,6 +88,63 @@ struct ServiceLogoView: View {
         }
     }
 
+    // MARK: - Local Image (con match parziale per varianti di piano)
+
+    private func getLocalImage() -> UIImage? {
+        // Prima prova il nome esatto
+        if let exactMatch = UIImage(named: serviceName) {
+            return exactMatch
+        }
+
+        // Prova match parziale per varianti di piano (es. "Netflix Premium" → "Netflix")
+        let baseNames = serviceBaseNames[serviceName] ?? []
+        for baseName in baseNames {
+            if let baseImage = UIImage(named: baseName) {
+                return baseImage
+            }
+        }
+
+        return nil
+    }
+
+    // Mappa delle varianti ai nomi base per le icone locali
+    private var serviceBaseNames: [String: [String]] {
+        [
+            // Netflix
+            "Netflix Standard con pubblicità": ["Netflix"],
+            "Netflix Standard": ["Netflix"],
+            "Netflix Premium": ["Netflix"],
+            // Disney+
+            "Disney+ Standard con pubblicità": ["Disney+", "Disney"],
+            "Disney+ Standard": ["Disney+", "Disney"],
+            "Disney+ Premium": ["Disney+", "Disney"],
+            // Spotify
+            "Spotify Individual": ["Spotify"],
+            "Spotify Duo": ["Spotify"],
+            "Spotify Family": ["Spotify"],
+            "Spotify Student": ["Spotify"],
+            // Apple Music
+            "Apple Music Individuale": ["Apple Music"],
+            "Apple Music Famiglia": ["Apple Music"],
+            "Apple Music Studenti": ["Apple Music"],
+            // iCloud
+            "iCloud+ 200GB": ["iCloud+", "iCloud"],
+            "iCloud+ 2TB": ["iCloud+", "iCloud"],
+            // Google One
+            "Google One 100GB": ["Google One", "Google"],
+            "Google One 200GB": ["Google One", "Google"],
+            "Google One 2TB": ["Google One", "Google"],
+            // PlayStation
+            "PlayStation Plus Essential": ["PlayStation Plus", "PlayStation"],
+            "PlayStation Plus Extra": ["PlayStation Plus", "PlayStation"],
+            "PlayStation Plus Premium": ["PlayStation Plus", "PlayStation"],
+            // Xbox
+            "Xbox Game Pass Core": ["Xbox Game Pass", "Xbox"],
+            "Xbox Game Pass Standard": ["Xbox Game Pass", "Xbox"],
+            "Xbox Game Pass Ultimate": ["Xbox Game Pass", "Xbox"],
+        ]
+    }
+
     // MARK: - Logo URL
 
     private func getLogoURL() -> URL? {
@@ -113,8 +170,14 @@ struct ServiceLogoView: View {
         [
             // Streaming Video
             "Netflix": "netflix.com",
+            "Netflix Standard con pubblicità": "netflix.com",
+            "Netflix Standard": "netflix.com",
+            "Netflix Premium": "netflix.com",
             "Amazon Prime Video": "primevideo.com",
             "Disney+": "disneyplus.com",
+            "Disney+ Standard con pubblicità": "disneyplus.com",
+            "Disney+ Standard": "disneyplus.com",
+            "Disney+ Premium": "disneyplus.com",
             "NOW TV": "nowtv.it",
             "Sky Go": "sky.it",
             "DAZN": "dazn.com",
@@ -122,14 +185,23 @@ struct ServiceLogoView: View {
             "Paramount+": "paramountplus.com",
             "Discovery+": "discoveryplus.com",
             "Infinity+": "infinitytv.it",
+            "RaiPlay": "raiplay.it",
             "TimVision": "timvision.it",
             "Crunchyroll": "crunchyroll.com",
             "MUBI": "mubi.com",
+            "Chili": "chili.com",
             "YouTube Premium": "youtube.com",
 
             // Musica
             "Spotify": "spotify.com",
+            "Spotify Individual": "spotify.com",
+            "Spotify Duo": "spotify.com",
+            "Spotify Family": "spotify.com",
+            "Spotify Student": "spotify.com",
             "Apple Music": "apple.com",
+            "Apple Music Individuale": "apple.com",
+            "Apple Music Famiglia": "apple.com",
+            "Apple Music Studenti": "apple.com",
             "Amazon Music Unlimited": "music.amazon.com",
             "YouTube Music": "music.youtube.com",
             "Deezer": "deezer.com",

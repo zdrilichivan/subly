@@ -11,11 +11,16 @@ import CloudKit
 @main
 struct SublySwiftApp: App {
     @StateObject private var viewModel = SubscriptionViewModel()
+    @ObservedObject private var notificationService = NotificationService.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showingICloudAlert = false
     @State private var iCloudAlertMessage = ""
+    @State private var showUsageCheckSheet = false
 
     init() {
+        // Inizializza Google AdMob SDK
+        AdManager.configure()
+
         // Setup callback per aprire pagina di cancellazione dalle notifiche
         NotificationService.shared.onOpenCancellationPage = { serviceName in
             if let service = ServiceCatalog.find(byName: serviceName),
@@ -39,6 +44,21 @@ struct SublySwiftApp: App {
             }
             .onAppear {
                 checkiCloudStatus()
+            }
+            .onChange(of: notificationService.subscriptionToCheck) { _, newValue in
+                if newValue != nil {
+                    showUsageCheckSheet = true
+                }
+            }
+            .sheet(isPresented: $showUsageCheckSheet) {
+                if let subscriptionInfo = notificationService.subscriptionToCheck {
+                    UsageCheckSheet(subscriptionInfo: subscriptionInfo) {
+                        showUsageCheckSheet = false
+                        notificationService.subscriptionToCheck = nil
+                    }
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+                }
             }
             .alert("iCloud non disponibile", isPresented: $showingICloudAlert) {
                 Button("Apri Impostazioni") {

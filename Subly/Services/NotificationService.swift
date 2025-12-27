@@ -23,8 +23,19 @@ class NotificationService: NSObject, ObservableObject {
     @Published var isAuthorized = false
     @Published var pendingNotificationsCount = 0
 
+    // Subscription per cui mostrare la domanda "Stai utilizzando?"
+    @Published var subscriptionToCheck: SubscriptionCheckInfo?
+
     // Callback per aprire la pagina di cancellazione
     var onOpenCancellationPage: ((String) -> Void)?
+
+    // MARK: - Subscription Check Info
+    struct SubscriptionCheckInfo: Identifiable, Equatable {
+        let id: String
+        let name: String
+        let serviceName: String
+        let cost: String
+    }
 
     // MARK: - Notification Categories
     private let usageCheckCategory = "USAGE_CHECK"
@@ -154,8 +165,16 @@ class NotificationService: NSObject, ObservableObject {
             content.title = "⚠️ Rinnovo domani"
             content.body = "\(subscription.displayName) (\(subscription.cost.currencyFormatted)) - Ultima chance per ripensarci!"
         case 3:
-            content.title = "⏰ Tempo di riflettere"
-            content.body = "\(subscription.displayName) si rinnova tra 3 giorni (\(subscription.cost.currencyFormatted)). Ti serve davvero?"
+            // Notifica interattiva: porta nell'app per chiedere se usa il servizio
+            content.title = "🤔 Stai utilizzando \(subscription.displayName)?"
+            content.body = "Si rinnova tra 3 giorni (\(subscription.cost.currencyFormatted)). Tocca per rispondere."
+            content.userInfo = [
+                "subscriptionId": subscription.id.uuidString,
+                "subscriptionName": subscription.displayName,
+                "serviceName": subscription.serviceName,
+                "cost": subscription.cost.currencyFormatted,
+                "type": "usage_check_3days"
+            ]
         default:
             content.title = "🔔 Rinnovo tra \(daysBefore) giorni"
             content.body = "\(subscription.displayName) - \(subscription.cost.currencyFormatted)"
@@ -386,6 +405,10 @@ extension NotificationService: UNUserNotificationCenterDelegate {
         let subscriptionName = userInfo["subscriptionName"] as? String ?? ""
         let serviceName = userInfo["serviceName"] as? String ?? ""
 
+        // Controlla se è una notifica "usage check 3 giorni"
+        let notificationType = userInfo["type"] as? String
+        let cost = userInfo["cost"] as? String ?? ""
+
         switch response.actionIdentifier {
         case actionUsedYes:
             // L'utente ha detto che usa il servizio
@@ -414,8 +437,22 @@ extension NotificationService: UNUserNotificationCenterDelegate {
                 self.onOpenCancellationPage?(serviceName)
             }
 
+        case UNNotificationDefaultActionIdentifier:
+            // Tap sulla notifica (senza azione specifica)
+            // Se è la notifica a 3 giorni, mostra lo sheet nell'app
+            if notificationType == "usage_check_3days" {
+                logger.info("📱 Opening usage check for: \(subscriptionName)")
+                DispatchQueue.main.async {
+                    self.subscriptionToCheck = SubscriptionCheckInfo(
+                        id: subscriptionId,
+                        name: subscriptionName,
+                        serviceName: serviceName,
+                        cost: cost
+                    )
+                }
+            }
+
         default:
-            // Tap sulla notifica senza azione specifica
             break
         }
 

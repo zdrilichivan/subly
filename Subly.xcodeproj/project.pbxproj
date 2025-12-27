@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C1337462EF99C7100BE423D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 2C1337452EF99C7100BE423D /* GoogleMobileAds */; };
 		2C39A0F82EF194F300F7BCA1 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C39A0F72EF194F300F7BCA1 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C1337462EF99C7100BE423D /* GoogleMobileAds in Frameworks */,
 				2C39A0F82EF194F300F7BCA1 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -93,6 +95,7 @@
 			);
 			name = Subly;
 			packageProductDependencies = (
+				2C1337452EF99C7100BE423D /* GoogleMobileAds */,
 			);
 			productName = Subly;
 			productReference = 2C39A0922EF1694600F7BCA1 /* Subly.app */;
@@ -123,6 +126,9 @@
 			);
 			mainGroup = 2C39A0892EF1694600F7BCA1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2C1337442EF99C7100BE423D /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2C39A0932EF1694600F7BCA1 /* Products */;
 			projectDirPath = "";
@@ -282,7 +288,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Subly/Subly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 76RVTLGURV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -298,7 +304,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -318,7 +324,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Subly/Subly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 76RVTLGURV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -334,7 +340,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -369,6 +375,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2C1337442EF99C7100BE423D /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.14.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2C1337452EF99C7100BE423D /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2C1337442EF99C7100BE423D /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2C39A08A2EF1694600F7BCA1 /* Project object */;
 }

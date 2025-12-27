@@ -91,14 +91,12 @@ struct SubscriptionRow: View {
                 Text("Tra \(daysUntil) gg")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.orange)
-            } else if daysUntil > 7 {
+            } else {
+                // daysUntil > 7 oppure qualsiasi altro caso
+                // Gli abbonamenti si rinnovano automaticamente, quindi mostriamo sempre la data
                 Text(subscription.nextBillingDate.shortFormatted)
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
-            } else {
-                Text("Scaduto")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.red)
             }
         }
     }
