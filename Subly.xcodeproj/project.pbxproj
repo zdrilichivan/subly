@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		2C1337462EF99C7100BE423D /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 2C1337452EF99C7100BE423D /* GoogleMobileAds */; };
 		2C39A0F82EF194F300F7BCA1 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C39A0F72EF194F300F7BCA1 /* StoreKit.framework */; };
+		2CA746F82F066F0B006D0D1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 2CA746F72F066F0B006D0D1F /* GoogleSignIn */; };
+		2CA746FA2F066F0B006D0D1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2CA746F92F066F0B006D0D1F /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +46,8 @@
 			files = (
 				2C1337462EF99C7100BE423D /* GoogleMobileAds in Frameworks */,
 				2C39A0F82EF194F300F7BCA1 /* StoreKit.framework in Frameworks */,
+				2CA746F82F066F0B006D0D1F /* GoogleSignIn in Frameworks */,
+				2CA746FA2F066F0B006D0D1F /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,6 +100,8 @@
 			name = Subly;
 			packageProductDependencies = (
 				2C1337452EF99C7100BE423D /* GoogleMobileAds */,
+				2CA746F72F066F0B006D0D1F /* GoogleSignIn */,
+				2CA746F92F066F0B006D0D1F /* GoogleSignInSwift */,
 			);
 			productName = Subly;
 			productReference = 2C39A0922EF1694600F7BCA1 /* Subly.app */;
@@ -128,6 +134,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				2C1337442EF99C7100BE423D /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				2CA746F62F066F0B006D0D1F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2C39A0932EF1694600F7BCA1 /* Products */;
@@ -288,7 +295,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Subly/Subly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 76RVTLGURV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -304,7 +311,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -324,7 +331,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Subly/Subly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 76RVTLGURV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -340,7 +347,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -385,6 +392,14 @@
 				minimumVersion = 12.14.0;
 			};
 		};
+		2CA746F62F066F0B006D0D1F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -392,6 +407,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2C1337442EF99C7100BE423D /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
+		};
+		2CA746F72F066F0B006D0D1F /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2CA746F62F066F0B006D0D1F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		2CA746F92F066F0B006D0D1F /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2CA746F62F066F0B006D0D1F /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -17,7 +17,7 @@ struct OnboardingView: View {
     @State private var nameInput = ""
     @FocusState private var isNameFieldFocused: Bool
 
-    private let totalPages = 8 // 7 info pages + 1 name page
+    private let totalPages = 9 // 8 info pages + 1 name page
 
     private let pages: [OnboardingPage] = [
         OnboardingPage(
@@ -31,6 +31,12 @@ struct OnboardingView: View {
             iconColor: .appPrimary,
             title: "Traccia i tuoi abbonamenti",
             description: "Aggiungi tutti i tuoi abbonamenti da oltre 80 servizi. Saprai sempre quanto spendi ogni mese e ogni anno."
+        ),
+        OnboardingPage(
+            icon: "mail.and.text.magnifyingglass",
+            iconColor: .blue,
+            title: "Trova abbonamenti nascosti",
+            description: "Collega Gmail per scansionare le tue email e trovare automaticamente gli abbonamenti che hai dimenticato."
         ),
         OnboardingPage(
             icon: "lightbulb.fill",

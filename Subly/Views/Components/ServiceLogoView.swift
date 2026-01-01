@@ -12,9 +12,13 @@ struct ServiceLogoView: View {
     let category: ServiceCategory
     var size: CGFloat = 48
 
+    @State private var cachedImage: UIImage?
+    @State private var isLoading = false
+    @State private var loadAttempted = false
+
     var body: some View {
         Group {
-            // Prima controlla se esiste un'icona locale negli Assets (anche con match parziale)
+            // 1. Prima controlla icona locale negli Assets
             if let localImage = getLocalImage() {
                 Image(uiImage: localImage)
                     .resizable()
@@ -22,39 +26,69 @@ struct ServiceLogoView: View {
                     .frame(width: size, height: size)
                     .clipShape(RoundedRectangle(cornerRadius: size * 0.2))
                     .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-            } else if let logoURL = getLogoURL() {
-                AsyncImage(url: logoURL) { phase in
-                    switch phase {
-                    case .empty:
-                        // Loading placeholder
-                        fallbackView
-                            .overlay(
+            }
+            // 2. Poi controlla cache locale
+            else if let cached = cachedImage {
+                Image(uiImage: cached)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.2))
+                    .background(
+                        RoundedRectangle(cornerRadius: size * 0.2)
+                            .fill(Color.white)
+                    )
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+            }
+            // 3. Altrimenti mostra fallback (e scarica in background)
+            else {
+                fallbackView
+                    .overlay(
+                        Group {
+                            if isLoading {
                                 ProgressView()
                                     .scaleEffect(0.5)
-                            )
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: size, height: size)
-                            .clipShape(RoundedRectangle(cornerRadius: size * 0.2))
-                            .background(
-                                RoundedRectangle(cornerRadius: size * 0.2)
-                                    .fill(Color.white)
-                            )
-                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-                    case .failure:
-                        // Fallback se il logo non carica
-                        fallbackView
-                    @unknown default:
-                        fallbackView
-                    }
-                }
-            } else {
-                fallbackView
+                            }
+                        }
+                    )
             }
         }
         .frame(width: size, height: size)
+        .onAppear {
+            loadLogoIfNeeded()
+        }
+    }
+
+    // MARK: - Load Logo
+
+    private func loadLogoIfNeeded() {
+        // Non ricaricare se già provato
+        guard !loadAttempted else { return }
+        loadAttempted = true
+
+        // Controlla prima la cache
+        if let cached = LogoCacheManager.shared.getCachedLogo(for: serviceName) {
+            cachedImage = cached
+            return
+        }
+
+        // Ottieni il dominio per Brandfetch
+        guard let domain = serviceDomains[serviceName] ?? guessDomain() else { return }
+
+        isLoading = true
+        Task {
+            // Usa Brandfetch (con fallback a Google Favicon)
+            if let image = await LogoCacheManager.shared.fetchAndCacheLogo(for: domain, serviceName: serviceName) {
+                await MainActor.run {
+                    cachedImage = image
+                    isLoading = false
+                }
+            } else {
+                await MainActor.run {
+                    isLoading = false
+                }
+            }
+        }
     }
 
     // MARK: - Fallback View (icona generica)
@@ -145,15 +179,7 @@ struct ServiceLogoView: View {
         ]
     }
 
-    // MARK: - Logo URL
-
-    private func getLogoURL() -> URL? {
-        guard let domain = serviceDomains[serviceName] ?? guessDomain() else {
-            return nil
-        }
-        // Usa Google Favicon service con dimensione massima
-        return URL(string: "https://www.google.com/s2/favicons?domain=\(domain)&sz=256")
-    }
+    // MARK: - Domain Helper
 
     private func guessDomain() -> String? {
         // Prova a indovinare il dominio dal nome del servizio
@@ -185,6 +211,7 @@ struct ServiceLogoView: View {
             "Paramount+": "paramountplus.com",
             "Discovery+": "discoveryplus.com",
             "Infinity+": "infinitytv.it",
+            "Infinity+ su Prime Video": "infinitytv.it",
             "RaiPlay": "raiplay.it",
             "TimVision": "timvision.it",
             "Crunchyroll": "crunchyroll.com",

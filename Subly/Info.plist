@@ -17,5 +17,18 @@
 			<string>cstr6suwn9.skadnetwork</string>
 		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>691747467864-jv686no8cdd5ifirp6r7g9pprlmq3f26.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.691747467864-jv686no8cdd5ifirp6r7g9pprlmq3f26</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

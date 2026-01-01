@@ -65,11 +65,11 @@ struct DailyTipsView: View {
                     .foregroundColor(.white)
             }
 
-            Text("Il tuo consiglio del giorno")
+            Text(String(localized: "Il tuo consiglio del giorno"))
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text("Ogni giorno un nuovo consiglio per gestire meglio i tuoi soldi")
+            Text(String(localized: "Ogni giorno un nuovo consiglio per gestire meglio i tuoi soldi"))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -84,7 +84,7 @@ struct DailyTipsView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Category badge
             HStack {
-                Label(tipsService.todaysTip.category.rawValue, systemImage: tipsService.todaysTip.category.icon)
+                Label(tipsService.todaysTip.category.localizedName, systemImage: tipsService.todaysTip.category.icon)
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(categoryColor)
@@ -98,7 +98,7 @@ struct DailyTipsView: View {
                 Spacer()
 
                 // Day indicator
-                Text("Giorno \(dayOfYear)")
+                Text(String(localized: "Giorno \(dayOfYear)"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -157,11 +157,11 @@ struct DailyTipsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Promemoria giornaliero")
+                    Text(String(localized: "Promemoria giornaliero"))
                         .font(.subheadline)
                         .fontWeight(.semibold)
 
-                    Text("Ricevi un consiglio ogni mattina alle 9:00")
+                    Text(String(localized: "Ricevi un consiglio ogni mattina alle 9:00"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -199,7 +199,7 @@ struct DailyTipsView: View {
                 Image(systemName: "square.grid.2x2.fill")
                     .foregroundColor(.green)
 
-                Text("Categorie di consigli")
+                Text(String(localized: "Categorie di consigli"))
                     .font(.headline)
             }
 
@@ -225,7 +225,7 @@ struct DailyTipsView: View {
                         .fill(color(for: category).opacity(0.12))
                 )
 
-            Text(category.rawValue)
+            Text(category.localizedName)
                 .font(.caption)
                 .fontWeight(.medium)
                 .lineLimit(1)
@@ -247,12 +247,12 @@ struct DailyTipsView: View {
                 .font(.title)
                 .foregroundColor(.secondary.opacity(0.5))
 
-            Text("Non è quanto guadagni, ma quanto risparmi.")
+            Text(String(localized: "Non è quanto guadagni, ma quanto risparmi."))
                 .font(.body)
                 .italic()
                 .multilineTextAlignment(.center)
 
-            Text("— Warren Buffett")
+            Text(String(localized: "— Warren Buffett"))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -308,7 +308,7 @@ struct ActionDetailSheet: View {
                                 .foregroundColor(.green)
                         }
 
-                        Text("Come mettere in pratica")
+                        Text(String(localized: "Come mettere in pratica"))
                             .font(.title3)
                             .fontWeight(.bold)
                     }
@@ -334,7 +334,7 @@ struct ActionDetailSheet: View {
 
                     // Guide section
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Guida pratica")
+                        Text(String(localized: "Guida pratica"))
                             .font(.headline)
 
                         ForEach(actionGuideItems, id: \.title) { item in
@@ -363,7 +363,7 @@ struct ActionDetailSheet: View {
 
                     // Questions to ask
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Domande da porti")
+                        Text(String(localized: "Domande da porti"))
                             .font(.headline)
 
                         ForEach(questionsToAsk, id: \.self) { question in
@@ -390,7 +390,7 @@ struct ActionDetailSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Chiudi") {
+                    Button(String(localized: "Chiudi")) {
                         dismiss()
                     }
                 }
@@ -404,39 +404,39 @@ struct ActionDetailSheet: View {
         switch tip.category {
         case .awareness:
             return [
-                ActionGuideItem(emoji: "1️⃣", title: "Controlla i tuoi estratti conto", description: "Scarica l'ultimo mese e evidenzia ogni abbonamento ricorrente."),
-                ActionGuideItem(emoji: "2️⃣", title: "Crea una lista", description: "Scrivi tutti gli abbonamenti attivi con il loro costo mensile."),
-                ActionGuideItem(emoji: "3️⃣", title: "Valuta l'utilizzo", description: "Per ogni abbonamento, chiediti: l'ho usato nell'ultima settimana?")
+                ActionGuideItem(emoji: "1️⃣", title: String(localized: "Controlla i tuoi estratti conto"), description: String(localized: "Scarica l'ultimo mese e evidenzia ogni abbonamento ricorrente.")),
+                ActionGuideItem(emoji: "2️⃣", title: String(localized: "Crea una lista"), description: String(localized: "Scrivi tutti gli abbonamenti attivi con il loro costo mensile.")),
+                ActionGuideItem(emoji: "3️⃣", title: String(localized: "Valuta l'utilizzo"), description: String(localized: "Per ogni abbonamento, chiediti: l'ho usato nell'ultima settimana?"))
             ]
         case .saving:
             return [
-                ActionGuideItem(emoji: "1️⃣", title: "Identifica l'obiettivo", description: "Decidi quanto vuoi risparmiare questo mese."),
-                ActionGuideItem(emoji: "2️⃣", title: "Automatizza", description: "Imposta un bonifico automatico verso un conto risparmio."),
-                ActionGuideItem(emoji: "3️⃣", title: "Monitora", description: "Controlla i progressi ogni settimana.")
+                ActionGuideItem(emoji: "1️⃣", title: String(localized: "Identifica l'obiettivo"), description: String(localized: "Decidi quanto vuoi risparmiare questo mese.")),
+                ActionGuideItem(emoji: "2️⃣", title: String(localized: "Automatizza"), description: String(localized: "Imposta un bonifico automatico verso un conto risparmio.")),
+                ActionGuideItem(emoji: "3️⃣", title: String(localized: "Monitora"), description: String(localized: "Controlla i progressi ogni settimana."))
             ]
         case .budgeting:
             return [
-                ActionGuideItem(emoji: "1️⃣", title: "Calcola le entrate", description: "Somma tutti i tuoi guadagni mensili netti."),
-                ActionGuideItem(emoji: "2️⃣", title: "Elenca le spese fisse", description: "Affitto, bollette, abbonamenti, assicurazioni."),
-                ActionGuideItem(emoji: "3️⃣", title: "Definisci i limiti", description: "Assegna un budget per ogni categoria di spesa.")
+                ActionGuideItem(emoji: "1️⃣", title: String(localized: "Calcola le entrate"), description: String(localized: "Somma tutti i tuoi guadagni mensili netti.")),
+                ActionGuideItem(emoji: "2️⃣", title: String(localized: "Elenca le spese fisse"), description: String(localized: "Affitto, bollette, abbonamenti, assicurazioni.")),
+                ActionGuideItem(emoji: "3️⃣", title: String(localized: "Definisci i limiti"), description: String(localized: "Assegna un budget per ogni categoria di spesa."))
             ]
         case .challenge:
             return [
-                ActionGuideItem(emoji: "1️⃣", title: "Accetta la sfida", description: "Decidi di iniziare oggi, non domani."),
-                ActionGuideItem(emoji: "2️⃣", title: "Prepara l'ambiente", description: "Rimuovi le tentazioni che potrebbero farti fallire."),
-                ActionGuideItem(emoji: "3️⃣", title: "Traccia i progressi", description: "Segna ogni giorno completato con successo.")
+                ActionGuideItem(emoji: "1️⃣", title: String(localized: "Accetta la sfida"), description: String(localized: "Decidi di iniziare oggi, non domani.")),
+                ActionGuideItem(emoji: "2️⃣", title: String(localized: "Prepara l'ambiente"), description: String(localized: "Rimuovi le tentazioni che potrebbero farti fallire.")),
+                ActionGuideItem(emoji: "3️⃣", title: String(localized: "Traccia i progressi"), description: String(localized: "Segna ogni giorno completato con successo."))
             ]
         case .hack:
             return [
-                ActionGuideItem(emoji: "1️⃣", title: "Prova subito", description: "Non rimandare: i migliori risultati vengono dall'azione immediata."),
-                ActionGuideItem(emoji: "2️⃣", title: "Misura il risparmio", description: "Calcola quanto hai risparmiato con questo trucco."),
-                ActionGuideItem(emoji: "3️⃣", title: "Rendi abituale", description: "Integra questo hack nella tua routine quotidiana.")
+                ActionGuideItem(emoji: "1️⃣", title: String(localized: "Prova subito"), description: String(localized: "Non rimandare: i migliori risultati vengono dall'azione immediata.")),
+                ActionGuideItem(emoji: "2️⃣", title: String(localized: "Misura il risparmio"), description: String(localized: "Calcola quanto hai risparmiato con questo trucco.")),
+                ActionGuideItem(emoji: "3️⃣", title: String(localized: "Rendi abituale"), description: String(localized: "Integra questo hack nella tua routine quotidiana."))
             ]
         case .mindset:
             return [
-                ActionGuideItem(emoji: "1️⃣", title: "Rifletti", description: "Prenditi 5 minuti per pensare a questo concetto."),
-                ActionGuideItem(emoji: "2️⃣", title: "Scrivi", description: "Annota come questo si applica alla tua situazione."),
-                ActionGuideItem(emoji: "3️⃣", title: "Agisci", description: "Identifica un'azione concreta da fare oggi.")
+                ActionGuideItem(emoji: "1️⃣", title: String(localized: "Rifletti"), description: String(localized: "Prenditi 5 minuti per pensare a questo concetto.")),
+                ActionGuideItem(emoji: "2️⃣", title: String(localized: "Scrivi"), description: String(localized: "Annota come questo si applica alla tua situazione.")),
+                ActionGuideItem(emoji: "3️⃣", title: String(localized: "Agisci"), description: String(localized: "Identifica un'azione concreta da fare oggi."))
             ]
         }
     }
@@ -445,45 +445,45 @@ struct ActionDetailSheet: View {
         switch tip.category {
         case .awareness:
             return [
-                "Ho usato questo servizio nell'ultimo mese?",
-                "Potrei vivere senza per 30 giorni?",
-                "Esiste un'alternativa gratuita?",
-                "Il costo giustifica il valore che ricevo?"
+                String(localized: "Ho usato questo servizio nell'ultimo mese?"),
+                String(localized: "Potrei vivere senza per 30 giorni?"),
+                String(localized: "Esiste un'alternativa gratuita?"),
+                String(localized: "Il costo giustifica il valore che ricevo?")
             ]
         case .saving:
             return [
-                "Quanto posso realisticamente mettere da parte?",
-                "Quali spese posso ridurre facilmente?",
-                "Ho un fondo di emergenza?",
-                "Sto risparmiando per un obiettivo specifico?"
+                String(localized: "Quanto posso realisticamente mettere da parte?"),
+                String(localized: "Quali spese posso ridurre facilmente?"),
+                String(localized: "Ho un fondo di emergenza?"),
+                String(localized: "Sto risparmiando per un obiettivo specifico?")
             ]
         case .budgeting:
             return [
-                "So esattamente dove vanno i miei soldi?",
-                "Rispetto il budget che mi sono dato?",
-                "Quali categorie superano sempre il limite?",
-                "Il mio budget è realistico?"
+                String(localized: "So esattamente dove vanno i miei soldi?"),
+                String(localized: "Rispetto il budget che mi sono dato?"),
+                String(localized: "Quali categorie superano sempre il limite?"),
+                String(localized: "Il mio budget è realistico?")
             ]
         case .challenge:
             return [
-                "Sono pronto a impegnarmi per questa sfida?",
-                "Cosa potrebbe farmi mollare?",
-                "Come mi sentirò quando avrò completato?",
-                "Posso coinvolgere qualcuno per motivarmi?"
+                String(localized: "Sono pronto a impegnarmi per questa sfida?"),
+                String(localized: "Cosa potrebbe farmi mollare?"),
+                String(localized: "Come mi sentirò quando avrò completato?"),
+                String(localized: "Posso coinvolgere qualcuno per motivarmi?")
             ]
         case .hack:
             return [
-                "Questo trucco funziona per la mia situazione?",
-                "Quanto tempo richiede implementarlo?",
-                "Qual è il potenziale risparmio annuale?",
-                "Ci sono controindicazioni?"
+                String(localized: "Questo trucco funziona per la mia situazione?"),
+                String(localized: "Quanto tempo richiede implementarlo?"),
+                String(localized: "Qual è il potenziale risparmio annuale?"),
+                String(localized: "Ci sono controindicazioni?")
             ]
         case .mindset:
             return [
-                "Questo principio risuona con me?",
-                "Come posso applicarlo alla mia vita?",
-                "Quali abitudini devo cambiare?",
-                "Chi conosco che incarna questo valore?"
+                String(localized: "Questo principio risuona con me?"),
+                String(localized: "Come posso applicarlo alla mia vita?"),
+                String(localized: "Quali abitudini devo cambiare?"),
+                String(localized: "Chi conosco che incarna questo valore?")
             ]
         }
     }

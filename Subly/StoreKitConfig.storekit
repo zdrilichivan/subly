@@ -1,37 +1,35 @@
 {
-  "identifier" : "8A7B6C5D-4E3F-2A1B-0C9D-8E7F6A5B4C3D",
+  "identifier" : "com.ivanzdrilich.Subly.storekit",
   "nonRenewingSubscriptions" : [
 
   ],
   "products" : [
     {
-      "displayPrice" : "0.99",
+      "displayPrice" : "4.99",
       "familyShareable" : false,
-      "internalID" : "1234567890",
+      "internalID" : "1",
       "localizations" : [
         {
-          "description" : "Sblocca Subly per sempre con abbonamenti illimitati",
-          "displayName" : "Sblocca Subly",
+          "description" : "Sblocca tutte le funzionalità",
+          "displayName" : "Subly Pro",
           "locale" : "it"
         },
         {
-          "description" : "Unlock Subly forever with unlimited subscriptions",
-          "displayName" : "Unlock Subly",
+          "description" : "Unlock all features",
+          "displayName" : "Subly Pro",
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.ivanzdrilich.subly.unlimited",
-      "referenceName" : "Sblocca Subly",
+      "productID" : "com.ivanzdrilich.Subly.pro",
+      "referenceName" : "Subly Pro",
       "type" : "NonConsumable"
     }
   ],
   "settings" : {
-    "_applicationInternalID" : "123456789",
-    "_developerTeamID" : "XXXXXXXXXX",
+    "_applicationInternalID" : "6756615202",
+    "_developerTeamID" : "2A61533CCD",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 746611200,
-    "_locale" : "it",
-    "_storefront" : "ITA",
+    "_lastSynchronizedDate" : 756518400,
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -84,7 +82,7 @@
 
   ],
   "version" : {
-    "major" : 3,
+    "major" : 4,
     "minor" : 0
   }
 }

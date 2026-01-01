@@ -10,11 +10,16 @@ import UIKit
 
 struct DashboardView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
+    @Binding var selectedTab: Int
     @AppStorage("userName") private var userName = ""
     @AppStorage("userProfileImageData") private var profileImageData: Data?
+    @AppStorage("hasSeenEmailScanPromo") private var hasSeenEmailScanPromo = false
     @State private var navigateToSettings = false
     @State private var showingAddSheet = false
-    @State private var navigateToTips = false
+    @State private var showingProUpgrade = false
+    @State private var showingEmailScan = false
+    @ObservedObject private var storeManager = StoreManager.shared
+    @ObservedObject private var gmailScanner = GmailScannerService.shared
 
     private let insightService = InsightService.shared
 
@@ -31,7 +36,16 @@ struct DashboardView: View {
 
                         // Daily Tip Card
                         DailyTipCard {
-                            navigateToTips = true
+                            selectedTab = 2 // Coach tab
+                        }
+
+                        // Email Scan Promo Card
+                        EmailScanPromoCard {
+                            if storeManager.isPro {
+                                showingEmailScan = true
+                            } else {
+                                showingProUpgrade = true
+                            }
                         }
 
                         // Insight: Cosa potresti fare (carousel con più suggerimenti)
@@ -82,11 +96,17 @@ struct DashboardView: View {
             .sheet(isPresented: $showingAddSheet) {
                 AddSubscriptionView()
             }
+            .sheet(isPresented: $showingProUpgrade) {
+                ProUpgradeView()
+            }
+            .sheet(isPresented: $showingEmailScan) {
+                NavigationStack {
+                    EmailScanView()
+                        .environmentObject(viewModel)
+                }
+            }
             .navigationDestination(isPresented: $navigateToSettings) {
                 SettingsView()
-            }
-            .navigationDestination(isPresented: $navigateToTips) {
-                DailyTipsView()
             }
         }
     }
@@ -297,6 +317,6 @@ struct DashboardView: View {
 }
 
 #Preview {
-    DashboardView()
+    DashboardView(selectedTab: .constant(0))
         .environmentObject(SubscriptionViewModel())
 }

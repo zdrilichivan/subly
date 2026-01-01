@@ -20,6 +20,9 @@ struct SettingsView: View {
     @State private var showingResetAlert = false
     @State private var showingProfileSheet = false
     @State private var showingOnboarding = false
+    @State private var showingProUpgrade = false
+    @ObservedObject private var storeManager = StoreManager.shared
+    @ObservedObject private var gmailScanner = GmailScannerService.shared
     @State private var budgetLimitText = ""
     @State private var nameInput = ""
     @State private var selectedPhotoItem: PhotosPickerItem?
@@ -39,11 +42,17 @@ struct SettingsView: View {
                 // Profile Section
                 profileSection
 
+                // Pro Section
+                proSection
+
                 // Notifications Section
                 notificationsSection
 
                 // Budget Section
                 budgetSection
+
+                // Email Scan Section
+                emailScanSection
 
                 // App Info Section
                 appInfoSection
@@ -57,6 +66,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingProfileSheet) {
                 profileEditSheet
+            }
+            .sheet(isPresented: $showingProUpgrade) {
+                ProUpgradeView()
             }
             .fullScreenCover(isPresented: $showingOnboarding) {
                 OnboardingPreviewView(isPresented: $showingOnboarding)
@@ -136,6 +148,98 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Pro Section
+
+    private var proSection: some View {
+        Section {
+            if storeManager.isPro {
+                // Utente Pro
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.yellow, .orange],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 44, height: 44)
+
+                        Image(systemName: "crown.fill")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(String(localized: "Subly Pro"))
+                            .font(.headline)
+
+                        Text(String(localized: "Tutte le funzionalità sbloccate"))
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title2)
+                }
+                .padding(.vertical, 4)
+            } else {
+                // Utente Free - Card promozionale
+                Button {
+                    showingProUpgrade = true
+                } label: {
+                    HStack(spacing: 14) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.yellow, .orange],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 44, height: 44)
+
+                            Image(systemName: "crown.fill")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                        }
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(String(localized: "Passa a Subly Pro"))
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
+                            Text(String(localized: "Scansione email, no ads, widget"))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Text(storeManager.formattedPrice)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color.appPrimary)
+                            )
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        } header: {
+            Text(String(localized: "Subly Pro"))
+        }
+    }
+
     // MARK: - Notifications Section
 
     private var notificationsSection: some View {
@@ -212,6 +316,55 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Email Scan Section
+
+    private var emailScanSection: some View {
+        Section {
+            NavigationLink {
+                EmailScanView()
+                    .environmentObject(viewModel)
+            } label: {
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.blue, .purple],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 44, height: 44)
+
+                        Image(systemName: "mail.and.text.magnifyingglass")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(String(localized: "Scansiona Email"))
+                            .font(.headline)
+
+                        if gmailScanner.isSignedIn {
+                            Text(gmailScanner.userEmail ?? String(localized: "Gmail collegato"))
+                                .font(.subheadline)
+                                .foregroundColor(.green)
+                        } else {
+                            Text(String(localized: "Trova abbonamenti automaticamente"))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+        } header: {
+            Text(String(localized: "Importa Abbonamenti"))
+        } footer: {
+            Text(String(localized: "Collega Gmail per trovare automaticamente gli abbonamenti dalle ricevute email."))
+        }
+    }
+
     // MARK: - App Info Section
 
     private var appInfoSection: some View {
@@ -232,7 +385,7 @@ struct SettingsView: View {
             }
 
             // Privacy Policy
-            Link(destination: URL(string: "https://oxidized-wildebeest-640.notion.site/Privacy-Policy-2cbee015438880c88a6bd1115528dbd8")!) {
+            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
                 HStack {
                     Image(systemName: "hand.raised.fill")
                         .foregroundColor(.appPrimary)
@@ -246,7 +399,7 @@ struct SettingsView: View {
             }
 
             // Terms of Service
-            Link(destination: URL(string: "https://oxidized-wildebeest-640.notion.site/TERMINI-E-CONDIZIONI-D-USO-Subly-2cdee015438880558071e0cbb23f3d68")!) {
+            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/terms.html")!) {
                 HStack {
                     Image(systemName: "doc.text.fill")
                         .foregroundColor(.appPrimary)

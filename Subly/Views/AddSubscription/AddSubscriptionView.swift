@@ -10,6 +10,11 @@ import SwiftUI
 struct AddSubscriptionView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var storeManager = StoreManager.shared
+
+    // Milestone tracking
+    @AppStorage("shownMilestones") private var shownMilestonesData: Data = Data()
+    private let milestones = [3, 5, 10]
 
     // Form State
     @State private var selectedService: Service?
@@ -27,6 +32,8 @@ struct AddSubscriptionView: View {
     @State private var showingServicePicker = false
     @State private var isSaving = false
     @State private var showingSuccessAlert = false
+    @State private var showingMilestonePromo = false
+    @State private var currentMilestone: Int = 0
 
     var body: some View {
         NavigationStack {
@@ -77,6 +84,11 @@ struct AddSubscriptionView: View {
                 }
             } message: {
                 Text("L'abbonamento è ora tracciato. Riceverai notifiche prima di ogni rinnovo.")
+            }
+            .sheet(isPresented: $showingMilestonePromo) {
+                MilestonePromotionView(subscriptionCount: currentMilestone) {
+                    dismiss()
+                }
             }
             .onChange(of: selectedService) { _, newService in
                 if let service = newService {
@@ -313,17 +325,61 @@ struct AddSubscriptionView: View {
             await viewModel.addSubscription(subscription)
             isSaving = false
 
-            // Mostra interstitial dopo il salvataggio, poi mostra l'alert
-            if let viewController = UIApplication.shared.currentViewController {
-                AdManager.shared.showInterstitial(from: viewController) {
-                    DispatchQueue.main.async {
-                        self.showingSuccessAlert = true
+            // Controlla se abbiamo raggiunto un milestone e l'utente non è Pro
+            let newCount = viewModel.subscriptions.count
+            if let milestone = checkMilestone(count: newCount), !storeManager.isPro {
+                currentMilestone = milestone
+                markMilestoneAsShown(milestone)
+
+                // Mostra interstitial, poi la promo milestone
+                if let viewController = UIApplication.shared.currentViewController {
+                    AdManager.shared.showInterstitial(from: viewController) {
+                        DispatchQueue.main.async {
+                            self.showingMilestonePromo = true
+                        }
                     }
+                } else {
+                    showingMilestonePromo = true
                 }
             } else {
-                showingSuccessAlert = true
+                // Flusso normale: mostra interstitial poi alert
+                if let viewController = UIApplication.shared.currentViewController {
+                    AdManager.shared.showInterstitial(from: viewController) {
+                        DispatchQueue.main.async {
+                            self.showingSuccessAlert = true
+                        }
+                    }
+                } else {
+                    showingSuccessAlert = true
+                }
             }
         }
+    }
+
+    // MARK: - Milestone Helpers
+
+    private var shownMilestones: Set<Int> {
+        get {
+            (try? JSONDecoder().decode(Set<Int>.self, from: shownMilestonesData)) ?? []
+        }
+        set {
+            shownMilestonesData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
+
+    private func checkMilestone(count: Int) -> Int? {
+        for milestone in milestones {
+            if count == milestone && !shownMilestones.contains(milestone) {
+                return milestone
+            }
+        }
+        return nil
+    }
+
+    private func markMilestoneAsShown(_ milestone: Int) {
+        var shown = shownMilestones
+        shown.insert(milestone)
+        shownMilestonesData = (try? JSONEncoder().encode(shown)) ?? Data()
     }
 }
 

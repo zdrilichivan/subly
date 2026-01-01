@@ -30,6 +30,11 @@ class AdManager: NSObject, ObservableObject {
     private var interstitialAd: InterstitialAd?
     @Published var isInterstitialReady = false
 
+    /// Controlla se l'utente è Pro (no ads)
+    var isPro: Bool {
+        StoreManager.shared.isPro
+    }
+
     // Completion handler per navigazione dopo dismiss
     private var onAdDismissed: (() -> Void)?
 
@@ -106,6 +111,13 @@ class AdManager: NSObject, ObservableObject {
     ///   - viewController: Il view controller da cui presentare l'ad
     ///   - completion: Chiamato quando l'ad viene chiuso (o subito se non disponibile)
     func showInterstitial(from viewController: UIViewController, completion: @escaping () -> Void) {
+        // Skip ads per utenti Pro
+        if isPro {
+            print("👑 User is Pro - skipping ad")
+            completion()
+            return
+        }
+
         guard isInterstitialReady, let ad = interstitialAd else {
             print("⚠️ Interstitial not ready, proceeding without ad")
             completion()
@@ -145,6 +157,12 @@ class AdManager: NSObject, ObservableObject {
     ///   - location: La pagina che richiede l'ad
     ///   - delay: Delay in secondi prima di mostrare l'ad
     func showInterstitialOncePerSession(for location: AdLocation, delay: TimeInterval = 2.0) {
+        // Skip ads per utenti Pro
+        if isPro {
+            print("👑 User is Pro - skipping ad for \(location)")
+            return
+        }
+
         // Se già mostrata per questa pagina, skip
         guard !hasShownAd(for: location) else {
             print("📱 Ad already shown for \(location) this session - skipping")

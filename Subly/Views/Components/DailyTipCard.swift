@@ -35,7 +35,7 @@ struct DailyTipCard: View {
 
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Consiglio del giorno")
+                    Text(String(localized: "Consiglio del giorno"))
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)

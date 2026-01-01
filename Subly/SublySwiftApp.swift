@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CloudKit
+import GoogleSignIn
 
 @main
 struct SublySwiftApp: App {
@@ -20,6 +21,15 @@ struct SublySwiftApp: App {
     init() {
         // Inizializza Google AdMob SDK
         AdManager.configure()
+
+        // Ripristina sessione Google Sign-In precedente
+        GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
+            if let user = user {
+                Task { @MainActor in
+                    GmailScannerService.shared.handleRestoredUser(user)
+                }
+            }
+        }
 
         // Setup callback per aprire pagina di cancellazione dalle notifiche
         NotificationService.shared.onOpenCancellationPage = { serviceName in
@@ -41,6 +51,10 @@ struct SublySwiftApp: App {
                     OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
                         .environmentObject(viewModel)
                 }
+            }
+            .onOpenURL { url in
+                // Gestisce il callback OAuth di Google Sign-In
+                GIDSignIn.sharedInstance.handle(url)
             }
             .onAppear {
                 checkiCloudStatus()

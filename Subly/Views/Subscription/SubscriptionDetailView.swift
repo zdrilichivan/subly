@@ -50,28 +50,28 @@ struct SubscriptionDetailView: View {
                 Button {
                     showingEditSheet = true
                 } label: {
-                    Text("Modifica")
+                    Text(String(localized: "Modifica"))
                 }
             }
         }
         .sheet(isPresented: $showingEditSheet) {
             EditSubscriptionView(subscription: subscription)
         }
-        .alert("Elimina abbonamento", isPresented: $showingDeleteAlert) {
-            Button("Annulla", role: .cancel) { }
-            Button("Elimina", role: .destructive) {
+        .alert(String(localized: "Elimina abbonamento"), isPresented: $showingDeleteAlert) {
+            Button(String(localized: "Annulla"), role: .cancel) { }
+            Button(String(localized: "Elimina"), role: .destructive) {
                 deleteSubscription()
             }
         } message: {
-            Text("Sei sicuro di voler eliminare \(subscription.displayName)? Questa azione non può essere annullata.")
+            Text(String(localized: "Sei sicuro di voler eliminare \(subscription.displayName)? Questa azione non può essere annullata."))
         }
-        .alert("Riattiva abbonamento", isPresented: $showingReactivateAlert) {
-            Button("Annulla", role: .cancel) { }
-            Button("Riattiva") {
+        .alert(String(localized: "Riattiva abbonamento"), isPresented: $showingReactivateAlert) {
+            Button(String(localized: "Annulla"), role: .cancel) { }
+            Button(String(localized: "Riattiva")) {
                 reactivateSubscription()
             }
         } message: {
-            Text("Vuoi riattivare \(subscription.displayName)?")
+            Text(String(localized: "Vuoi riattivare \(subscription.displayName)?"))
         }
         .sheet(isPresented: $showingSplitSheet) {
             splitCostSheet
@@ -108,7 +108,7 @@ struct SubscriptionDetailView: View {
                 if !subscription.isActive {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark.circle.fill")
-                        Text("Cancellato")
+                        Text(String(localized: "Cancellato"))
                     }
                     .font(.caption2)
                     .fontWeight(.medium)
@@ -147,7 +147,7 @@ struct SubscriptionDetailView: View {
             InfoRow(
                 icon: "calendar",
                 iconColor: subscription.isRenewalSoon ? .orange : .blue,
-                title: "Prossimo rinnovo",
+                title: String(localized: "Prossimo rinnovo"),
                 value: subscription.nextBillingDate.shortFormatted
             )
 
@@ -157,7 +157,7 @@ struct SubscriptionDetailView: View {
             InfoRow(
                 icon: "creditcard.fill",
                 iconColor: .green,
-                title: "Costo mensile",
+                title: String(localized: "Costo mensile"),
                 value: subscription.monthlyCost.currencyFormatted
             )
 
@@ -167,7 +167,7 @@ struct SubscriptionDetailView: View {
             InfoRow(
                 icon: "calendar.badge.clock",
                 iconColor: .purple,
-                title: "Costo annuale",
+                title: String(localized: "Costo annuale"),
                 value: subscription.yearlyCost.currencyFormatted
             )
 
@@ -177,7 +177,7 @@ struct SubscriptionDetailView: View {
             InfoRow(
                 icon: subscription.category.iconName,
                 iconColor: subscription.category.color,
-                title: "Categoria",
+                title: String(localized: "Categoria"),
                 value: subscription.category.displayName
             )
 
@@ -187,8 +187,8 @@ struct SubscriptionDetailView: View {
                 InfoRow(
                     icon: "star.fill",
                     iconColor: .yellow,
-                    title: "Tipo",
-                    value: "Abbonamento essenziale"
+                    title: String(localized: "Tipo"),
+                    value: String(localized: "Abbonamento essenziale")
                 )
             }
         }
@@ -203,7 +203,7 @@ struct SubscriptionDetailView: View {
 
     private func notesSection(notes: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Note", systemImage: "note.text")
+            Label(String(localized: "Note"), systemImage: "note.text")
                 .font(.headline)
 
             Text(notes)
@@ -224,13 +224,13 @@ struct SubscriptionDetailView: View {
         VStack(spacing: 12) {
             // Header
             HStack {
-                Label("Dividi il costo", systemImage: "person.2.fill")
+                Label(String(localized: "Dividi il costo"), systemImage: "person.2.fill")
                     .font(.headline)
 
                 Spacer()
 
                 if subscription.isShared {
-                    Text("\(subscription.sharedWith ?? 1) persone")
+                    Text(String(localized: "\(subscription.sharedWith ?? 1) persone"))
                         .font(.caption)
                         .foregroundColor(.white)
                         .padding(.horizontal, 10)
@@ -245,7 +245,7 @@ struct SubscriptionDetailView: View {
                     // Already shared - show split details
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Costo totale")
+                            Text(String(localized: "Costo totale"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             Text(subscription.cost.currencyFormatted)
@@ -261,7 +261,7 @@ struct SubscriptionDetailView: View {
                         Spacer()
 
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text("La tua quota")
+                            Text(String(localized: "La tua quota"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             Text(subscription.perPersonCost.currencyFormatted)
@@ -279,7 +279,7 @@ struct SubscriptionDetailView: View {
                     } label: {
                         HStack {
                             Image(systemName: "paperplane.fill")
-                            Text("Invia richiesta pagamento")
+                            Text(String(localized: "Invia richiesta pagamento"))
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -298,11 +298,11 @@ struct SubscriptionDetailView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Condividi questo abbonamento?")
+                            Text(String(localized: "Condividi questo abbonamento?"))
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
 
-                            Text("Dividi il costo con amici o familiari")
+                            Text(String(localized: "Dividi il costo con amici o familiari"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -314,7 +314,7 @@ struct SubscriptionDetailView: View {
                         splitPeopleCount = 2
                         showingSplitSheet = true
                     } label: {
-                        Text("Imposta divisione")
+                        Text(String(localized: "Imposta divisione"))
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(SecondaryButtonStyle())
@@ -346,7 +346,7 @@ struct SubscriptionDetailView: View {
                 .padding(.top, 32)
 
                 // Title
-                Text("Con quante persone dividi \(subscription.displayName)?")
+                Text(String(localized: "Con quante persone dividi \(subscription.displayName)?"))
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
@@ -381,14 +381,14 @@ struct SubscriptionDetailView: View {
                         .disabled(splitPeopleCount >= 10)
                     }
 
-                    Text("persone (incluso te)")
+                    Text(String(localized: "persone (incluso te)"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
 
                 // Cost preview
                 VStack(spacing: 8) {
-                    Text("Ognuno paga")
+                    Text(String(localized: "Ognuno paga"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
@@ -396,7 +396,7 @@ struct SubscriptionDetailView: View {
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundColor(.green)
 
-                    Text("invece di \(subscription.cost.currencyFormatted)")
+                    Text(String(localized: "invece di \(subscription.cost.currencyFormatted)"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -414,25 +414,25 @@ struct SubscriptionDetailView: View {
                 Button {
                     saveSplitSetting()
                 } label: {
-                    Text("Salva")
+                    Text(String(localized: "Salva"))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
-            .navigationTitle("Dividi costo")
+            .navigationTitle(String(localized: "Dividi costo"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annulla") {
+                    Button(String(localized: "Annulla")) {
                         showingSplitSheet = false
                     }
                 }
 
                 if subscription.isShared {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Rimuovi") {
+                        Button(String(localized: "Rimuovi")) {
                             removeSplitSetting()
                         }
                         .foregroundColor(.red)
@@ -493,7 +493,7 @@ struct SubscriptionDetailView: View {
                     Image(systemName: "hand.raised.fill")
                         .foregroundColor(.blue)
 
-                    Text("Ti aiutiamo noi a cancellare questo servizio")
+                    Text(String(localized: "Ti aiutiamo noi a cancellare questo servizio"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -503,7 +503,7 @@ struct SubscriptionDetailView: View {
                 Link(destination: url) {
                     HStack {
                         Image(systemName: "arrow.up.right.square.fill")
-                        Text("Vai alla pagina di cancellazione")
+                        Text(String(localized: "Vai alla pagina di cancellazione"))
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -517,7 +517,7 @@ struct SubscriptionDetailView: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash")
-                        Text("Rimuovi da Subly")
+                        Text(String(localized: "Rimuovi da Subly"))
                     }
                 }
                 .buttonStyle(SecondaryButtonStyle())
@@ -527,7 +527,7 @@ struct SubscriptionDetailView: View {
                 } label: {
                     HStack {
                         Image(systemName: "arrow.counterclockwise")
-                        Text("Riattiva abbonamento")
+                        Text(String(localized: "Riattiva abbonamento"))
                     }
                 }
                 .buttonStyle(PrimaryButtonStyle())
