@@ -14,22 +14,19 @@ struct StatCard: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 12) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.1))
-                    .frame(width: 52, height: 52)
-
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(color)
-            }
+        VStack(spacing: Spacing.sm) {
+            // Icon - usando design system per coerenza
+            IconContainer(
+                systemName: icon,
+                size: IconContainerSize.lg,
+                color: color,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
 
             // Value & Title
-            VStack(spacing: 4) {
+            VStack(spacing: Spacing.xxs) {
                 Text(value)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(Typography.numericMedium())
                     .foregroundColor(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -41,9 +38,9 @@ struct StatCard: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.vertical, Spacing.lg)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
                 .fill(Color(.secondarySystemGroupedBackground))
         )
     }
@@ -57,24 +54,21 @@ struct MiniStatCard: View {
     let color: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Icon
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(color.opacity(0.12))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(color)
-            }
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            // Icon - usando design system
+            IconContainer(
+                systemName: icon,
+                size: IconContainerSize.md,
+                color: color,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
 
             Spacer()
 
             // Value & Title
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(value)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(Typography.numericMedium(20))
                     .foregroundColor(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -88,9 +82,9 @@ struct MiniStatCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(minHeight: 120)
-        .padding(16)
+        .padding(Spacing.md)
         .background(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
                 .fill(Color(.secondarySystemGroupedBackground))
         )
     }

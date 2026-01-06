@@ -2,7 +2,7 @@
 //  ServicePickerView.swift
 //  SublySwift
 //
-//  Vista per selezionare un servizio dal catalogo
+//  Vista per selezionare un servizio dal catalogo (raggruppato per brand)
 //
 
 import SwiftUI
@@ -16,6 +16,7 @@ struct ServicePickerView: View {
     @State private var selectedCategory: ServiceCategory?
     @State private var showingCustomService = false
     @State private var customServiceName = ""
+    @State private var selectedGroup: ServiceGroup?
 
     private let columns = [
         GridItem(.adaptive(minimum: 80), spacing: 12)
@@ -53,6 +54,16 @@ struct ServicePickerView: View {
                         Image(systemName: showingCustomService ? "list.bullet" : "plus")
                     }
                 }
+            }
+            .sheet(item: $selectedGroup) { group in
+                VariantPickerSheet(
+                    group: group,
+                    onSelect: { service in
+                        selectService(service)
+                    }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
             }
         }
     }
@@ -110,17 +121,16 @@ struct ServicePickerView: View {
         .padding(.bottom, 12)
     }
 
-    // MARK: - Services Grid
+    // MARK: - Services Grid (Grouped by Brand)
 
     private var servicesGrid: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(filteredServices) { service in
-                    ServiceLogoGridItem(
-                        service: service,
-                        isSelected: selectedService?.id == service.id,
+                ForEach(filteredGroups) { group in
+                    BrandGridItem(
+                        group: group,
                         action: {
-                            selectService(service)
+                            handleGroupTap(group)
                         }
                     )
                 }
@@ -129,23 +139,17 @@ struct ServicePickerView: View {
         }
     }
 
-    private var filteredServices: [Service] {
-        var services = ServiceCatalog.allServices
+    private var filteredGroups: [ServiceGroup] {
+        var groups = ServiceCatalog.groups(for: selectedCategory)
 
-        // Filter by category
-        if let cat = selectedCategory {
-            services = services.filter { $0.category == cat }
-        }
-
-        // Filter by search
         if !searchText.isEmpty {
-            services = ServiceCatalog.search(searchText)
+            groups = ServiceCatalog.searchGroups(searchText)
             if let cat = selectedCategory {
-                services = services.filter { $0.category == cat }
+                groups = groups.filter { $0.category == cat }
             }
         }
 
-        return services
+        return groups
     }
 
     // MARK: - Custom Service Form
@@ -185,10 +189,23 @@ struct ServicePickerView: View {
 
     // MARK: - Actions
 
+    private func handleGroupTap(_ group: ServiceGroup) {
+        Haptic.selection()
+
+        if let singleService = group.singleService {
+            // Solo una variante: seleziona direttamente
+            selectService(singleService)
+        } else {
+            // Multiple varianti: mostra sheet
+            selectedGroup = group
+        }
+    }
+
     private func selectService(_ service: Service) {
         Haptic.selection()
         selectedService = service
         category = service.category
+        selectedGroup = nil
         dismiss()
     }
 
@@ -198,6 +215,137 @@ struct ServicePickerView: View {
             category: category
         )
         selectService(customService)
+    }
+}
+
+// MARK: - Brand Grid Item
+
+struct BrandGridItem: View {
+    let group: ServiceGroup
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                // Logo
+                ServiceLogoView(
+                    serviceName: group.brandName,
+                    category: group.category,
+                    size: 56
+                )
+
+                // Brand Name
+                Text(group.brandName)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(height: 28)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Variant Picker Sheet
+
+struct VariantPickerSheet: View {
+    let group: ServiceGroup
+    let onSelect: (Service) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Header con logo
+                VStack(spacing: Spacing.sm) {
+                    ServiceLogoView(
+                        serviceName: group.brandName,
+                        category: group.category,
+                        size: 64
+                    )
+
+                    Text(group.brandName)
+                        .font(.title2)
+                        .fontWeight(.bold)
+
+                    Text("Seleziona il tuo piano")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.md)
+
+                // Lista varianti
+                ScrollView {
+                    VStack(spacing: Spacing.sm) {
+                        ForEach(group.services) { service in
+                            VariantRow(service: service) {
+                                onSelect(service)
+                                dismiss()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, Spacing.md)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Annulla") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Variant Row
+
+struct VariantRow: View {
+    let service: Service
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.md) {
+                // Variant name
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(service.variantName ?? service.name)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    if service.variantName != nil {
+                        Text(service.name)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                // Price
+                if let cost = service.typicalCost {
+                    Text(cost.currencyFormatted)
+                        .font(Typography.numericSmall())
+                        .foregroundColor(.appPrimary)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

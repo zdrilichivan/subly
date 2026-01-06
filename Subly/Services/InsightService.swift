@@ -15,62 +15,72 @@ class InsightService: ObservableObject {
 
     // MARK: - Spending Comparisons
 
-    /// Genera confronti concreti su cosa si potrebbe fare con i soldi spesi
+    /// Genera confronti significativi focalizzati su esperienze e libertà
     func getSpendingComparisons(yearlyCost: Double) -> [SpendingComparison] {
         var comparisons: [SpendingComparison] = []
 
-        // Solo se si spende abbastanza da fare confronti significativi
-        if yearlyCost >= 100 {
+        // Tempo lavorato (stipendio medio ~€10/ora netto)
+        let hoursWorked = Int(yearlyCost / 10)
+        if hoursWorked >= 10 {
             comparisons.append(SpendingComparison(
-                icon: "cup.and.saucer.fill",
-                title: String(localized: "Caffè al bar"),
-                description: String(localized: "\(Int(yearlyCost / 1.5)) caffè all'anno"),
-                color: .brown
+                icon: "clock.fill",
+                title: String(localized: "\(hoursWorked) ore di lavoro"),
+                description: String(localized: "Il tempo che lavori solo per pagare abbonamenti"),
+                color: .orange
             ))
         }
 
-        if yearlyCost >= 200 {
+        // Esperienze con persone care
+        if yearlyCost >= 150 {
             comparisons.append(SpendingComparison(
-                icon: "fork.knife",
-                title: String(localized: "Cene fuori"),
-                description: String(localized: "\(Int(yearlyCost / 50)) cene al ristorante"),
+                icon: "heart.fill",
+                title: String(localized: "Tempo con chi ami"),
+                description: String(localized: "\(Int(yearlyCost / 30)) cene fuori con amici o famiglia"),
                 color: .pink
             ))
         }
 
-        if yearlyCost >= 500 {
+        // Viaggi e avventure
+        if yearlyCost >= 300 {
             comparisons.append(SpendingComparison(
-                icon: "airplane",
-                title: String(localized: "Weekend fuori"),
-                description: String(localized: "\(Int(yearlyCost / 300)) weekend in una città europea"),
+                icon: "airplane.departure",
+                title: String(localized: "Vivi esperienze vere"),
+                description: String(localized: "\(Int(yearlyCost / 150)) weekend in posti nuovi"),
                 color: .blue
             ))
         }
 
-        if yearlyCost >= 1000 {
+        // Crescita personale
+        if yearlyCost >= 200 {
             comparisons.append(SpendingComparison(
-                icon: "figure.2.and.child.holdinghands",
-                title: String(localized: "Vacanza in famiglia"),
-                description: String(localized: "Una settimana al mare per tutta la famiglia"),
-                color: .cyan
-            ))
-        }
-
-        if yearlyCost >= 1500 {
-            comparisons.append(SpendingComparison(
-                icon: "books.vertical.fill",
-                title: String(localized: "Corso di formazione"),
-                description: String(localized: "Un corso professionale che migliora la tua carriera"),
+                icon: "brain.head.profile",
+                title: String(localized: "Investi su te stesso"),
+                description: String(localized: "Corsi, libri, palestra vera invece di app"),
                 color: .purple
             ))
         }
 
-        if yearlyCost >= 2000 {
+        // Libertà finanziaria
+        if yearlyCost >= 500 {
+            let monthsOfFreedom = yearlyCost / 500
+            let freedomText = monthsOfFreedom >= 2
+                ? String(localized: "\(Int(monthsOfFreedom)) mesi di fondo emergenza")
+                : String(localized: "L'inizio del tuo fondo emergenza")
             comparisons.append(SpendingComparison(
-                icon: "banknote.fill",
-                title: String(localized: "Fondo emergenza"),
-                description: String(localized: "2 mesi di spese impreviste coperte"),
+                icon: "shield.checkered",
+                title: String(localized: "Sicurezza finanziaria"),
+                description: freedomText,
                 color: .green
+            ))
+        }
+
+        // Aiutare gli altri
+        if yearlyCost >= 250 {
+            comparisons.append(SpendingComparison(
+                icon: "hand.raised.fingers.spread.fill",
+                title: String(localized: "Fai la differenza"),
+                description: String(localized: "Un anno di supporto a chi ne ha bisogno"),
+                color: .teal
             ))
         }
 

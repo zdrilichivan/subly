@@ -12,18 +12,14 @@ import UIKit
 struct SettingsView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @StateObject private var notificationService = NotificationService.shared
-    @StateObject private var budgetService = BudgetService.shared
     @AppStorage("userName") private var userName = ""
     @AppStorage("userProfileImageData") private var profileImageData: Data?
 
-    @State private var showingBudgetSheet = false
     @State private var showingResetAlert = false
     @State private var showingProfileSheet = false
     @State private var showingOnboarding = false
     @State private var showingProUpgrade = false
     @ObservedObject private var storeManager = StoreManager.shared
-    @ObservedObject private var gmailScanner = GmailScannerService.shared
-    @State private var budgetLimitText = ""
     @State private var nameInput = ""
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
@@ -38,31 +34,58 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // Profile Section
-                profileSection
+            ScrollView {
+                ZStack(alignment: .top) {
+                    // Gradient che scrolla con i contenuti
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.35, green: 0.40, blue: 0.65),
+                            Color(red: 0.12, green: 0.14, blue: 0.25)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 380)
+                    .frame(maxWidth: .infinity)
+                    .offset(y: -220)
 
-                // Pro Section
-                proSection
+                    VStack(spacing: Spacing.md) {
+                        // Custom Header
+                        headerSection
 
-                // Notifications Section
-                notificationsSection
+                        // Content as cards
+                        VStack(spacing: Spacing.md) {
+                            // Profile Section
+                            profileCard
 
-                // Budget Section
-                budgetSection
+                            // Pro Section
+                            proCard
 
-                // Email Scan Section
-                emailScanSection
+                            // Notifications Section
+                            notificationsCard
 
-                // App Info Section
-                appInfoSection
+                            // App Info Section
+                            appInfoCard
 
-                // Data Section
-                dataSection
+                            // Data Section
+                            dataCard
+
+                            #if DEBUG
+                            // Debug Section
+                            debugCard
+                            #endif
+                        }
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.xxl)
+                }
             }
-            .navigationTitle("Impostazioni")
-            .sheet(isPresented: $showingBudgetSheet) {
-                budgetEditSheet
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("")
+                }
             }
             .sheet(isPresented: $showingProfileSheet) {
                 profileEditSheet
@@ -84,16 +107,112 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Profile Section
+    // MARK: - Header Section
 
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(formattedDate)
+                .font(Typography.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.white.opacity(0.8))
+                .textCase(.uppercase)
+
+            Text(String(localized: "Impostazioni"))
+                .font(.system(size: 26, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, Spacing.sm)
+    }
+
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.dateFormat = "EEEE d MMMM"
+        return formatter.string(from: Date()).uppercased()
+    }
+
+    // MARK: - Profile Card
+
+    private var profileCard: some View {
+        Button {
+            nameInput = userName
+            selectedImageData = profileImageData
+            showingProfileSheet = true
+            Haptic.selection()
+        } label: {
+            HStack(spacing: Spacing.md) {
+                // Avatar
+                Group {
+                    if let imageData = profileImageData,
+                       let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 56, height: 56)
+                            .clipShape(Circle())
+                    } else {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.appPrimary, .appSecondary],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 56, height: 56)
+
+                            Text(userName.isEmpty ? "?" : String(userName.prefix(1)).uppercased())
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(userName.isEmpty ? "Aggiungi profilo" : userName)
+                        .font(Typography.headline)
+                        .foregroundColor(.primary)
+
+                    HStack(spacing: Spacing.xxs) {
+                        Image(systemName: "checkmark.icloud.fill")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                        Text("Sincronizzato con iCloud")
+                            .foregroundColor(.secondary)
+                    }
+                    .font(Typography.caption)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(.tertiaryLabel))
+            }
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    // Keep original for List compatibility
     private var profileSection: some View {
         Section {
             Button {
                 nameInput = userName
                 selectedImageData = profileImageData
                 showingProfileSheet = true
+                Haptic.selection()
             } label: {
-                HStack(spacing: 14) {
+                HStack(spacing: Spacing.md) {
                     // Avatar
                     Group {
                         if let imageData = profileImageData,
@@ -101,7 +220,7 @@ struct SettingsView: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 60, height: 60)
+                                .frame(width: 56, height: 56)
                                 .clipShape(Circle())
                         } else {
                             ZStack {
@@ -113,7 +232,7 @@ struct SettingsView: View {
                                             endPoint: .bottomTrailing
                                         )
                                     )
-                                    .frame(width: 60, height: 60)
+                                    .frame(width: 56, height: 56)
 
                                 Text(userName.isEmpty ? "?" : String(userName.prefix(1)).uppercased())
                                     .font(.title2)
@@ -123,60 +242,51 @@ struct SettingsView: View {
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
                         Text(userName.isEmpty ? "Aggiungi profilo" : userName)
-                            .font(.headline)
+                            .font(Typography.headline)
                             .foregroundColor(.primary)
 
-                        HStack(spacing: 4) {
+                        HStack(spacing: Spacing.xxs) {
                             Image(systemName: "checkmark.icloud.fill")
                                 .font(.caption2)
+                                .foregroundColor(.green)
                             Text("Sincronizzato con iCloud")
+                                .foregroundColor(.secondary)
                         }
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(Typography.caption)
                     }
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
-                        .font(.subheadline)
+                        .font(.caption)
+                        .fontWeight(.semibold)
                         .foregroundColor(Color(.tertiaryLabel))
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, Spacing.xs)
             }
         }
     }
 
-    // MARK: - Pro Section
+    // MARK: - Pro Card
 
-    private var proSection: some View {
-        Section {
+    private var proCard: some View {
+        VStack(spacing: 0) {
             if storeManager.isPro {
-                // Utente Pro
-                HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.yellow, .orange],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 44, height: 44)
+                HStack(spacing: Spacing.md) {
+                    GradientIconContainer(
+                        systemName: "crown.fill",
+                        size: IconContainerSize.md,
+                        gradientColors: [.yellow, .orange]
+                    )
 
-                        Image(systemName: "crown.fill")
-                            .font(.title3)
-                            .foregroundColor(.white)
-                    }
-
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
                         Text(String(localized: "Subly Pro"))
-                            .font(.headline)
+                            .font(Typography.headline)
 
                         Text(String(localized: "Tutte le funzionalità sbloccate"))
-                            .font(.subheadline)
+                            .font(Typography.subheadline)
                             .foregroundColor(.green)
                     }
 
@@ -186,53 +296,363 @@ struct SettingsView: View {
                         .foregroundColor(.green)
                         .font(.title2)
                 }
-                .padding(.vertical, 4)
+                .padding(Spacing.md)
             } else {
-                // Utente Free - Card promozionale
                 Button {
                     showingProUpgrade = true
+                    Haptic.impact(.light)
                 } label: {
-                    HStack(spacing: 14) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.yellow, .orange],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 44, height: 44)
+                    HStack(spacing: Spacing.md) {
+                        GradientIconContainer(
+                            systemName: "crown.fill",
+                            size: IconContainerSize.md,
+                            gradientColors: [.yellow, .orange]
+                        )
 
-                            Image(systemName: "crown.fill")
-                                .font(.title3)
-                                .foregroundColor(.white)
-                        }
-
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
                             Text(String(localized: "Passa a Subly Pro"))
-                                .font(.headline)
+                                .font(Typography.headline)
                                 .foregroundColor(.primary)
 
-                            Text(String(localized: "Scansione email, no ads, widget"))
-                                .font(.subheadline)
+                            Text(String(localized: "Abbonamenti illimitati, coach, widget"))
+                                .font(Typography.caption)
                                 .foregroundColor(.secondary)
                         }
 
                         Spacer()
 
-                        Text(storeManager.formattedPrice)
-                            .font(.subheadline)
+                        Text(String(localized: "Da \(storeManager.monthlyPrice)"))
+                            .font(Typography.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
                             .background(
                                 Capsule()
                                     .fill(Color.appPrimary)
                             )
                     }
-                    .padding(.vertical, 4)
+                    .padding(Spacing.md)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+
+    // MARK: - Notifications Card
+
+    private var notificationsCard: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "bell.fill",
+                    size: IconContainerSize.md,
+                    color: .red,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(String(localized: "Notifiche"))
+                        .font(Typography.headline)
+
+                    if notificationService.isAuthorized {
+                        Text(String(localized: "Attive • \(notificationService.pendingNotificationsCount) programmate"))
+                            .font(Typography.caption)
+                            .foregroundColor(.green)
+                    } else {
+                        Text(String(localized: "Non attive"))
+                            .font(Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                if !notificationService.isAuthorized {
+                    Button {
+                        requestNotifications()
+                        Haptic.impact(.light)
+                    } label: {
+                        Text(String(localized: "Attiva"))
+                            .font(Typography.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(
+                                Capsule()
+                                    .fill(Color.appPrimary)
+                            )
+                    }
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
+                }
+            }
+            .padding(Spacing.md)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+
+    // MARK: - App Info Card
+
+    private var appInfoCard: some View {
+        VStack(spacing: 0) {
+            // Tutorial
+            Button {
+                showingOnboarding = true
+                Haptic.selection()
+            } label: {
+                SettingsCardRow(
+                    icon: "book.fill",
+                    iconColor: .appPrimary,
+                    title: String(localized: "Rivedi il tutorial"),
+                    trailingIcon: "chevron.right"
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Divider().padding(.leading, 56)
+
+            // Privacy Policy
+            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
+                SettingsCardRow(
+                    icon: "hand.raised.fill",
+                    iconColor: .blue,
+                    title: String(localized: "Privacy Policy"),
+                    trailingIcon: "arrow.up.right"
+                )
+            }
+
+            Divider().padding(.leading, 56)
+
+            // Terms of Service
+            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/terms.html")!) {
+                SettingsCardRow(
+                    icon: "doc.text.fill",
+                    iconColor: .purple,
+                    title: String(localized: "Termini e Condizioni"),
+                    trailingIcon: "arrow.up.right"
+                )
+            }
+
+            Divider().padding(.leading, 56)
+
+            // Supporto
+            Link(destination: URL(string: "mailto:info@zdrilichwebstudios.it?subject=Supporto%20Subly")!) {
+                SettingsCardRow(
+                    icon: "envelope.fill",
+                    iconColor: .green,
+                    title: String(localized: "Contatta supporto"),
+                    trailingIcon: "arrow.up.right"
+                )
+            }
+
+            Divider().padding(.leading, 56)
+
+            // Versione
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "info.circle.fill",
+                    size: IconContainerSize.sm,
+                    color: .gray,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+
+                Text(String(localized: "Versione"))
+                    .font(Typography.body)
+
+                Spacer()
+
+                Text(appVersion)
+                    .font(Typography.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(Spacing.md)
+
+            Divider().padding(.leading, 56)
+
+            // Sviluppatore
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "person.fill",
+                    size: IconContainerSize.sm,
+                    color: .gray,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+
+                Text(String(localized: "Sviluppatore"))
+                    .font(Typography.body)
+
+                Spacer()
+
+                Text("Ivan Zdrilich")
+                    .font(Typography.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(Spacing.md)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+
+    // MARK: - Data Card
+
+    private var dataCard: some View {
+        Button {
+            showingResetAlert = true
+            Haptic.impact(.light)
+        } label: {
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "arrow.counterclockwise",
+                    size: IconContainerSize.sm,
+                    color: .red,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+
+                Text(String(localized: "Ripristina app"))
+                    .font(Typography.body)
+                    .foregroundColor(.red)
+
+                Spacer()
+            }
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    // MARK: - Debug Card
+
+    #if DEBUG
+    private var debugCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "ladybug.fill")
+                    .foregroundColor(.orange)
+                Text("Debug")
+                    .font(Typography.headline)
+                    .foregroundColor(.orange)
+            }
+            .padding(.bottom, Spacing.xxs)
+
+            Toggle(isOn: $storeManager.debugProEnabled) {
+                HStack(spacing: Spacing.sm) {
+                    IconContainer(
+                        systemName: "crown.fill",
+                        size: IconContainerSize.sm,
+                        color: .yellow,
+                        backgroundOpacity: IconBackgroundOpacity.medium
+                    )
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Abilita Pro")
+                            .font(Typography.body)
+                        Text("Solo per test, non effettua acquisti")
+                            .font(Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .tint(.orange)
+        }
+        .padding(Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+        )
+    }
+    #endif
+
+    // MARK: - Pro Section
+
+    private var proSection: some View {
+        Section {
+            if storeManager.isPro {
+                // Utente Pro
+                HStack(spacing: Spacing.md) {
+                    GradientIconContainer(
+                        systemName: "crown.fill",
+                        size: IconContainerSize.md,
+                        gradientColors: [.yellow, .orange]
+                    )
+
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text(String(localized: "Subly Pro"))
+                            .font(Typography.headline)
+
+                        Text(String(localized: "Tutte le funzionalità sbloccate"))
+                            .font(Typography.subheadline)
+                            .foregroundColor(.green)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title2)
+                }
+                .padding(.vertical, Spacing.xxs)
+            } else {
+                // Utente Free - Card promozionale
+                Button {
+                    showingProUpgrade = true
+                    Haptic.impact(.light)
+                } label: {
+                    HStack(spacing: Spacing.md) {
+                        GradientIconContainer(
+                            systemName: "crown.fill",
+                            size: IconContainerSize.md,
+                            gradientColors: [.yellow, .orange]
+                        )
+
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(String(localized: "Passa a Subly Pro"))
+                                .font(Typography.headline)
+                                .foregroundColor(.primary)
+
+                            Text(String(localized: "Abbonamenti illimitati, coach, widget"))
+                                .font(Typography.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Text(String(localized: "Da \(storeManager.monthlyPrice)"))
+                            .font(Typography.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(
+                                Capsule()
+                                    .fill(Color.appPrimary)
+                            )
+                    }
+                    .padding(.vertical, Spacing.xxs)
                 }
             }
         } header: {
@@ -244,124 +664,58 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
-            HStack {
-                Label("Notifiche", systemImage: "bell.fill")
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "bell.fill",
+                    size: IconContainerSize.md,
+                    color: .red,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
 
-                Spacer()
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(String(localized: "Notifiche"))
+                        .font(Typography.headline)
 
-                if notificationService.isAuthorized {
-                    Text("Attive")
-                        .foregroundColor(.green)
-                } else {
-                    Button("Attiva") {
-                        requestNotifications()
-                    }
-                    .foregroundColor(.appPrimary)
-                }
-            }
-
-            if notificationService.isAuthorized {
-                HStack {
-                    Text("Notifiche programmate")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(notificationService.pendingNotificationsCount)")
-                        .foregroundColor(.secondary)
-                }
-            }
-        } header: {
-            Text("Notifiche")
-        } footer: {
-            Text("3 giorni prima del rinnovo ti chiederemo se stai ancora utilizzando il servizio. Se rispondi no, ti aiuteremo a disdire. Riceverai anche promemoria 1 giorno prima e il giorno stesso.")
-        }
-    }
-
-    // MARK: - Budget Section
-
-    private var budgetSection: some View {
-        Section {
-            Toggle(isOn: Binding(
-                get: { budgetService.settings.isEnabled },
-                set: { budgetService.enableBudget($0) }
-            )) {
-                Label("Budget mensile", systemImage: "chart.pie.fill")
-            }
-
-            if budgetService.settings.isEnabled {
-                Button {
-                    budgetLimitText = budgetService.settings.monthlyLimit.map { String(format: "%.2f", $0) } ?? ""
-                    showingBudgetSheet = true
-                } label: {
-                    HStack {
-                        Text("Limite mensile")
-                        Spacer()
-                        Text(budgetService.settings.monthlyLimit?.currencyFormatted ?? "Non impostato")
+                    if notificationService.isAuthorized {
+                        Text(String(localized: "Attive • \(notificationService.pendingNotificationsCount) programmate"))
+                            .font(Typography.caption)
+                            .foregroundColor(.green)
+                    } else {
+                        Text(String(localized: "Non attive"))
+                            .font(Typography.caption)
                             .foregroundColor(.secondary)
                     }
                 }
 
-                HStack {
-                    Text("Soglia alert")
-                    Spacer()
-                    Text(budgetService.settings.notifyAtPercentage.percentageFormatted)
-                        .foregroundColor(.secondary)
-                }
-            }
-        } header: {
-            Text("Budget")
-        } footer: {
-            if budgetService.settings.isEnabled {
-                Text("Riceverai un alert quando raggiungi la soglia impostata.")
-            }
-        }
-    }
+                Spacer()
 
-    // MARK: - Email Scan Section
-
-    private var emailScanSection: some View {
-        Section {
-            NavigationLink {
-                EmailScanView()
-                    .environmentObject(viewModel)
-            } label: {
-                HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.blue, .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 44, height: 44)
-
-                        Image(systemName: "mail.and.text.magnifyingglass")
-                            .font(.title3)
+                if !notificationService.isAuthorized {
+                    Button {
+                        requestNotifications()
+                        Haptic.impact(.light)
+                    } label: {
+                        Text(String(localized: "Attiva"))
+                            .font(Typography.subheadline)
+                            .fontWeight(.semibold)
                             .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(
+                                Capsule()
+                                    .fill(Color.appPrimary)
+                            )
                     }
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(String(localized: "Scansiona Email"))
-                            .font(.headline)
-
-                        if gmailScanner.isSignedIn {
-                            Text(gmailScanner.userEmail ?? String(localized: "Gmail collegato"))
-                                .font(.subheadline)
-                                .foregroundColor(.green)
-                        } else {
-                            Text(String(localized: "Trova abbonamenti automaticamente"))
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                    }
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.title3)
                 }
-                .padding(.vertical, 4)
             }
+            .padding(.vertical, Spacing.xxs)
         } header: {
-            Text(String(localized: "Importa Abbonamenti"))
+            Text(String(localized: "Notifiche"))
         } footer: {
-            Text(String(localized: "Collega Gmail per trovare automaticamente gli abbonamenti dalle ricevute email."))
+            Text(String(localized: "3 giorni prima del rinnovo ti chiederemo se stai ancora utilizzando il servizio. Se rispondi no, ti aiuteremo a disdire. Riceverai anche promemoria 1 giorno prima e il giorno stesso."))
         }
     }
 
@@ -369,78 +723,90 @@ struct SettingsView: View {
 
     private var appInfoSection: some View {
         Section {
+            // Tutorial
             Button {
                 showingOnboarding = true
+                Haptic.selection()
             } label: {
-                HStack {
-                    Image(systemName: "book.fill")
-                        .foregroundColor(.appPrimary)
-                    Text("Rivedi il tutorial")
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(Color(.tertiaryLabel))
-                }
+                SettingsRow(
+                    icon: "book.fill",
+                    iconColor: .appPrimary,
+                    title: String(localized: "Rivedi il tutorial"),
+                    trailingIcon: "chevron.right"
+                )
             }
 
             // Privacy Policy
             Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
-                HStack {
-                    Image(systemName: "hand.raised.fill")
-                        .foregroundColor(.appPrimary)
-                    Text("Privacy Policy")
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption)
-                        .foregroundColor(Color(.tertiaryLabel))
-                }
+                SettingsRow(
+                    icon: "hand.raised.fill",
+                    iconColor: .blue,
+                    title: String(localized: "Privacy Policy"),
+                    trailingIcon: "arrow.up.right"
+                )
             }
 
             // Terms of Service
             Link(destination: URL(string: "https://zdrilichivan.github.io/subly/terms.html")!) {
-                HStack {
-                    Image(systemName: "doc.text.fill")
-                        .foregroundColor(.appPrimary)
-                    Text("Termini e Condizioni")
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption)
-                        .foregroundColor(Color(.tertiaryLabel))
-                }
+                SettingsRow(
+                    icon: "doc.text.fill",
+                    iconColor: .purple,
+                    title: String(localized: "Termini e Condizioni"),
+                    trailingIcon: "arrow.up.right"
+                )
             }
 
             // Supporto
             Link(destination: URL(string: "mailto:info@zdrilichwebstudios.it?subject=Supporto%20Subly")!) {
-                HStack {
-                    Image(systemName: "envelope.fill")
-                        .foregroundColor(.appPrimary)
-                    Text("Contatta supporto")
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption)
-                        .foregroundColor(Color(.tertiaryLabel))
-                }
+                SettingsRow(
+                    icon: "envelope.fill",
+                    iconColor: .green,
+                    title: String(localized: "Contatta supporto"),
+                    trailingIcon: "arrow.up.right"
+                )
             }
 
-            HStack {
-                Text("Versione")
+            // Versione
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "info.circle.fill",
+                    size: IconContainerSize.sm,
+                    color: .gray,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+
+                Text(String(localized: "Versione"))
+                    .font(Typography.body)
+
                 Spacer()
+
                 Text(appVersion)
+                    .font(Typography.subheadline)
                     .foregroundColor(.secondary)
             }
+            .padding(.vertical, Spacing.xxs)
 
-            HStack {
-                Text("Sviluppatore")
+            // Sviluppatore
+            HStack(spacing: Spacing.md) {
+                IconContainer(
+                    systemName: "person.fill",
+                    size: IconContainerSize.sm,
+                    color: .gray,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+
+                Text(String(localized: "Sviluppatore"))
+                    .font(Typography.body)
+
                 Spacer()
+
                 Text("Ivan Zdrilich")
+                    .font(Typography.subheadline)
                     .foregroundColor(.secondary)
             }
+            .padding(.vertical, Spacing.xxs)
         } header: {
-            Text("Informazioni")
+            Text(String(localized: "Informazioni"))
         }
     }
 
@@ -448,74 +814,31 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         Section {
-            Button(role: .destructive) {
+            Button {
                 showingResetAlert = true
+                Haptic.impact(.light)
             } label: {
-                HStack {
-                    Image(systemName: "arrow.counterclockwise")
-                    Text("Ripristina app")
+                HStack(spacing: Spacing.md) {
+                    IconContainer(
+                        systemName: "arrow.counterclockwise",
+                        size: IconContainerSize.sm,
+                        color: .red,
+                        backgroundOpacity: IconBackgroundOpacity.medium
+                    )
+
+                    Text(String(localized: "Ripristina app"))
+                        .font(Typography.body)
+                        .foregroundColor(.red)
+
                     Spacer()
                 }
+                .padding(.vertical, Spacing.xxs)
             }
         } header: {
-            Text("Dati")
+            Text(String(localized: "Dati"))
         } footer: {
-            Text("Elimina tutti gli abbonamenti e le impostazioni. L'app verrà riportata allo stato iniziale come appena installata.")
+            Text(String(localized: "Elimina tutti gli abbonamenti e le impostazioni. L'app verrà riportata allo stato iniziale come appena installata."))
         }
-    }
-
-    // MARK: - Budget Edit Sheet
-
-    private var budgetEditSheet: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    HStack {
-                        Text("€")
-                            .foregroundColor(.secondary)
-
-                        TextField("0,00", text: $budgetLimitText)
-                            .keyboardType(.decimalPad)
-                    }
-                } header: {
-                    Text("Limite mensile")
-                }
-
-                Section {
-                    Picker("Soglia alert", selection: Binding(
-                        get: { budgetService.settings.notifyAtPercentage },
-                        set: { budgetService.updateNotifyPercentage($0) }
-                    )) {
-                        Text("50%").tag(50.0)
-                        Text("60%").tag(60.0)
-                        Text("70%").tag(70.0)
-                        Text("80%").tag(80.0)
-                        Text("90%").tag(90.0)
-                    }
-                } header: {
-                    Text("Alert")
-                } footer: {
-                    Text("Riceverai una notifica quando la spesa raggiunge questa percentuale del budget.")
-                }
-            }
-            .navigationTitle("Imposta budget")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annulla") {
-                        showingBudgetSheet = false
-                    }
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Salva") {
-                        saveBudget()
-                    }
-                    .fontWeight(.semibold)
-                }
-            }
-        }
-        .presentationDetents([.medium])
     }
 
     // MARK: - Profile Edit Sheet
@@ -637,13 +960,6 @@ struct SettingsView: View {
         }
     }
 
-    private func saveBudget() {
-        let value = Double(budgetLimitText.replacingOccurrences(of: ",", with: "."))
-        budgetService.updateBudgetLimit(value)
-        showingBudgetSheet = false
-        Haptic.notification(.success)
-    }
-
     private func saveProfile() {
         userName = nameInput.trimmed
         profileImageData = selectedImageData
@@ -669,44 +985,51 @@ struct OnboardingPreviewView: View {
         OnboardingPage(
             icon: "leaf.fill",
             iconColor: .green,
+            gradientColors: [.green, .mint],
             title: "Benvenuto in Subly",
-            description: "L'app che ti aiuta a riprendere il controllo dei tuoi abbonamenti e a vivere con meno, ma meglio."
+            description: "Riprendi il controllo dei tuoi abbonamenti. Vivi con meno, vivi meglio."
         ),
         OnboardingPage(
-            icon: "creditcard.fill",
+            icon: "plus.circle.fill",
+            iconColor: .appPrimary,
+            gradientColors: [.appPrimary, .appSecondary],
+            title: "Aggiungi i tuoi abbonamenti",
+            description: "Oltre 100 servizi disponibili. Scopri quanto spendi ogni mese e ogni anno in un colpo d'occhio."
+        ),
+        OnboardingPage(
+            icon: "mail.and.text.magnifyingglass",
             iconColor: .blue,
-            title: "Traccia i tuoi abbonamenti",
-            description: "Aggiungi tutti i tuoi abbonamenti da oltre 80 servizi. Saprai sempre quanto spendi ogni mese e ogni anno."
+            gradientColors: [.blue, .purple],
+            title: "Scansione Email con AI",
+            description: "Collega Gmail e lascia che l'intelligenza artificiale trovi automaticamente tutti gli abbonamenti nascosti nelle tue ricevute."
         ),
         OnboardingPage(
-            icon: "lightbulb.fill",
-            iconColor: .green,
-            title: "Scopri cosa potresti fare",
-            description: "Ti mostreremo cosa potresti fare con i soldi che spendi: viaggi, cene, esperienze. Vale la pena continuare a pagare?"
-        ),
-        OnboardingPage(
-            icon: "brain.head.profile",
-            iconColor: .purple,
-            title: "Ripensa alle tue scelte",
-            description: "Domande provocatorie e suggerimenti personalizzati per aiutarti a capire di quali abbonamenti hai davvero bisogno."
+            icon: "sparkles",
+            iconColor: .orange,
+            gradientColors: [.orange, .yellow],
+            title: "Scopri alternative migliori",
+            description: "Ti mostreremo cosa potresti fare con quei soldi: viaggi, cene, esperienze. Ne vale davvero la pena?"
         ),
         OnboardingPage(
             icon: "hand.raised.fill",
-            iconColor: .blue,
-            title: "Ti aiutiamo a cancellare",
-            description: "Per ogni servizio troverai il link diretto alla pagina di cancellazione. Disdire non è mai stato così facile."
+            iconColor: .red,
+            gradientColors: [.red, .pink],
+            title: "Disdici in un tap",
+            description: "Link diretto alla pagina di cancellazione per ogni servizio. Disdire non è mai stato così semplice."
         ),
         OnboardingPage(
-            icon: "bell.fill",
-            iconColor: .red,
-            title: "Mai più rinnovi a sorpresa",
-            description: "Notifiche intelligenti 3 giorni, 1 giorno e il giorno stesso del rinnovo. Decidi tu se continuare."
+            icon: "bell.badge.fill",
+            iconColor: .purple,
+            gradientColors: [.purple, .indigo],
+            title: "Notifiche intelligenti",
+            description: "Ti avvisiamo 3 giorni prima del rinnovo chiedendoti se usi ancora il servizio. Tu decidi, noi ti aiutiamo."
         ),
         OnboardingPage(
             icon: "icloud.fill",
             iconColor: .cyan,
-            title: "Sempre sincronizzato",
-            description: "I tuoi dati sono al sicuro su iCloud e sincronizzati su tutti i tuoi dispositivi Apple."
+            gradientColors: [.cyan, .blue],
+            title: "Sincronizzato su iCloud",
+            description: "I tuoi dati sono al sicuro e sempre sincronizzati su tutti i tuoi dispositivi Apple."
         )
     ]
 
@@ -765,22 +1088,42 @@ struct OnboardingPreviewView: View {
     }
 
     private func pageView(for page: OnboardingPage) -> some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 40) {
             Spacer()
 
+            // Icon con gradient
             ZStack {
+                // Cerchio esterno sfumato
                 Circle()
-                    .fill(page.iconColor.opacity(0.1))
-                    .frame(width: 120, height: 120)
+                    .fill(
+                        LinearGradient(
+                            colors: page.gradientColors.isEmpty ? [page.iconColor.opacity(0.3), page.iconColor.opacity(0.1)] : page.gradientColors.map { $0.opacity(0.15) },
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                // Cerchio interno
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: page.gradientColors.isEmpty ? [page.iconColor] : page.gradientColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: (page.gradientColors.first ?? page.iconColor).opacity(0.4), radius: 20, x: 0, y: 10)
 
                 Image(systemName: page.icon)
-                    .font(.system(size: 50, weight: .semibold))
-                    .foregroundColor(page.iconColor)
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.white)
             }
 
             VStack(spacing: 16) {
                 Text(page.title)
-                    .font(.title)
+                    .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
 
@@ -788,12 +1131,77 @@ struct OnboardingPreviewView: View {
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 40)
+                    .lineSpacing(4)
             }
 
             Spacer()
             Spacer()
         }
+    }
+}
+
+// MARK: - Settings Row Component
+
+struct SettingsRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    var trailingIcon: String = "chevron.right"
+
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            IconContainer(
+                systemName: icon,
+                size: IconContainerSize.sm,
+                color: iconColor,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
+
+            Text(title)
+                .font(Typography.body)
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Image(systemName: trailingIcon)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(.tertiaryLabel))
+        }
+        .padding(.vertical, Spacing.xxs)
+    }
+}
+
+// MARK: - Settings Card Row Component (for ScrollView layout)
+
+struct SettingsCardRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    var trailingIcon: String = "chevron.right"
+
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            IconContainer(
+                systemName: icon,
+                size: IconContainerSize.sm,
+                color: iconColor,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
+
+            Text(title)
+                .font(Typography.body)
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Image(systemName: trailingIcon)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(.tertiaryLabel))
+        }
+        .padding(Spacing.md)
     }
 }
 

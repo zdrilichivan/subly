@@ -19,9 +19,6 @@ struct SublySwiftApp: App {
     @State private var showUsageCheckSheet = false
 
     init() {
-        // Inizializza Google AdMob SDK
-        AdManager.configure()
-
         // Ripristina sessione Google Sign-In precedente
         GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
             if let user = user {

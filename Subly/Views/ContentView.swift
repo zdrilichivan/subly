@@ -11,49 +11,46 @@ struct ContentView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @State private var selectedTab = 0
 
-    // Tab indices
-    private let statsTabIndex = 1
-    private let tipsTabIndex = 2
+    init() {
+        // Tab bar meno trasparente
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor.systemBackground
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             // Tab 1: Dashboard
             DashboardView(selectedTab: $selectedTab)
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label("Home", systemImage: "house")
                 }
                 .tag(0)
 
             // Tab 2: Statistiche
             StatsView()
                 .tabItem {
-                    Label("Statistiche", systemImage: "chart.bar.fill")
+                    Label("Statistiche", systemImage: "chart.bar")
                 }
                 .tag(1)
 
             // Tab 3: Money Coach
             DailyTipsView()
                 .tabItem {
-                    Label("Coach", systemImage: "lightbulb.fill")
+                    Label("Coach", systemImage: "lightbulb")
                 }
                 .tag(2)
 
             // Tab 4: Impostazioni
             SettingsView()
                 .tabItem {
-                    Label("Impostazioni", systemImage: "gearshape.fill")
+                    Label("Impostazioni", systemImage: "gearshape")
                 }
                 .tag(3)
         }
-        .tint(.appPrimary)
-        .onChange(of: selectedTab) { oldValue, newValue in
-            // Mostra interstitial DOPO la navigazione, solo 1 volta per sessione
-            if newValue == statsTabIndex {
-                AdManager.shared.showInterstitialOncePerSession(for: .stats, delay: 2.0)
-            } else if newValue == tipsTabIndex {
-                AdManager.shared.showInterstitialOncePerSession(for: .coach, delay: 2.0)
-            }
-        }
+        .tint(Color(red: 0.25, green: 0.30, blue: 0.55)) // Indaco più intenso
     }
 }
 

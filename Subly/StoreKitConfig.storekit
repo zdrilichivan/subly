@@ -4,26 +4,7 @@
 
   ],
   "products" : [
-    {
-      "displayPrice" : "4.99",
-      "familyShareable" : false,
-      "internalID" : "1",
-      "localizations" : [
-        {
-          "description" : "Sblocca tutte le funzionalità",
-          "displayName" : "Subly Pro",
-          "locale" : "it"
-        },
-        {
-          "description" : "Unlock all features",
-          "displayName" : "Subly Pro",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "com.ivanzdrilich.Subly.pro",
-      "referenceName" : "Subly Pro",
-      "type" : "NonConsumable"
-    }
+
   ],
   "settings" : {
     "_applicationInternalID" : "6756615202",
@@ -79,7 +60,89 @@
     ]
   },
   "subscriptionGroups" : [
+    {
+      "id" : "subly_pro_group",
+      "localizations" : [
 
+      ],
+      "name" : "Subly Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "annual",
+          "introductoryOffer" : {
+            "internalID" : "annual_trial",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Risparmia il 16% con il piano annuale",
+              "displayName" : "Subly Pro Annuale",
+              "locale" : "it"
+            },
+            {
+              "description" : "Save 16% with annual plan",
+              "displayName" : "Subly Pro Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.ivanzdrilich.Subly.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Subly Pro Annual",
+          "subscriptionGroupID" : "subly_pro_group",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "monthly",
+          "introductoryOffer" : {
+            "internalID" : "monthly_trial",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Tutte le funzionalità Pro",
+              "displayName" : "Subly Pro Mensile",
+              "locale" : "it"
+            },
+            {
+              "description" : "All Pro features",
+              "displayName" : "Subly Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.ivanzdrilich.Subly.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Subly Pro Monthly",
+          "subscriptionGroupID" : "subly_pro_group",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
   ],
   "version" : {
     "major" : 4,

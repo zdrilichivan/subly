@@ -236,39 +236,9 @@ struct EmailScanView: View {
                     .fill(Color(.systemBackground))
             )
 
-            // Connect button
-            Button {
+            // Google Sign-In Button
+            GoogleSignInButton {
                 showingPermissionSheet = true
-            } label: {
-                HStack(spacing: 12) {
-                    // Google "G" logo style
-                    ZStack {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 32, height: 32)
-
-                        Text("G")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.red, .yellow, .green, .blue],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-
-                    Text(String(localized: "Collega Gmail"))
-                        .fontWeight(.semibold)
-                }
-                .foregroundColor(.primary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(.systemBackground))
-                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                )
             }
         }
     }
@@ -387,16 +357,8 @@ struct EmailPermissionView: View {
             VStack(spacing: 24) {
                 Spacer()
 
-                // Icon
-                ZStack {
-                    Circle()
-                        .fill(Color.blue.opacity(0.15))
-                        .frame(width: 120, height: 120)
-
-                    Image(systemName: "envelope.open.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.blue)
-                }
+                // Gmail Icon
+                GmailLogoView(size: 80)
 
                 // Title
                 Text(String(localized: "Accesso Email"))
@@ -443,7 +405,7 @@ struct EmailPermissionView: View {
 
                 Spacer()
 
-                // Continue button
+                // Continue button (Google style)
                 Button {
                     Task {
                         isConnecting = true
@@ -452,21 +414,41 @@ struct EmailPermissionView: View {
                         dismiss()
                     }
                 } label: {
-                    HStack {
+                    HStack(spacing: 12) {
                         if isConnecting {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .progressViewStyle(CircularProgressViewStyle(tint: Color(white: 0.3)))
                         } else {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 40, height: 40)
+
+                                GoogleLogoView(size: 20)
+                            }
+
                             Text(String(localized: "Continua con Google"))
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(white: 0.3))
+
+                            Spacer()
                         }
                     }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
+                    .padding(.leading, 8)
+                    .padding(.trailing, 16)
                     .frame(height: 56)
-                    .background(Color.blue)
-                    .cornerRadius(16)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(Color.white)
+                            .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 28)
+                            .stroke(Color(.systemGray4), lineWidth: 1)
+                    )
                 }
+                .buttonStyle(PlainButtonStyle())
                 .disabled(isConnecting)
 
                 // Cancel

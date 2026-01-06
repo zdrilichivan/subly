@@ -180,19 +180,15 @@ struct MilestonePromotionView: View {
                 Spacer()
             }
 
-            Text(String(localized: "Stai usando Subly come un professionista! Rimuovi la pubblicità e goditi un'esperienza senza interruzioni."))
+            Text(String(localized: "Stai usando Subly come un professionista! Sblocca abbonamenti illimitati e tutte le funzionalità Pro."))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.leading)
 
             HStack {
-                Text(storeManager.formattedPrice)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                Text(String(localized: "Da \(storeManager.monthlyPrice)/mese"))
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundColor(.appPrimary)
-
-                Text(String(localized: "una tantum"))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
 
                 Spacer()
             }

@@ -17,10 +17,7 @@ struct EditSubscriptionView: View {
     @State private var customName: String
     @State private var cost: String
     @State private var billingCycle: BillingCycle
-    @State private var nextBillingDate: Date
-    @State private var notes: String
     @State private var category: ServiceCategory
-    @State private var isEssential: Bool
 
     // UI State
     @State private var isSaving = false
@@ -31,10 +28,7 @@ struct EditSubscriptionView: View {
         _customName = State(initialValue: subscription.customName ?? "")
         _cost = State(initialValue: String(format: "%.2f", subscription.cost))
         _billingCycle = State(initialValue: subscription.billingCycle)
-        _nextBillingDate = State(initialValue: subscription.nextBillingDate)
-        _notes = State(initialValue: subscription.notes ?? "")
         _category = State(initialValue: subscription.category)
-        _isEssential = State(initialValue: subscription.isEssential)
     }
 
     var body: some View {
@@ -77,17 +71,6 @@ struct EditSubscriptionView: View {
                     Text("Costo")
                 }
 
-                // Date
-                Section {
-                    DatePicker(
-                        "Prossimo rinnovo",
-                        selection: $nextBillingDate,
-                        displayedComponents: .date
-                    )
-                } header: {
-                    Text("Data rinnovo")
-                }
-
                 // Category
                 Section {
                     Picker("Categoria", selection: $category) {
@@ -98,16 +81,6 @@ struct EditSubscriptionView: View {
                     }
                 } header: {
                     Text("Categoria")
-                }
-
-                // Notes
-                Section {
-                    TextField("Note (opzionale)", text: $notes, axis: .vertical)
-                        .lineLimit(3...6)
-
-                    Toggle("Abbonamento essenziale", isOn: $isEssential)
-                } header: {
-                    Text("Altro")
                 }
 
                 // Changes summary
@@ -164,10 +137,7 @@ struct EditSubscriptionView: View {
         customName != (subscription.customName ?? "") ||
         cost != String(format: "%.2f", subscription.cost) ||
         billingCycle != subscription.billingCycle ||
-        !Calendar.current.isDate(nextBillingDate, inSameDayAs: subscription.nextBillingDate) ||
-        notes != (subscription.notes ?? "") ||
-        category != subscription.category ||
-        isEssential != subscription.isEssential
+        category != subscription.category
     }
 
     // MARK: - Actions
@@ -183,10 +153,7 @@ struct EditSubscriptionView: View {
         updated.customName = customName.isEmpty ? nil : customName
         updated.cost = costValue
         updated.billingCycle = billingCycle
-        updated.nextBillingDate = nextBillingDate
-        updated.notes = notes.isEmpty ? nil : notes
         updated.category = category
-        updated.isEssential = isEssential
 
         Task {
             await viewModel.updateSubscription(updated)
@@ -204,7 +171,6 @@ struct EditSubscriptionView: View {
             cost: 12.99,
             billingCycle: .monthly,
             nextBillingDate: Date(),
-            notes: "Account condiviso",
             category: .streaming
         )
     )

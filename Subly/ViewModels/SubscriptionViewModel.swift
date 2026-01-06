@@ -13,6 +13,11 @@ import OSLog
 @MainActor
 class SubscriptionViewModel: ObservableObject {
 
+    // MARK: - Constants
+
+    /// Limite di abbonamenti per utenti gratuiti
+    static let freeSubscriptionLimit = 3
+
     // MARK: - Published Properties
     @Published var subscriptions: [Subscription] = []
     @Published var isLoading = false
@@ -68,6 +73,22 @@ class SubscriptionViewModel: ObservableObject {
     /// Abbonamenti attivi
     var activeSubscriptions: [Subscription] {
         subscriptions.filter { $0.isActive }
+    }
+
+    /// Numero di abbonamenti attivi
+    var activeSubscriptionCount: Int {
+        activeSubscriptions.count
+    }
+
+    /// Controlla se l'utente può aggiungere un nuovo abbonamento
+    /// Gli utenti Pro possono aggiungere abbonamenti illimitati
+    var canAddSubscription: Bool {
+        StoreManager.shared.isPro || activeSubscriptionCount < Self.freeSubscriptionLimit
+    }
+
+    /// Slot rimanenti per utenti free
+    var remainingFreeSlots: Int {
+        max(0, Self.freeSubscriptionLimit - activeSubscriptionCount)
     }
 
     /// Totale mensile

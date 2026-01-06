@@ -58,7 +58,7 @@ struct DailyTipCard: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(.secondarySystemGroupedBackground))
-                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
             )
         }
         .buttonStyle(PlainButtonStyle())

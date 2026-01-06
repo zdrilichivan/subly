@@ -13,39 +13,83 @@ struct StatsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    // Grafico spese per categoria
-                    if viewModel.activeSubscriptions.isNotEmpty {
-                        categoryChartSection
+                ZStack(alignment: .top) {
+                    // Gradient che scrolla con i contenuti
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.35, green: 0.40, blue: 0.65),
+                            Color(red: 0.12, green: 0.14, blue: 0.25)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 380)
+                    .frame(maxWidth: .infinity)
+                    .offset(y: -220)
+
+                    VStack(spacing: 20) {
+                        // Custom Header
+                        headerSection
+
+                        // Grafico spese per categoria
+                        if viewModel.activeSubscriptions.isNotEmpty {
+                            categoryChartSection
+                        }
+
+                        // Budget Status Card
+                        if let budgetStatus = viewModel.budgetStatus {
+                            budgetStatusCard(status: budgetStatus)
+                        }
+
+                        // Overview Stats
+                        overviewSection
+
+                        // Category Breakdown
+                        categoryBreakdownSection
+
+                        // Saving Suggestions
+                        let suggestions = viewModel.getSavingSuggestions()
+                        if suggestions.isNotEmpty {
+                            suggestionsSection(suggestions: suggestions)
+                        }
                     }
-
-                    // Budget Status Card
-                    if let budgetStatus = viewModel.budgetStatus {
-                        budgetStatusCard(status: budgetStatus)
-                    }
-
-                    // Overview Stats
-                    overviewSection
-
-                    // Category Breakdown
-                    categoryBreakdownSection
-
-                    // Upcoming Renewals
-                    if viewModel.upcomingRenewals.isNotEmpty {
-                        upcomingRenewalsSection
-                    }
-
-                    // Saving Suggestions
-                    let suggestions = viewModel.getSavingSuggestions()
-                    if suggestions.isNotEmpty {
-                        suggestionsSection(suggestions: suggestions)
-                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.xxl)
                 }
-                .padding()
             }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle(String(localized: "Statistiche"))
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("")
+                }
+            }
         }
+    }
+
+    // MARK: - Header Section
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(formattedDate)
+                .font(Typography.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.white.opacity(0.8))
+                .textCase(.uppercase)
+
+            Text(String(localized: "Statistiche"))
+                .font(.system(size: 26, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, Spacing.sm)
+    }
+
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.dateFormat = "EEEE d MMMM"
+        return formatter.string(from: Date()).uppercased()
     }
 
     // MARK: - Category Chart Section
@@ -192,36 +236,53 @@ struct StatsView: View {
             Text(String(localized: "Panoramica"))
                 .font(.headline)
 
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 12) {
-                MiniStatCard(
-                    title: String(localized: "Abbonamenti attivi"),
-                    value: "\(viewModel.activeSubscriptions.count)",
-                    icon: "creditcard.fill",
-                    color: .appPrimary
+            HStack(spacing: 12) {
+                // Card combinata: Abbonamenti + Categorie
+                HStack(spacing: 16) {
+                    // Abbonamenti
+                    VStack(spacing: 4) {
+                        Text("\(viewModel.activeSubscriptions.count)")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundColor(.appPrimary)
+                        Text(String(localized: "Abbonamenti"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Divider()
+                        .frame(height: 40)
+
+                    // Categorie
+                    VStack(spacing: 4) {
+                        Text("\(viewModel.spendingByCategory.count)")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundColor(.orange)
+                        Text(String(localized: "Categorie"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(.secondarySystemGroupedBackground))
                 )
 
-                MiniStatCard(
-                    title: String(localized: "Spesa mensile"),
-                    value: viewModel.totalMonthlyCost.currencyFormatted,
-                    icon: "calendar",
-                    color: .green
-                )
-
-                MiniStatCard(
-                    title: String(localized: "Spesa annuale"),
-                    value: viewModel.totalYearlyCost.currencyFormatted,
-                    icon: "calendar.badge.clock",
-                    color: .purple
-                )
-
-                MiniStatCard(
-                    title: String(localized: "Rinnovi prossimi 7gg"),
-                    value: "\(viewModel.upcomingRenewals.count)",
-                    icon: "bell.fill",
-                    color: .orange
+                // Spesa annuale
+                VStack(spacing: 4) {
+                    Text(viewModel.totalYearlyCost.currencyFormatted)
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundColor(.purple)
+                    Text(String(localized: "Spesa annuale"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(.secondarySystemGroupedBackground))
                 )
             }
         }
@@ -278,78 +339,6 @@ struct StatsView: View {
 
     private func subscriptionsForCategory(_ category: ServiceCategory) -> [Subscription] {
         viewModel.subscriptions.filter { $0.category == category && $0.isActive }
-    }
-
-    // MARK: - Upcoming Renewals Section
-
-    private var upcomingRenewalsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                HStack(spacing: 8) {
-                    Image(systemName: "bell.fill")
-                        .foregroundColor(.orange)
-                    Text(String(localized: "Prossimi rinnovi"))
-                        .font(.headline)
-                }
-
-                Spacer()
-
-                Text(String(localized: "7 giorni"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule()
-                            .fill(Color.orange.opacity(0.15))
-                    )
-            }
-
-            VStack(spacing: 4) {
-                ForEach(Array(viewModel.upcomingRenewals.prefix(5).enumerated()), id: \.element.id) { index, subscription in
-                    NavigationLink(destination: SubscriptionDetailView(subscription: subscription)) {
-                        HStack {
-                            ServiceLogoView(
-                                serviceName: subscription.serviceName,
-                                category: subscription.category,
-                                size: 40
-                            )
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(subscription.displayName)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.primary)
-
-                                Text(subscription.renewalText)
-                                    .font(.caption)
-                                    .foregroundColor(subscription.isRenewalToday ? .red : .orange)
-                            }
-
-                            Spacer()
-
-                            Text(subscription.cost.currencyFormatted)
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                        }
-                        .padding(.vertical, 10)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Divider between items
-                    if index < min(viewModel.upcomingRenewals.count, 5) - 1 {
-                        Divider()
-                            .padding(.leading, 52)
-                    }
-                }
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
     }
 
     // MARK: - Suggestions Section

@@ -12,19 +12,18 @@ struct AddSubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var storeManager = StoreManager.shared
 
+    // Servizio iniziale (passato dal picker)
+    var initialService: Service?
+
     // Milestone tracking
     @AppStorage("shownMilestones") private var shownMilestonesData: Data = Data()
     private let milestones = [3, 5, 10]
 
     // Form State
     @State private var selectedService: Service?
-    @State private var customName = ""
     @State private var cost = ""
     @State private var billingCycle: BillingCycle = .monthly
-    @State private var nextBillingDate = Date()
-    @State private var notes = ""
     @State private var category: ServiceCategory = .other
-    @State private var isEssential = false
     @State private var isShared = false
     @State private var sharedWithCount: Int = 2
 
@@ -46,17 +45,6 @@ struct AddSubscriptionView: View {
 
                 // Sharing
                 sharingSection
-
-                // Date
-                dateSection
-
-                // Notes
-                notesSection
-
-                // Budget Impact Preview
-                if let impact = budgetImpact {
-                    budgetImpactSection(impact: impact)
-                }
             }
             .navigationTitle("Traccia Abbonamento")
             .navigationBarTitleDisplayMode(.inline)
@@ -83,11 +71,21 @@ struct AddSubscriptionView: View {
                     dismiss()
                 }
             } message: {
-                Text("L'abbonamento è ora tracciato. Riceverai notifiche prima di ogni rinnovo.")
+                Text("L'abbonamento è ora tracciato. Ti chiederemo periodicamente se lo stai ancora utilizzando.")
             }
             .sheet(isPresented: $showingMilestonePromo) {
                 MilestonePromotionView(subscriptionCount: currentMilestone) {
                     dismiss()
+                }
+            }
+            .onAppear {
+                // Se c'è un servizio iniziale, pre-selezionalo
+                if let initial = initialService, selectedService == nil {
+                    selectedService = initial
+                    category = initial.category
+                    if let typicalCost = initial.typicalCost {
+                        cost = String(format: "%.2f", typicalCost)
+                    }
                 }
             }
             .onChange(of: selectedService) { _, newService in
@@ -135,9 +133,6 @@ struct AddSubscriptionView: View {
                 }
             }
 
-            if selectedService != nil {
-                TextField("Nome personalizzato (opzionale)", text: $customName)
-            }
         } header: {
             Text("Servizio")
         } footer: {
@@ -220,69 +215,6 @@ struct AddSubscriptionView: View {
         return perPerson.currencyFormatted
     }
 
-    private var dateSection: some View {
-        Section {
-            DatePicker(
-                "Prossimo rinnovo",
-                selection: $nextBillingDate,
-                displayedComponents: .date
-            )
-        } header: {
-            Text("Data rinnovo")
-        }
-    }
-
-    private var notesSection: some View {
-        Section {
-            TextField("Note (opzionale)", text: $notes, axis: .vertical)
-                .lineLimit(3...6)
-
-            Toggle("Abbonamento essenziale", isOn: $isEssential)
-        } header: {
-            Text("Altro")
-        } footer: {
-            Text("Gli abbonamenti essenziali sono esclusi dai suggerimenti di risparmio.")
-        }
-    }
-
-    private func budgetImpactSection(impact: BudgetImpact) -> some View {
-        Section {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Nuovo totale mensile")
-                    Spacer()
-                    Text(impact.newTotal.currencyFormatted)
-                        .fontWeight(.semibold)
-                }
-
-                HStack {
-                    Text("Budget utilizzato")
-                    Spacer()
-                    Text(impact.newPercentage.percentageFormatted)
-                        .foregroundColor(impact.willExceedBudget ? .red : .primary)
-                        .fontWeight(.semibold)
-                }
-
-                BudgetProgressView(
-                    percentage: impact.newPercentage,
-                    color: impact.willExceedBudget ? .budgetDanger : (impact.newPercentage >= 80 ? .budgetWarning : .budgetSafe)
-                )
-
-                if impact.willExceedBudget {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text(impact.impactText)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
-                }
-            }
-        } header: {
-            Text("Impatto sul budget")
-        }
-    }
-
     // MARK: - Computed Properties
 
     private var isFormValid: Bool {
@@ -290,13 +222,6 @@ struct AddSubscriptionView: View {
         !cost.isEmpty &&
         Double(cost.replacingOccurrences(of: ",", with: ".")) != nil &&
         Double(cost.replacingOccurrences(of: ",", with: "."))! > 0
-    }
-
-    private var budgetImpact: BudgetImpact? {
-        guard let costValue = Double(cost.replacingOccurrences(of: ",", with: ".")) else {
-            return nil
-        }
-        return viewModel.calculateBudgetImpact(newCost: costValue, billingCycle: billingCycle)
     }
 
     // MARK: - Actions
@@ -311,13 +236,10 @@ struct AddSubscriptionView: View {
 
         let subscription = Subscription(
             serviceName: service.name,
-            customName: customName.isEmpty ? nil : customName,
             cost: costValue,
             billingCycle: billingCycle,
-            nextBillingDate: nextBillingDate,
-            notes: notes.isEmpty ? nil : notes,
+            nextBillingDate: Date(),
             category: category,
-            isEssential: isEssential,
             sharedWith: isShared ? sharedWithCount : nil
         )
 
@@ -330,28 +252,9 @@ struct AddSubscriptionView: View {
             if let milestone = checkMilestone(count: newCount), !storeManager.isPro {
                 currentMilestone = milestone
                 markMilestoneAsShown(milestone)
-
-                // Mostra interstitial, poi la promo milestone
-                if let viewController = UIApplication.shared.currentViewController {
-                    AdManager.shared.showInterstitial(from: viewController) {
-                        DispatchQueue.main.async {
-                            self.showingMilestonePromo = true
-                        }
-                    }
-                } else {
-                    showingMilestonePromo = true
-                }
+                showingMilestonePromo = true
             } else {
-                // Flusso normale: mostra interstitial poi alert
-                if let viewController = UIApplication.shared.currentViewController {
-                    AdManager.shared.showInterstitial(from: viewController) {
-                        DispatchQueue.main.async {
-                            self.showingSuccessAlert = true
-                        }
-                    }
-                } else {
-                    showingSuccessAlert = true
-                }
+                showingSuccessAlert = true
             }
         }
     }
@@ -384,6 +287,6 @@ struct AddSubscriptionView: View {
 }
 
 #Preview {
-    AddSubscriptionView()
+    AddSubscriptionView(initialService: nil)
         .environmentObject(SubscriptionViewModel())
 }

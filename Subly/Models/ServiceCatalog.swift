@@ -17,6 +17,8 @@ struct Service: Identifiable, Equatable {
     let typicalCost: Double?
     let billingCycle: BillingCycle
     let cancellationURL: String?
+    let brandName: String  // Nome del brand (es. "Netflix" per "Netflix Standard")
+    let variantName: String?  // Nome della variante (es. "Standard", "Premium")
 
     init(
         id: UUID = UUID(),
@@ -25,7 +27,9 @@ struct Service: Identifiable, Equatable {
         iconName: String = "",
         typicalCost: Double? = nil,
         billingCycle: BillingCycle = .monthly,
-        cancellationURL: String? = nil
+        cancellationURL: String? = nil,
+        brandName: String? = nil,
+        variantName: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -34,6 +38,28 @@ struct Service: Identifiable, Equatable {
         self.typicalCost = typicalCost
         self.billingCycle = billingCycle
         self.cancellationURL = cancellationURL
+        self.brandName = brandName ?? name  // Default: usa il nome come brand
+        self.variantName = variantName
+    }
+}
+
+// MARK: - Service Group (per raggruppare varianti)
+struct ServiceGroup: Identifiable {
+    let id = UUID()
+    let brandName: String
+    let services: [Service]
+    let category: ServiceCategory
+
+    var iconName: String {
+        services.first?.iconName ?? category.iconName
+    }
+
+    var hasMultipleVariants: Bool {
+        services.count > 1
+    }
+
+    var singleService: Service? {
+        services.count == 1 ? services.first : nil
     }
 }
 
@@ -44,16 +70,16 @@ struct ServiceCatalog {
     static let allServices: [Service] = [
         // MARK: Streaming Video
         // Netflix - tutti i piani
-        Service(name: "Netflix Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 6.99, cancellationURL: "https://www.netflix.com/cancelplan"),
-        Service(name: "Netflix Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 13.99, cancellationURL: "https://www.netflix.com/cancelplan"),
-        Service(name: "Netflix Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 18.99, cancellationURL: "https://www.netflix.com/cancelplan"),
+        Service(name: "Netflix Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 6.99, cancellationURL: "https://www.netflix.com/cancelplan", brandName: "Netflix", variantName: "Standard con pubblicità"),
+        Service(name: "Netflix Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 13.99, cancellationURL: "https://www.netflix.com/cancelplan", brandName: "Netflix", variantName: "Standard"),
+        Service(name: "Netflix Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 18.99, cancellationURL: "https://www.netflix.com/cancelplan", brandName: "Netflix", variantName: "Premium"),
 
         Service(name: "Amazon Prime Video", category: .streaming, iconName: "play.tv.fill", typicalCost: 4.99, cancellationURL: "https://www.amazon.it/gp/video/settings"),
 
         // Disney+ - tutti i piani
-        Service(name: "Disney+ Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 5.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
-        Service(name: "Disney+ Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 8.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
-        Service(name: "Disney+ Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 11.99, cancellationURL: "https://www.disneyplus.com/account/subscription"),
+        Service(name: "Disney+ Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 5.99, cancellationURL: "https://www.disneyplus.com/account/subscription", brandName: "Disney+", variantName: "Standard con pubblicità"),
+        Service(name: "Disney+ Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 8.99, cancellationURL: "https://www.disneyplus.com/account/subscription", brandName: "Disney+", variantName: "Standard"),
+        Service(name: "Disney+ Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 11.99, cancellationURL: "https://www.disneyplus.com/account/subscription", brandName: "Disney+", variantName: "Premium"),
         Service(name: "NOW TV", category: .streaming, iconName: "play.tv.fill", typicalCost: 14.99, cancellationURL: "https://www.nowtv.it/account"),
         Service(name: "Sky Go", category: .streaming, iconName: "play.tv.fill", typicalCost: 29.90, cancellationURL: "https://www.sky.it/assistenza/info-disdette"),
         Service(name: "DAZN", category: .streaming, iconName: "sportscourt.fill", typicalCost: 29.99, cancellationURL: "https://www.dazn.com/it-IT/account/subscription"),
@@ -70,15 +96,15 @@ struct ServiceCatalog {
 
         // MARK: Musica
         // Spotify - tutti i piani
-        Service(name: "Spotify Individual", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
-        Service(name: "Spotify Duo", category: .music, iconName: "music.note", typicalCost: 14.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
-        Service(name: "Spotify Family", category: .music, iconName: "music.note", typicalCost: 17.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
-        Service(name: "Spotify Student", category: .music, iconName: "music.note", typicalCost: 5.99, cancellationURL: "https://www.spotify.com/it/account/subscription/"),
+        Service(name: "Spotify Individual", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://www.spotify.com/it/account/subscription/", brandName: "Spotify", variantName: "Individual"),
+        Service(name: "Spotify Duo", category: .music, iconName: "music.note", typicalCost: 14.99, cancellationURL: "https://www.spotify.com/it/account/subscription/", brandName: "Spotify", variantName: "Duo"),
+        Service(name: "Spotify Family", category: .music, iconName: "music.note", typicalCost: 17.99, cancellationURL: "https://www.spotify.com/it/account/subscription/", brandName: "Spotify", variantName: "Family"),
+        Service(name: "Spotify Student", category: .music, iconName: "music.note", typicalCost: 5.99, cancellationURL: "https://www.spotify.com/it/account/subscription/", brandName: "Spotify", variantName: "Student"),
 
         // Apple Music - tutti i piani
-        Service(name: "Apple Music Individuale", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
-        Service(name: "Apple Music Famiglia", category: .music, iconName: "music.note", typicalCost: 16.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
-        Service(name: "Apple Music Studenti", category: .music, iconName: "music.note", typicalCost: 5.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
+        Service(name: "Apple Music Individuale", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://support.apple.com/it-it/HT202039", brandName: "Apple Music", variantName: "Individuale"),
+        Service(name: "Apple Music Famiglia", category: .music, iconName: "music.note", typicalCost: 16.99, cancellationURL: "https://support.apple.com/it-it/HT202039", brandName: "Apple Music", variantName: "Famiglia"),
+        Service(name: "Apple Music Studenti", category: .music, iconName: "music.note", typicalCost: 5.99, cancellationURL: "https://support.apple.com/it-it/HT202039", brandName: "Apple Music", variantName: "Studenti"),
         Service(name: "Amazon Music Unlimited", category: .music, iconName: "music.note", typicalCost: 9.99, cancellationURL: "https://www.amazon.it/music/settings"),
         Service(name: "YouTube Music", category: .music, iconName: "music.note", typicalCost: 9.99, cancellationURL: "https://www.youtube.com/paid_memberships"),
         Service(name: "Deezer", category: .music, iconName: "music.note", typicalCost: 10.99, cancellationURL: "https://www.deezer.com/account/subscription"),
@@ -124,12 +150,12 @@ struct ServiceCatalog {
         Service(name: "SWEAT", category: .fitness, iconName: "figure.dance", typicalCost: 19.99, cancellationURL: "https://sweat.com/account"),
 
         // MARK: Cloud Storage
-        Service(name: "iCloud+", category: .cloud, iconName: "icloud.fill", typicalCost: 0.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
-        Service(name: "iCloud+ 200GB", category: .cloud, iconName: "icloud.fill", typicalCost: 2.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
-        Service(name: "iCloud+ 2TB", category: .cloud, iconName: "icloud.fill", typicalCost: 9.99, cancellationURL: "https://support.apple.com/it-it/HT202039"),
-        Service(name: "Google One 100GB", category: .cloud, iconName: "cloud.fill", typicalCost: 1.99, cancellationURL: "https://one.google.com/settings"),
-        Service(name: "Google One 200GB", category: .cloud, iconName: "cloud.fill", typicalCost: 2.99, cancellationURL: "https://one.google.com/settings"),
-        Service(name: "Google One 2TB", category: .cloud, iconName: "cloud.fill", typicalCost: 9.99, cancellationURL: "https://one.google.com/settings"),
+        Service(name: "iCloud+ 50GB", category: .cloud, iconName: "icloud.fill", typicalCost: 0.99, cancellationURL: "https://support.apple.com/it-it/HT202039", brandName: "iCloud+", variantName: "50GB"),
+        Service(name: "iCloud+ 200GB", category: .cloud, iconName: "icloud.fill", typicalCost: 2.99, cancellationURL: "https://support.apple.com/it-it/HT202039", brandName: "iCloud+", variantName: "200GB"),
+        Service(name: "iCloud+ 2TB", category: .cloud, iconName: "icloud.fill", typicalCost: 9.99, cancellationURL: "https://support.apple.com/it-it/HT202039", brandName: "iCloud+", variantName: "2TB"),
+        Service(name: "Google One 100GB", category: .cloud, iconName: "cloud.fill", typicalCost: 1.99, cancellationURL: "https://one.google.com/settings", brandName: "Google One", variantName: "100GB"),
+        Service(name: "Google One 200GB", category: .cloud, iconName: "cloud.fill", typicalCost: 2.99, cancellationURL: "https://one.google.com/settings", brandName: "Google One", variantName: "200GB"),
+        Service(name: "Google One 2TB", category: .cloud, iconName: "cloud.fill", typicalCost: 9.99, cancellationURL: "https://one.google.com/settings", brandName: "Google One", variantName: "2TB"),
         Service(name: "OneDrive 100GB", category: .cloud, iconName: "cloud.fill", typicalCost: 2.00, cancellationURL: "https://account.microsoft.com/services"),
         Service(name: "pCloud", category: .cloud, iconName: "cloud.fill", typicalCost: 4.99, cancellationURL: "https://www.pcloud.com/settings/"),
 
@@ -146,12 +172,12 @@ struct ServiceCatalog {
         Service(name: "Substack", category: .news, iconName: "envelope.fill", typicalCost: 5.00, cancellationURL: "https://substack.com/account/settings"),
 
         // MARK: Gaming
-        Service(name: "PlayStation Plus Essential", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 8.99, cancellationURL: "https://www.playstation.com/it-it/support/store/cancel-ps-store-subscription/"),
-        Service(name: "PlayStation Plus Extra", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 13.99, cancellationURL: "https://www.playstation.com/it-it/support/store/cancel-ps-store-subscription/"),
-        Service(name: "PlayStation Plus Premium", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 16.99, cancellationURL: "https://www.playstation.com/it-it/support/store/cancel-ps-store-subscription/"),
-        Service(name: "Xbox Game Pass Core", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 6.99, cancellationURL: "https://account.microsoft.com/services"),
-        Service(name: "Xbox Game Pass Standard", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 12.99, cancellationURL: "https://account.microsoft.com/services"),
-        Service(name: "Xbox Game Pass Ultimate", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 14.99, cancellationURL: "https://account.microsoft.com/services"),
+        Service(name: "PlayStation Plus Essential", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 8.99, cancellationURL: "https://www.playstation.com/it-it/support/store/cancel-ps-store-subscription/", brandName: "PlayStation Plus", variantName: "Essential"),
+        Service(name: "PlayStation Plus Extra", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 13.99, cancellationURL: "https://www.playstation.com/it-it/support/store/cancel-ps-store-subscription/", brandName: "PlayStation Plus", variantName: "Extra"),
+        Service(name: "PlayStation Plus Premium", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 16.99, cancellationURL: "https://www.playstation.com/it-it/support/store/cancel-ps-store-subscription/", brandName: "PlayStation Plus", variantName: "Premium"),
+        Service(name: "Xbox Game Pass Core", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 6.99, cancellationURL: "https://account.microsoft.com/services", brandName: "Xbox Game Pass", variantName: "Core"),
+        Service(name: "Xbox Game Pass Standard", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 12.99, cancellationURL: "https://account.microsoft.com/services", brandName: "Xbox Game Pass", variantName: "Standard"),
+        Service(name: "Xbox Game Pass Ultimate", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 14.99, cancellationURL: "https://account.microsoft.com/services", brandName: "Xbox Game Pass", variantName: "Ultimate"),
         Service(name: "Nintendo Switch Online", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 3.99, cancellationURL: "https://accounts.nintendo.com/shop/subscription"),
         Service(name: "EA Play", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 4.99, cancellationURL: "https://myaccount.ea.com/cp-ui/subscriptions"),
         Service(name: "Ubisoft+", category: .gaming, iconName: "gamecontroller.fill", typicalCost: 14.99, cancellationURL: "https://store.ubi.com/account"),
@@ -192,6 +218,34 @@ struct ServiceCatalog {
     // MARK: - Grouped by Category
     static var groupedByCategory: [ServiceCategory: [Service]] {
         Dictionary(grouping: allServices, by: { $0.category })
+    }
+
+    // MARK: - Grouped by Brand
+    static var groupedByBrand: [ServiceGroup] {
+        let grouped = Dictionary(grouping: allServices, by: { $0.brandName })
+        return grouped.map { brandName, services in
+            ServiceGroup(
+                brandName: brandName,
+                services: services.sorted { ($0.typicalCost ?? 0) < ($1.typicalCost ?? 0) },
+                category: services.first?.category ?? .other
+            )
+        }.sorted { $0.brandName < $1.brandName }
+    }
+
+    // MARK: - Search Groups
+    static func searchGroups(_ query: String) -> [ServiceGroup] {
+        guard query.isNotEmpty else { return groupedByBrand }
+        let lowercasedQuery = query.lowercased()
+        return groupedByBrand.filter { group in
+            group.brandName.lowercased().contains(lowercasedQuery) ||
+            group.services.contains { $0.name.lowercased().contains(lowercasedQuery) }
+        }
+    }
+
+    // MARK: - Groups by Category
+    static func groups(for category: ServiceCategory?) -> [ServiceGroup] {
+        guard let category = category else { return groupedByBrand }
+        return groupedByBrand.filter { $0.category == category }
     }
 
     // MARK: - Search

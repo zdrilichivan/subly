@@ -13,13 +13,14 @@ struct DashboardView: View {
     @Binding var selectedTab: Int
     @AppStorage("userName") private var userName = ""
     @AppStorage("userProfileImageData") private var profileImageData: Data?
-    @AppStorage("hasSeenEmailScanPromo") private var hasSeenEmailScanPromo = false
     @State private var navigateToSettings = false
-    @State private var showingAddSheet = false
+    @State private var showingServicePicker = false
     @State private var showingProUpgrade = false
-    @State private var showingEmailScan = false
+    @State private var showingLimitAlert = false
+    @State private var showingSuccessAlert = false
+    @State private var selectedServiceForAdd: Service?
+    @State private var selectedCategoryForAdd: ServiceCategory = .other
     @ObservedObject private var storeManager = StoreManager.shared
-    @ObservedObject private var gmailScanner = GmailScannerService.shared
 
     private let insightService = InsightService.shared
 
@@ -27,28 +28,36 @@ struct DashboardView: View {
         NavigationStack {
             ScrollViewReader { scrollProxy in
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // Custom Header
-                        headerSection
+                    ZStack(alignment: .top) {
+                        // Gradient che scrolla con i contenuti
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.35, green: 0.40, blue: 0.65),
+                                Color(red: 0.12, green: 0.14, blue: 0.25)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 380)
+                        .frame(maxWidth: .infinity)
+                        .offset(y: -220)
 
-                        // Cards statistiche
-                        statsCardsSection
+                        VStack(spacing: Spacing.lg) {
+                            // Custom Header
+                            headerSection
 
-                        // Daily Tip Card
-                        DailyTipCard {
-                            selectedTab = 2 // Coach tab
-                        }
+                            // Cards statistiche
+                            statsCardsSection
 
-                        // Email Scan Promo Card
-                        EmailScanPromoCard {
+                            // Email Scan Card (solo Pro)
                             if storeManager.isPro {
-                                showingEmailScan = true
-                            } else {
-                                showingProUpgrade = true
+                                NavigationLink(destination: EmailScanView()) {
+                                    EmailScanPromoCard { }
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                        }
 
-                        // Insight: Cosa potresti fare (carousel con più suggerimenti)
+                        // Insight: Cosa potresti fare (carousel con piu suggerimenti)
                         if viewModel.activeSubscriptions.isNotEmpty {
                             let comparisons = insightService.getSpendingComparisons(yearlyCost: viewModel.totalYearlyCost)
                             if comparisons.isNotEmpty {
@@ -77,13 +86,13 @@ struct DashboardView: View {
                         Color.clear
                             .frame(height: 1)
                             .id("bottomAnchor")
+                        }
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.bottom, Spacing.xxl)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 32)
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -93,17 +102,32 @@ struct DashboardView: View {
             .refreshable {
                 await viewModel.refreshData()
             }
-            .sheet(isPresented: $showingAddSheet) {
-                AddSubscriptionView()
+            .sheet(isPresented: $showingServicePicker) {
+                ServicePickerView(
+                    selectedService: $selectedServiceForAdd,
+                    category: $selectedCategoryForAdd
+                )
+            }
+            .onChange(of: selectedServiceForAdd) { _, newService in
+                if let service = newService {
+                    addSubscription(service)
+                }
             }
             .sheet(isPresented: $showingProUpgrade) {
                 ProUpgradeView()
             }
-            .sheet(isPresented: $showingEmailScan) {
-                NavigationStack {
-                    EmailScanView()
-                        .environmentObject(viewModel)
+            .alert("Abbonamento tracciato", isPresented: $showingSuccessAlert) {
+                Button("OK") { }
+            } message: {
+                Text("L'abbonamento è stato aggiunto alla tua lista.")
+            }
+            .alert("Limite raggiunto", isPresented: $showingLimitAlert) {
+                Button("Passa a Pro") {
+                    showingProUpgrade = true
                 }
+                Button("Annulla", role: .cancel) { }
+            } message: {
+                Text("Hai raggiunto il limite di \(SubscriptionViewModel.freeSubscriptionLimit) abbonamenti gratuiti. Passa a Subly Pro per tracciare abbonamenti illimitati!")
             }
             .navigationDestination(isPresented: $navigateToSettings) {
                 SettingsView()
@@ -114,55 +138,63 @@ struct DashboardView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: Spacing.md) {
             // Left side - Greeting & Date
             VStack(alignment: .leading, spacing: 6) {
                 Text(formattedDate)
-                    .font(.subheadline)
+                    .font(Typography.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.8))
                     .textCase(.uppercase)
 
                 Text(greetingText)
                     .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(.white)
             }
 
             Spacer()
 
             // Right side - Pill with Add + Avatar
-            HStack(spacing: 12) {
-                // Add button - styled like card icons
+            HStack(spacing: Spacing.sm) {
+                // Add button
                 Button {
-                    showingAddSheet = true
+                    if viewModel.canAddSubscription {
+                        selectedServiceForAdd = nil
+                        showingServicePicker = true
+                    } else {
+                        showingLimitAlert = true
+                    }
+                    Haptic.impact(.light)
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(Color.appPrimary.opacity(0.12))
+                            .fill(Color(red: 0.28, green: 0.32, blue: 0.52))
                             .frame(width: 38, height: 38)
 
                         Image(systemName: "plus")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.appPrimary)
+                            .foregroundColor(.white)
                     }
                 }
+                .accessibilityLabel("Aggiungi abbonamento")
 
                 // Avatar button
                 Button {
                     navigateToSettings = true
+                    Haptic.selection()
                 } label: {
                     profileAvatarView
                 }
+                .accessibilityLabel("Impostazioni profilo")
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 6)
             .background(
                 Capsule()
-                    .fill(Color(.secondarySystemGroupedBackground))
-                    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+                    .fill(Color(red: 0.22, green: 0.25, blue: 0.40))
             )
         }
-        .padding(.top, 12)
-        .padding(.bottom, 8)
+        .padding(.bottom, Spacing.sm)
     }
 
     private var profileAvatarView: some View {
@@ -226,16 +258,16 @@ struct DashboardView: View {
     // MARK: - Stats Cards Section
 
     private var statsCardsSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.sm) {
             StatCard(
-                title: String(localized: "Mensile"),
+                title: String(localized: "Spesa mensile"),
                 value: viewModel.totalMonthlyCost.currencyFormatted,
                 icon: "calendar",
                 color: .appPrimary
             )
 
             StatCard(
-                title: String(localized: "Annuale"),
+                title: String(localized: "Spesa annuale"),
                 value: viewModel.totalYearlyCost.currencyFormatted,
                 icon: "calendar.badge.clock",
                 color: .appSecondary
@@ -246,16 +278,16 @@ struct DashboardView: View {
     // MARK: - Subscriptions Section
 
     private var subscriptionsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(alignment: .center) {
                 Text("I tuoi abbonamenti")
-                    .font(.headline)
+                    .font(Typography.headline)
 
                 if viewModel.activeSubscriptions.isNotEmpty {
                     Text("\(viewModel.activeSubscriptions.count)")
-                        .font(.subheadline)
+                        .font(Typography.subheadline)
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, Spacing.xs)
                         .padding(.vertical, 2)
                         .background(
                             Capsule()
@@ -269,7 +301,7 @@ struct DashboardView: View {
             if viewModel.subscriptionsByRenewalDate.isEmpty {
                 emptyStateView
             } else {
-                LazyVStack(spacing: 12) {
+                LazyVStack(spacing: Spacing.sm) {
                     ForEach(viewModel.subscriptionsByRenewalDate) { subscription in
                         NavigationLink(destination: SubscriptionDetailView(subscription: subscription)) {
                             SubscriptionRow(subscription: subscription)
@@ -284,35 +316,79 @@ struct DashboardView: View {
     // MARK: - Empty State
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "creditcard.fill")
-                .font(.system(size: 50))
-                .foregroundColor(.secondary.opacity(0.5))
+        VStack(spacing: Spacing.md) {
+            IconContainer(
+                systemName: "creditcard.fill",
+                size: 64,
+                color: .secondary,
+                backgroundOpacity: 0.1
+            )
 
             Text("Nessun abbonamento")
-                .font(.headline)
+                .font(Typography.headline)
                 .foregroundColor(.secondary)
 
             Text("Inizia a tracciare i tuoi abbonamenti esistenti per tenere sotto controllo le spese")
-                .font(.subheadline)
+                .font(Typography.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
 
             Button {
-                showingAddSheet = true
+                if viewModel.canAddSubscription {
+                    selectedServiceForAdd = nil
+                    showingServicePicker = true
+                } else {
+                    showingLimitAlert = true
+                }
+                Haptic.impact(.light)
             } label: {
                 Label("Traccia abbonamento", systemImage: "plus")
             }
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(EnhancedPrimaryButtonStyle())
             .padding(.horizontal, 40)
         }
-        .padding(40)
+        .padding(Spacing.xxl)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
                 .fill(Color(.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8)
+                .shadow(color: .black.opacity(0.15), radius: 8)
         )
+    }
+
+    // MARK: - Actions
+
+    private func addSubscription(_ service: Service) {
+        let subscription = Subscription(
+            serviceName: service.name,
+            cost: service.typicalCost ?? 0,
+            billingCycle: service.billingCycle,
+            nextBillingDate: Date(),
+            category: service.category
+        )
+
+        Task {
+            await viewModel.addSubscription(subscription)
+            selectedServiceForAdd = nil
+            showingSuccessAlert = true
+            Haptic.notification(.success)
+        }
+    }
+}
+
+// MARK: - Rounded Corner Shape
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }
 

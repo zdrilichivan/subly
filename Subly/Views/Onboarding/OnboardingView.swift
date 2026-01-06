@@ -17,56 +17,36 @@ struct OnboardingView: View {
     @State private var nameInput = ""
     @FocusState private var isNameFieldFocused: Bool
 
-    private let totalPages = 9 // 8 info pages + 1 name page
+    private let totalPages = 5 // 4 info pages + 1 name page
 
     private let pages: [OnboardingPage] = [
         OnboardingPage(
-            icon: "leaf.fill",
-            iconColor: .green,
-            title: "Benvenuto in Subly",
-            description: "L'app che ti aiuta a riprendere il controllo dei tuoi abbonamenti e a vivere con meno, ma meglio."
+            icon: "questionmark.circle.fill",
+            iconColor: .orange,
+            gradientColors: [.orange, .red],
+            title: "Quanti abbonamenti hai?",
+            description: "L'italiano medio ne ha 12 attivi. Netflix, Spotify, palestra, cloud... Li usi davvero tutti?"
         ),
         OnboardingPage(
-            icon: "creditcard.fill",
-            iconColor: .appPrimary,
-            title: "Traccia i tuoi abbonamenti",
-            description: "Aggiungi tutti i tuoi abbonamenti da oltre 80 servizi. Saprai sempre quanto spendi ogni mese e ogni anno."
-        ),
-        OnboardingPage(
-            icon: "mail.and.text.magnifyingglass",
-            iconColor: .blue,
-            title: "Trova abbonamenti nascosti",
-            description: "Collega Gmail per scansionare le tue email e trovare automaticamente gli abbonamenti che hai dimenticato."
-        ),
-        OnboardingPage(
-            icon: "lightbulb.fill",
-            iconColor: .green,
-            title: "Scopri cosa potresti fare",
-            description: "Ti mostreremo cosa potresti fare con i soldi che spendi: viaggi, cene, esperienze. Vale la pena continuare a pagare?"
-        ),
-        OnboardingPage(
-            icon: "brain.head.profile",
+            icon: "bell.badge.fill",
             iconColor: .purple,
-            title: "Ripensa alle tue scelte",
-            description: "Domande provocatorie e suggerimenti personalizzati per aiutarti a capire di quali abbonamenti hai davvero bisogno."
+            gradientColors: [.purple, .indigo],
+            title: "Ti chiediamo solo una cosa",
+            description: "\"Stai usando questo servizio?\" Prima di ogni rinnovo, ti aiutiamo a decidere con consapevolezza."
         ),
         OnboardingPage(
             icon: "hand.raised.fill",
-            iconColor: .blue,
-            title: "Ti aiutiamo a cancellare",
-            description: "Per ogni servizio troverai il link diretto alla pagina di cancellazione. Disdire non è mai stato così facile."
+            iconColor: .green,
+            gradientColors: [.green, .mint],
+            title: "Se non lo usi, via",
+            description: "Link diretto alla disdetta. Niente più abbonamenti dimenticati che si rinnovano in silenzio."
         ),
         OnboardingPage(
-            icon: "bell.fill",
-            iconColor: .red,
-            title: "Mai più rinnovi a sorpresa",
-            description: "Notifiche intelligenti 3 giorni, 1 giorno e il giorno stesso del rinnovo. Decidi tu se continuare."
-        ),
-        OnboardingPage(
-            icon: "icloud.fill",
-            iconColor: .cyan,
-            title: "Sempre sincronizzato",
-            description: "I tuoi dati sono al sicuro su iCloud e sincronizzati su tutti i tuoi dispositivi Apple."
+            icon: "leaf.fill",
+            iconColor: .appPrimary,
+            gradientColors: [.appPrimary, .appSecondary],
+            title: "Paga solo ciò che ami",
+            description: "Il minimalismo digitale non è privarsi, è scegliere con intenzione. Meno abbonamenti, più valore."
         )
     ]
 
@@ -100,19 +80,18 @@ struct OnboardingView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
 
-            // Page indicators
-            HStack(spacing: 8) {
-                ForEach(0..<totalPages, id: \.self) { index in
-                    Circle()
-                        .fill(index == currentPage ? Color.appPrimary : Color(.systemGray4))
-                        .frame(width: 8, height: 8)
-                        .animation(.easeInOut, value: currentPage)
-                }
-            }
-            .padding(.vertical, 20)
+            // Page indicators - migliorati con design system
+            PageIndicator(
+                totalPages: totalPages,
+                currentPage: currentPage,
+                activeColor: .appPrimary,
+                size: 10,
+                spacing: 10
+            )
+            .padding(.vertical, Spacing.lg)
 
-            // Buttons
-            VStack(spacing: 12) {
+            // Buttons - migliorati con stato disabled visibile
+            VStack(spacing: Spacing.sm) {
                 if currentPage == totalPages - 1 {
                     // Last page - name input
                     Button {
@@ -120,20 +99,23 @@ struct OnboardingView: View {
                     } label: {
                         Text("Inizia")
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .buttonStyle(EnhancedPrimaryButtonStyle())
                     .disabled(nameInput.trimmed.isEmpty)
+                    .opacity(nameInput.trimmed.isEmpty ? 0.5 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: nameInput.trimmed.isEmpty)
                 } else {
                     Button {
-                        withAnimation {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             currentPage += 1
                         }
+                        Haptic.selection()
                     } label: {
                         Text("Continua")
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .buttonStyle(EnhancedPrimaryButtonStyle())
                 }
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, Spacing.xl)
             .padding(.bottom, 40)
         }
         .background(Color(.systemGroupedBackground))
@@ -142,24 +124,43 @@ struct OnboardingView: View {
     // MARK: - Page View
 
     private func pageView(for page: OnboardingPage) -> some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 40) {
             Spacer()
 
-            // Icon
+            // Icon con gradient
             ZStack {
+                // Cerchio esterno sfumato
                 Circle()
-                    .fill(page.iconColor.opacity(0.1))
-                    .frame(width: 120, height: 120)
+                    .fill(
+                        LinearGradient(
+                            colors: page.gradientColors.isEmpty ? [page.iconColor.opacity(0.3), page.iconColor.opacity(0.1)] : page.gradientColors.map { $0.opacity(0.15) },
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                // Cerchio interno
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: page.gradientColors.isEmpty ? [page.iconColor] : page.gradientColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: (page.gradientColors.first ?? page.iconColor).opacity(0.4), radius: 20, x: 0, y: 10)
 
                 Image(systemName: page.icon)
-                    .font(.system(size: 50, weight: .semibold))
-                    .foregroundColor(page.iconColor)
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.white)
             }
 
             // Text
             VStack(spacing: 16) {
                 Text(page.title)
-                    .font(.title)
+                    .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
 
@@ -167,7 +168,8 @@ struct OnboardingView: View {
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 40)
+                    .lineSpacing(4)
             }
 
             Spacer()
@@ -181,29 +183,47 @@ struct OnboardingView: View {
         VStack(spacing: 32) {
             Spacer()
 
-            // Icon
+            // Icon con gradient
             ZStack {
                 Circle()
-                    .fill(Color.appPrimary.opacity(0.1))
-                    .frame(width: 120, height: 120)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.appPrimary.opacity(0.15), Color.appSecondary.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.appPrimary, .appSecondary],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: Color.appPrimary.opacity(0.4), radius: 20, x: 0, y: 10)
 
                 Image(systemName: "person.fill")
-                    .font(.system(size: 50, weight: .semibold))
-                    .foregroundColor(.appPrimary)
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.white)
             }
 
             // Text
             VStack(spacing: 16) {
                 Text("Come ti chiami?")
-                    .font(.title)
+                    .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
 
-                Text("Ti accompagneremo nel tuo percorso verso il minimalismo digitale")
+                Text("Saremo la tua guida verso un rapporto più sano con i servizi digitali")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 40)
+                    .lineSpacing(4)
             }
 
             // Name input field
@@ -212,8 +232,12 @@ struct OnboardingView: View {
                 .multilineTextAlignment(.center)
                 .padding()
                 .background(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 16)
                         .fill(Color(.secondarySystemGroupedBackground))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.appPrimary.opacity(0.3), lineWidth: 1)
                 )
                 .padding(.horizontal, 48)
                 .focused($isNameFieldFocused)
@@ -251,6 +275,7 @@ struct OnboardingView: View {
 struct OnboardingPage {
     let icon: String
     let iconColor: Color
+    var gradientColors: [Color] = []
     let title: LocalizedStringKey
     let description: LocalizedStringKey
 }

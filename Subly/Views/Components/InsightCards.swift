@@ -79,43 +79,59 @@ struct SpendingCarouselCard: View {
     let comparisons: [SpendingComparison]
 
     @State private var currentIndex = 0
-    private let timer = Timer.publish(every: 6, on: .main, in: .common).autoconnect()
+    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+
+    private let motivationalTexts = [
+        "Gli abbonamenti passano, le esperienze restano.",
+        "Stai pagando per servizi o per abitudine?",
+        "Ogni euro risparmiato è un euro investito su di te.",
+        "Il minimalismo non è rinuncia, è scelta.",
+        "Meno abbonamenti, più libertà.",
+        "Chiediti: lo uso davvero?"
+    ]
 
     var body: some View {
         VStack(spacing: 12) {
             // Header
             HStack {
-                Image(systemName: "lightbulb.fill")
+                Image(systemName: "sparkles")
                     .font(.subheadline)
-                    .foregroundColor(.green)
+                    .foregroundColor(.orange)
 
-                Text(String(localized: "Cosa potresti fare"))
+                Text(String(localized: "E se invece..."))
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.green)
+                    .foregroundColor(.orange)
 
                 Spacer()
 
                 Text(yearlyCost.currencyFormatted + String(localized: "/anno"))
                     .font(.caption)
+                    .fontWeight(.medium)
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color(.systemGray5))
+                    )
             }
 
             // Carousel
             TabView(selection: $currentIndex) {
-                ForEach(Array(comparisons.prefix(4).enumerated()), id: \.element.id) { index, comparison in
-                    comparisonItem(comparison)
+                ForEach(Array(comparisons.prefix(5).enumerated()), id: \.element.id) { index, comparison in
+                    comparisonItem(comparison, index: index)
                         .tag(index)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 100)
+            .frame(height: 105)
 
-            // Page indicators (colore corrisponde all'icona attuale)
+            // Page indicators
             HStack(spacing: 6) {
-                ForEach(0..<min(comparisons.count, 4), id: \.self) { index in
+                ForEach(0..<min(comparisons.count, 5), id: \.self) { index in
                     Circle()
-                        .fill(index == currentIndex ? comparisons[currentIndex].color : Color(.systemGray4))
+                        .fill(index == currentIndex ? comparisons[min(currentIndex, comparisons.count - 1)].color : Color(.systemGray4))
                         .frame(width: 6, height: 6)
                         .animation(.easeInOut(duration: 0.2), value: currentIndex)
                 }
@@ -128,21 +144,21 @@ struct SpendingCarouselCard: View {
         )
         .onReceive(timer) { _ in
             withAnimation(.easeInOut(duration: 0.5)) {
-                currentIndex = (currentIndex + 1) % min(comparisons.count, 4)
+                currentIndex = (currentIndex + 1) % min(comparisons.count, 5)
             }
         }
     }
 
-    private func comparisonItem(_ comparison: SpendingComparison) -> some View {
-        VStack(spacing: 12) {
+    private func comparisonItem(_ comparison: SpendingComparison, index: Int) -> some View {
+        VStack(spacing: 10) {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
                         .fill(comparison.color.opacity(0.15))
-                        .frame(width: 54, height: 54)
+                        .frame(width: 50, height: 50)
 
                     Image(systemName: comparison.icon)
-                        .font(.title2)
+                        .font(.title3)
                         .foregroundColor(comparison.color)
                 }
 
@@ -153,14 +169,15 @@ struct SpendingCarouselCard: View {
                     Text(comparison.description)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(2)
                 }
 
                 Spacer()
             }
 
-            Text(String(localized: "Ne vale la pena continuare a pagare?"))
+            Text(motivationalTexts[index % motivationalTexts.count])
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(comparison.color)
                 .italic()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

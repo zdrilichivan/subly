@@ -2,12 +2,24 @@
 //  StoreManager.swift
 //  Subly
 //
-//  Gestione acquisti in-app con StoreKit 2
+//  Gestione abbonamenti in-app con StoreKit 2
 //
 
 import Foundation
 import StoreKit
 import Combine
+
+enum SubscriptionPlan: String, CaseIterable {
+    case monthly = "com.ivanzdrilich.Subly.pro.monthly"
+    case annual = "com.ivanzdrilich.Subly.pro.annual"
+
+    var displayName: String {
+        switch self {
+        case .monthly: return String(localized: "Mensile")
+        case .annual: return String(localized: "Annuale")
+        }
+    }
+}
 
 @MainActor
 class StoreManager: ObservableObject {
@@ -16,21 +28,99 @@ class StoreManager: ObservableObject {
     static let shared = StoreManager()
 
     // MARK: - Product IDs
-    static let proProductID = "com.ivanzdrilich.Subly.pro"
+    static let monthlyProductID = SubscriptionPlan.monthly.rawValue
+    static let annualProductID = SubscriptionPlan.annual.rawValue
+    static let allProductIDs = [monthlyProductID, annualProductID]
 
     // MARK: - Published Properties
     @Published private(set) var products: [Product] = []
     @Published private(set) var isPro: Bool = false
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
+    @Published var selectedPlan: SubscriptionPlan = .annual
+
+    // MARK: - Debug
+    #if DEBUG
+    @Published var debugProEnabled: Bool = false {
+        didSet {
+            isPro = debugProEnabled
+            UserDefaults.standard.set(debugProEnabled, forKey: "debugProEnabled")
+        }
+    }
+    #endif
 
     // MARK: - Private Properties
     private var updateListenerTask: Task<Void, Error>?
+
+    // MARK: - Computed Properties
+
+    var monthlyProduct: Product? {
+        products.first { $0.id == StoreManager.monthlyProductID }
+    }
+
+    var annualProduct: Product? {
+        products.first { $0.id == StoreManager.annualProductID }
+    }
+
+    var selectedProduct: Product? {
+        switch selectedPlan {
+        case .monthly: return monthlyProduct
+        case .annual: return annualProduct
+        }
+    }
+
+    var monthlyPrice: String {
+        monthlyProduct?.displayPrice ?? "€1,99"
+    }
+
+    var annualPrice: String {
+        annualProduct?.displayPrice ?? "€19,99"
+    }
+
+    var annualMonthlyEquivalent: String {
+        if let product = annualProduct {
+            let monthly = product.price / 12
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = product.priceFormatStyle.locale
+            return formatter.string(from: monthly as NSDecimalNumber) ?? "€1,67"
+        }
+        return "€1,67"
+    }
+
+    var savingsPercentage: Int {
+        // €1,99 * 12 = €23,88 annuale se pagato mensilmente
+        // €19,99 annuale = risparmio di €3,89 = ~16%
+        return 16
+    }
+
+    /// Controlla se l'utente è idoneo per la prova gratuita
+    var isEligibleForTrial: Bool {
+        guard let product = selectedProduct else { return false }
+        return product.subscription?.introductoryOffer != nil
+    }
+
+    /// Durata della prova gratuita in giorni
+    var trialDays: Int {
+        guard let product = selectedProduct,
+              let intro = product.subscription?.introductoryOffer else { return 0 }
+        // P1W = 7 giorni
+        return intro.period.value * (intro.period.unit == .week ? 7 : 1)
+    }
 
     // MARK: - Init
     private init() {
         // Carica stato salvato
         isPro = UserDefaults.standard.bool(forKey: "isSublyPro")
+
+        #if DEBUG
+        // In debug, controlla se Pro è abilitato manualmente
+        let debugPro = UserDefaults.standard.bool(forKey: "debugProEnabled")
+        debugProEnabled = debugPro
+        if debugPro {
+            isPro = true
+        }
+        #endif
 
         // Avvia listener per aggiornamenti transazioni
         updateListenerTask = listenForTransactions()
@@ -53,9 +143,10 @@ class StoreManager: ObservableObject {
         errorMessage = nil
 
         do {
-            let storeProducts = try await Product.products(for: [StoreManager.proProductID])
-            products = storeProducts
-            print("✅ StoreKit: Loaded \(products.count) products")
+            let storeProducts = try await Product.products(for: StoreManager.allProductIDs)
+            // Ordina: annuale prima, mensile dopo
+            products = storeProducts.sorted { $0.price > $1.price }
+            print("✅ StoreKit: Loaded \(products.count) subscription products")
         } catch {
             print("❌ StoreKit: Failed to load products: \(error)")
             errorMessage = "Impossibile caricare i prodotti"
@@ -67,11 +158,15 @@ class StoreManager: ObservableObject {
     // MARK: - Purchase
 
     func purchase() async -> Bool {
-        guard let product = products.first else {
+        guard let product = selectedProduct else {
             errorMessage = "Prodotto non disponibile"
             return false
         }
 
+        return await purchase(product: product)
+    }
+
+    func purchase(product: Product) async -> Bool {
         isLoading = true
         errorMessage = nil
 
@@ -88,7 +183,7 @@ class StoreManager: ObservableObject {
                 // Completa transazione
                 await transaction.finish()
 
-                print("✅ StoreKit: Purchase successful")
+                print("✅ StoreKit: Subscription purchase successful")
                 isLoading = false
                 return true
 
@@ -128,7 +223,7 @@ class StoreManager: ObservableObject {
             if isPro {
                 print("✅ StoreKit: Purchases restored successfully")
             } else {
-                errorMessage = "Nessun acquisto da ripristinare"
+                errorMessage = "Nessun abbonamento attivo trovato"
             }
         } catch {
             print("❌ StoreKit: Restore failed: \(error)")
@@ -147,8 +242,12 @@ class StoreManager: ObservableObject {
             do {
                 let transaction = try checkVerified(result)
 
-                if transaction.productID == StoreManager.proProductID {
-                    hasPro = true
+                // Controlla se è uno dei nostri abbonamenti Pro
+                if StoreManager.allProductIDs.contains(transaction.productID) {
+                    // Verifica che l'abbonamento non sia scaduto o revocato
+                    if transaction.revocationDate == nil {
+                        hasPro = true
+                    }
                 }
             } catch {
                 print("❌ StoreKit: Transaction verification failed")
@@ -160,6 +259,18 @@ class StoreManager: ObservableObject {
         UserDefaults.standard.set(hasPro, forKey: "isSublyPro")
 
         print("📱 StoreKit: isPro = \(isPro)")
+    }
+
+    // MARK: - Manage Subscription
+
+    func showManageSubscriptions() async {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            do {
+                try await AppStore.showManageSubscriptions(in: windowScene)
+            } catch {
+                print("❌ StoreKit: Failed to show manage subscriptions: \(error)")
+            }
+        }
     }
 
     // MARK: - Transaction Listener
@@ -200,19 +311,6 @@ class StoreManager: ObservableObject {
         case .verified(let safe):
             return safe
         }
-    }
-
-    // MARK: - Formatted Price
-
-    var formattedPrice: String {
-        if let product = products.first {
-            return product.displayPrice
-        }
-        // Fallback localizzato
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = Locale.current
-        return formatter.string(from: 4.99) ?? "€4,99"
     }
 }
 

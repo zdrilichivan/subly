@@ -207,7 +207,7 @@ struct ServiceLogoView: View {
             "NOW TV": "nowtv.it",
             "Sky Go": "sky.it",
             "DAZN": "dazn.com",
-            "Apple TV+": "apple.com",
+            "Apple TV+": "tv.apple.com",
             "Paramount+": "paramountplus.com",
             "Discovery+": "discoveryplus.com",
             "Infinity+": "infinitytv.it",
@@ -225,10 +225,10 @@ struct ServiceLogoView: View {
             "Spotify Duo": "spotify.com",
             "Spotify Family": "spotify.com",
             "Spotify Student": "spotify.com",
-            "Apple Music": "apple.com",
-            "Apple Music Individuale": "apple.com",
-            "Apple Music Famiglia": "apple.com",
-            "Apple Music Studenti": "apple.com",
+            "Apple Music": "music.apple.com",
+            "Apple Music Individuale": "music.apple.com",
+            "Apple Music Famiglia": "music.apple.com",
+            "Apple Music Studenti": "music.apple.com",
             "Amazon Music Unlimited": "music.amazon.com",
             "YouTube Music": "music.youtube.com",
             "Deezer": "deezer.com",
@@ -262,7 +262,7 @@ struct ServiceLogoView: View {
             "Todoist": "todoist.com",
 
             // Fitness
-            "Apple Fitness+": "apple.com",
+            "Apple Fitness+": "fitness.apple.com",
             "Peloton": "onepeloton.com",
             "Nike Training Club": "nike.com",
             "Strava": "strava.com",
@@ -274,13 +274,13 @@ struct ServiceLogoView: View {
             "SWEAT": "sweat.com",
 
             // Cloud
-            "iCloud+": "apple.com",
-            "iCloud+ 200GB": "apple.com",
-            "iCloud+ 2TB": "apple.com",
-            "Google One 100GB": "google.com",
-            "Google One 200GB": "google.com",
-            "Google One 2TB": "google.com",
-            "OneDrive 100GB": "microsoft.com",
+            "iCloud+": "icloud.com",
+            "iCloud+ 200GB": "icloud.com",
+            "iCloud+ 2TB": "icloud.com",
+            "Google One 100GB": "one.google.com",
+            "Google One 200GB": "one.google.com",
+            "Google One 2TB": "one.google.com",
+            "OneDrive 100GB": "onedrive.live.com",
             "pCloud": "pcloud.com",
 
             // News
@@ -305,7 +305,7 @@ struct ServiceLogoView: View {
             "Nintendo Switch Online": "nintendo.com",
             "EA Play": "ea.com",
             "Ubisoft+": "ubisoft.com",
-            "Apple Arcade": "apple.com",
+            "Apple Arcade": "arcade.apple.com",
             "GeForce NOW": "nvidia.com",
             "Twitch Turbo": "twitch.tv",
 

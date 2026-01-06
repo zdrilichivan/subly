@@ -9,33 +9,69 @@ import SwiftUI
 
 struct DailyTipsView: View {
     @StateObject private var tipsService = DailyTipsService.shared
+    @ObservedObject private var storeManager = StoreManager.shared
     @State private var showingNotificationAlert = false
     @State private var animateCard = false
     @State private var showingActionDetail = false
 
     var body: some View {
+        // Mostra la promo per utenti free, il contenuto completo per Pro
+        if !storeManager.isPro {
+            CoachPromoView()
+        } else {
+            coachContent
+        }
+    }
+
+    // MARK: - Coach Content (Pro only)
+
+    private var coachContent: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    headerSection
+                ZStack(alignment: .top) {
+                    // Gradient che scrolla con i contenuti
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.35, green: 0.40, blue: 0.65),
+                            Color(red: 0.12, green: 0.14, blue: 0.25)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 380)
+                    .frame(maxWidth: .infinity)
+                    .offset(y: -220)
 
-                    // Card del consiglio del giorno
-                    todaysTipCard
+                    VStack(spacing: 24) {
+                        // Page Header
+                        pageHeaderSection
 
-                    // Toggle notifiche
-                    notificationSection
+                        // Header
+                        headerSection
 
-                    // Categoria del giorno
-                    categorySection
+                        // Card del consiglio del giorno
+                        todaysTipCard
 
-                    // Citazione motivazionale
-                    quoteSection
+                        // Toggle notifiche
+                        notificationSection
+
+                        // Categoria del giorno
+                        categorySection
+
+                        // Citazione motivazionale
+                        quoteSection
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.xxl)
                 }
-                .padding()
             }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle("Money Coach")
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("")
+                }
+            }
             .onAppear {
                 tipsService.refreshTodaysTip()
                 withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
@@ -43,6 +79,31 @@ struct DailyTipsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Page Header Section
+
+    private var pageHeaderSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(formattedDate)
+                .font(Typography.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.white.opacity(0.8))
+                .textCase(.uppercase)
+
+            Text("Money Coach")
+                .font(.system(size: 26, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, Spacing.sm)
+    }
+
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.dateFormat = "EEEE d MMMM"
+        return formatter.string(from: Date()).uppercased()
     }
 
     // MARK: - Header Section
@@ -130,7 +191,7 @@ struct DailyTipsView: View {
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color(.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
         )
         .scaleEffect(animateCard ? 1 : 0.95)
         .opacity(animateCard ? 1 : 0)

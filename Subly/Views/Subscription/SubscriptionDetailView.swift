@@ -2,7 +2,7 @@
 //  SubscriptionDetailView.swift
 //  SublySwift
 //
-//  Vista dettaglio di un abbonamento
+//  Vista dettaglio di un abbonamento - Design compatto
 //
 
 import SwiftUI
@@ -22,35 +22,63 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Header
-                headerSection
+            ZStack(alignment: .top) {
+                // Gradient che scrolla con i contenuti
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.35, green: 0.40, blue: 0.65),
+                        Color(red: 0.12, green: 0.14, blue: 0.25)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 380)
+                .frame(maxWidth: .infinity)
+                .offset(y: -220)
 
-                // Info Cards
-                infoSection
+                VStack(spacing: Spacing.md) {
+                    // Custom Header
+                    headerSection
 
-                // Split Cost Section
-                splitCostSection
+                    // Header con logo, nome e prezzo
+                    compactHeader
 
-                // Notes
-                if let notes = subscription.notes, !notes.isEmpty {
-                    notesSection(notes: notes)
+                    // Info Grid - costo mensile e annuale
+                    infoGrid
+
+                    // Categoria
+                    categoryRow
+
+                    // Split Cost - divisione costi
+                    splitCostRow
+
+                    // Notes (conditional)
+                    if let notes = subscription.notes, !notes.isEmpty {
+                        compactNotesSection(notes: notes)
+                    }
+
+                    // Spacer per separare azioni
+                    Spacer()
+                        .frame(height: Spacing.lg)
+
+                    // Actions
+                    compactActionsSection
                 }
-
-                // Actions
-                actionsSection
+                .padding(Spacing.md)
             }
-            .padding()
         }
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle(subscription.displayName)
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("")
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showingEditSheet = true
                 } label: {
                     Text(String(localized: "Modifica"))
+                        .foregroundColor(.white)
                 }
             }
         }
@@ -84,266 +112,226 @@ struct SubscriptionDetailView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
-        HStack(spacing: 16) {
-            // Logo
+        VStack(alignment: .leading, spacing: 6) {
+            Text(String(localized: "Dettagli"))
+                .font(Typography.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.white.opacity(0.8))
+                .textCase(.uppercase)
+
+            Text(subscription.displayName)
+                .font(.system(size: 26, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, Spacing.sm)
+    }
+
+    // MARK: - Compact Header
+
+    private var compactHeader: some View {
+        HStack(spacing: Spacing.sm) {
+            // Logo - smaller
             ServiceLogoView(
                 serviceName: subscription.serviceName,
                 category: subscription.category,
-                size: 56
+                size: 48
             )
 
             // Name & Service
             VStack(alignment: .leading, spacing: 2) {
-                Text(subscription.displayName)
-                    .font(.headline)
-                    .fontWeight(.bold)
+                HStack(spacing: Spacing.xs) {
+                    Text(subscription.displayName)
+                        .font(.system(size: 17, weight: .semibold))
+                        .lineLimit(1)
+
+                    // Status badge inline
+                    if !subscription.isActive {
+                        Text(String(localized: "Cancellato"))
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.red))
+                    }
+                }
 
                 if subscription.customName != nil {
                     Text(subscription.serviceName)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+            }
 
-                // Status badge
-                if !subscription.isActive {
-                    HStack(spacing: 4) {
-                        Image(systemName: "xmark.circle.fill")
-                        Text(String(localized: "Cancellato"))
-                    }
+            Spacer()
+
+            // Price - compact
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(subscription.cost.currencyFormatted)
+                    .font(Typography.numericMedium(20))
+
+                Text(subscription.billingCycle.shortName)
                     .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+
+    // MARK: - Info Grid
+
+    private var infoGrid: some View {
+        HStack(spacing: Spacing.sm) {
+            // Costo mensile
+            LargeInfoCell(
+                icon: "creditcard.fill",
+                iconColor: .green,
+                label: String(localized: "Spesa mensile"),
+                value: subscription.monthlyCost.currencyFormatted
+            )
+
+            // Costo annuale
+            LargeInfoCell(
+                icon: "calendar.badge.clock",
+                iconColor: .purple,
+                label: String(localized: "Spesa annuale"),
+                value: subscription.yearlyCost.currencyFormatted
+            )
+        }
+    }
+
+    // MARK: - Category Row
+
+    private var categoryRow: some View {
+        HStack(spacing: Spacing.sm) {
+            // Icon
+            IconContainer(
+                systemName: subscription.category.iconName,
+                size: IconContainerSize.sm,
+                color: subscription.category.color,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
+
+            // Label
+            Text(String(localized: "Categoria"))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Spacer()
+
+            // Value
+            Text(subscription.category.displayName)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+        }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+
+    // MARK: - Split Cost Row (Compact)
+
+    private var splitCostRow: some View {
+        HStack(spacing: Spacing.sm) {
+            // Icon
+            IconContainer(
+                systemName: "person.2.fill",
+                size: IconContainerSize.sm,
+                color: .green,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
+
+            // Label
+            VStack(alignment: .leading, spacing: 0) {
+                Text(String(localized: "Dividi il costo"))
+                    .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Capsule().fill(Color.red))
+
+                if subscription.isShared {
+                    Text(String(localized: "Quota: \(subscription.perPersonCost.currencyFormatted)"))
+                        .font(.caption)
+                        .foregroundColor(.green)
                 }
             }
 
             Spacer()
 
-            // Price
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(subscription.cost.currencyFormatted)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-
-                Text(subscription.billingCycle.shortName)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-    }
-
-    // MARK: - Info Section
-
-    private var infoSection: some View {
-        VStack(spacing: 12) {
-            // Prossimo rinnovo
-            InfoRow(
-                icon: "calendar",
-                iconColor: subscription.isRenewalSoon ? .orange : .blue,
-                title: String(localized: "Prossimo rinnovo"),
-                value: subscription.nextBillingDate.shortFormatted
-            )
-
-            Divider()
-
-            // Costo mensile (normalizzato)
-            InfoRow(
-                icon: "creditcard.fill",
-                iconColor: .green,
-                title: String(localized: "Costo mensile"),
-                value: subscription.monthlyCost.currencyFormatted
-            )
-
-            Divider()
-
-            // Costo annuale
-            InfoRow(
-                icon: "calendar.badge.clock",
-                iconColor: .purple,
-                title: String(localized: "Costo annuale"),
-                value: subscription.yearlyCost.currencyFormatted
-            )
-
-            Divider()
-
-            // Categoria
-            InfoRow(
-                icon: subscription.category.iconName,
-                iconColor: subscription.category.color,
-                title: String(localized: "Categoria"),
-                value: subscription.category.displayName
-            )
-
-            if subscription.isEssential {
-                Divider()
-
-                InfoRow(
-                    icon: "star.fill",
-                    iconColor: .yellow,
-                    title: String(localized: "Tipo"),
-                    value: String(localized: "Abbonamento essenziale")
-                )
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-    }
-
-    // MARK: - Notes Section
-
-    private func notesSection(notes: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(String(localized: "Note"), systemImage: "note.text")
-                .font(.headline)
-
-            Text(notes)
-                .font(.body)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-    }
-
-    // MARK: - Split Cost Section
-
-    private var splitCostSection: some View {
-        VStack(spacing: 12) {
-            // Header
-            HStack {
-                Label(String(localized: "Dividi il costo"), systemImage: "person.2.fill")
-                    .font(.headline)
-
-                Spacer()
-
-                if subscription.isShared {
-                    Text(String(localized: "\(subscription.sharedWith ?? 1) persone"))
+            if subscription.isShared {
+                // Show split details and share button
+                HStack(spacing: Spacing.xs) {
+                    Text(String(localized: "\(subscription.sharedWith ?? 1) pers."))
                         .font(.caption)
+                        .fontWeight(.medium)
                         .foregroundColor(.white)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Capsule().fill(Color.green))
-                }
-            }
 
-            // Split info card
-            VStack(spacing: 16) {
-                if subscription.isShared {
-                    // Already shared - show split details
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(String(localized: "Costo totale"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text(subscription.cost.currencyFormatted)
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "arrow.right")
-                            .foregroundColor(.secondary)
-
-                        Spacer()
-
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text(String(localized: "La tua quota"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text(subscription.perPersonCost.currencyFormatted)
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(.green)
-                        }
-                    }
-
-                    Divider()
-
-                    // Request payment button
                     Button {
                         showingShareSheet = true
                     } label: {
-                        HStack {
-                            Image(systemName: "paperplane.fill")
-                            Text(String(localized: "Invia richiesta pagamento"))
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(SplitPaymentButtonStyle())
-                } else {
-                    // Not shared - show option to split
-                    HStack(spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.green.opacity(0.12))
-                                .frame(width: 50, height: 50)
-
-                            Image(systemName: "person.2.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(.green)
-                        }
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(String(localized: "Condividi questo abbonamento?"))
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-
-                            Text(String(localized: "Dividi il costo con amici o familiari"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-
-                        Spacer()
+                        Image(systemName: "paperplane.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.green)
                     }
 
                     Button {
-                        splitPeopleCount = 2
+                        splitPeopleCount = subscription.sharedWith ?? 2
                         showingSplitSheet = true
                     } label: {
-                        Text(String(localized: "Imposta divisione"))
-                            .frame(maxWidth: .infinity)
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
                     }
-                    .buttonStyle(SecondaryButtonStyle())
+                }
+            } else {
+                // Toggle or button to enable split
+                Button {
+                    splitPeopleCount = 2
+                    showingSplitSheet = true
+                } label: {
+                    Text(String(localized: "Imposta"))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .stroke(Color.green, lineWidth: 1.5)
+                        )
                 }
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            )
         }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
     }
 
     // MARK: - Split Cost Sheet
 
     private var splitCostSheet: some View {
         NavigationStack {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Visual
-                ZStack {
-                    Circle()
-                        .fill(Color.green.opacity(0.12))
-                        .frame(width: 80, height: 80)
-
-                    Image(systemName: "person.2.fill")
-                        .font(.system(size: 32))
-                        .foregroundColor(.green)
-                }
-                .padding(.top, 32)
+                IconContainer(
+                    systemName: "person.2.fill",
+                    size: IconContainerSize.xl,
+                    color: .green,
+                    backgroundOpacity: IconBackgroundOpacity.medium
+                )
+                .padding(.top, Spacing.lg)
 
                 // Title
                 Text(String(localized: "Con quante persone dividi \(subscription.displayName)?"))
@@ -352,7 +340,7 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
 
                 // Stepper
-                VStack(spacing: 8) {
+                VStack(spacing: Spacing.xs) {
                     HStack {
                         Button {
                             if splitPeopleCount > 2 {
@@ -360,14 +348,14 @@ struct SubscriptionDetailView: View {
                             }
                         } label: {
                             Image(systemName: "minus.circle.fill")
-                                .font(.system(size: 44))
+                                .font(.system(size: 40))
                                 .foregroundColor(splitPeopleCount > 2 ? .appPrimary : .gray)
                         }
                         .disabled(splitPeopleCount <= 2)
 
                         Text("\(splitPeopleCount)")
-                            .font(.system(size: 60, weight: .bold, design: .rounded))
-                            .frame(width: 100)
+                            .font(.system(size: 52, weight: .bold, design: .rounded))
+                            .frame(width: 80)
 
                         Button {
                             if splitPeopleCount < 10 {
@@ -375,7 +363,7 @@ struct SubscriptionDetailView: View {
                             }
                         } label: {
                             Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 44))
+                                .font(.system(size: 40))
                                 .foregroundColor(splitPeopleCount < 10 ? .appPrimary : .gray)
                         }
                         .disabled(splitPeopleCount >= 10)
@@ -387,23 +375,23 @@ struct SubscriptionDetailView: View {
                 }
 
                 // Cost preview
-                VStack(spacing: 8) {
+                VStack(spacing: Spacing.xs) {
                     Text(String(localized: "Ognuno paga"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
                     Text((subscription.cost / Double(splitPeopleCount)).currencyFormatted)
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundColor(.green)
 
                     Text(String(localized: "invece di \(subscription.cost.currencyFormatted)"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .padding()
+                .padding(Spacing.md)
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: CornerRadius.md)
                         .fill(Color.green.opacity(0.1))
                 )
                 .padding(.horizontal)
@@ -419,7 +407,7 @@ struct SubscriptionDetailView: View {
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .padding(.horizontal)
-                .padding(.bottom, 20)
+                .padding(.bottom, Spacing.md)
             }
             .navigationTitle(String(localized: "Dividi costo"))
             .navigationBarTitleDisplayMode(.inline)
@@ -440,9 +428,32 @@ struct SubscriptionDetailView: View {
                 }
             }
         }
-        .presentationDetents([.height(560)])
+        .presentationDetents([.height(480)])
         .presentationBackground(Color(.systemBackground))
         .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - Compact Notes Section
+
+    private func compactNotesSection(notes: String) -> some View {
+        HStack(spacing: Spacing.sm) {
+            Image(systemName: "note.text")
+                .font(.system(size: 14))
+                .foregroundColor(.orange)
+
+            Text(notes)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+
+            Spacer()
+        }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
     }
 
     // MARK: - Share Message
@@ -480,57 +491,71 @@ struct SubscriptionDetailView: View {
         }
     }
 
-    // MARK: - Actions Section
+    // MARK: - Compact Actions Section
 
-    private var actionsSection: some View {
-        VStack(spacing: 12) {
-            // Cancellation URL - prominent blue button
+    private var compactActionsSection: some View {
+        VStack(spacing: Spacing.sm) {
+            // Cancellation URL - compact link style
             if let urlString = ServiceCatalog.findCancellationURL(forService: subscription.serviceName),
                let url = URL(string: urlString) {
-
-                // Helpful message
-                HStack(spacing: 10) {
-                    Image(systemName: "hand.raised.fill")
-                        .foregroundColor(.blue)
-
-                    Text(String(localized: "Ti aiutiamo noi a cancellare questo servizio"))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 4)
-
                 Link(destination: url) {
-                    HStack {
-                        Image(systemName: "arrow.up.right.square.fill")
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 16, weight: .medium))
+
                         Text(String(localized: "Vai alla pagina di cancellazione"))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.secondary)
                     }
-                    .frame(maxWidth: .infinity)
+                    .foregroundColor(.blue)
+                    .padding(Spacing.sm)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.sm)
+                            .fill(Color.blue.opacity(0.1))
+                    )
                 }
-                .buttonStyle(CancellationButtonStyle())
             }
 
-            // Reactivate or Delete
+            // Reactivate or Delete - compact text button
             if subscription.isActive {
                 Button {
                     showingDeleteAlert = true
                 } label: {
-                    HStack {
+                    HStack(spacing: Spacing.xs) {
                         Image(systemName: "trash")
+                            .font(.system(size: 14))
                         Text(String(localized: "Rimuovi da Subly"))
+                            .font(.subheadline)
                     }
+                    .foregroundColor(.red)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.sm)
                 }
-                .buttonStyle(SecondaryButtonStyle())
             } else {
                 Button {
                     showingReactivateAlert = true
                 } label: {
-                    HStack {
+                    HStack(spacing: Spacing.xs) {
                         Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 14))
                         Text(String(localized: "Riattiva abbonamento"))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
                     }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.sm)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.sm)
+                            .fill(Color.appPrimary)
+                    )
                 }
-                .buttonStyle(PrimaryButtonStyle())
             }
         }
     }
@@ -552,7 +577,93 @@ struct SubscriptionDetailView: View {
     }
 }
 
-// MARK: - Info Row
+// MARK: - Large Info Cell
+
+struct LargeInfoCell: View {
+    let icon: String
+    let iconColor: Color
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(spacing: Spacing.sm) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(IconBackgroundOpacity.medium))
+                    .frame(width: 36, height: 36)
+
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(iconColor)
+            }
+
+            // Value
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            // Label
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+}
+
+// MARK: - Compact Info Cell
+
+struct CompactInfoCell: View {
+    let icon: String
+    let iconColor: Color
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(spacing: Spacing.xs) {
+            // Icon - small
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(IconBackgroundOpacity.medium))
+                    .frame(width: 28, height: 28)
+
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(iconColor)
+            }
+
+            // Value
+            Text(value)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            // Label
+            Text(label)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.sm)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
+}
+
+// MARK: - Info Row (kept for backwards compatibility)
 
 struct InfoRow: View {
     let icon: String
@@ -562,16 +673,13 @@ struct InfoRow: View {
     var badge: String?
 
     var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(iconColor.opacity(0.1))
-                    .frame(width: 36, height: 36)
-
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(iconColor)
-            }
+        HStack(spacing: Spacing.sm) {
+            IconContainer(
+                systemName: icon,
+                size: IconContainerSize.sm,
+                color: iconColor,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
 
             Text(title)
                 .foregroundColor(.secondary)
@@ -614,9 +722,9 @@ struct SplitPaymentButtonStyle: ButtonStyle {
             .font(.subheadline)
             .fontWeight(.semibold)
             .foregroundColor(.white)
-            .padding(.vertical, 12)
+            .padding(.vertical, Spacing.sm)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: CornerRadius.sm)
                     .fill(Color.green)
             )
             .opacity(configuration.isPressed ? 0.8 : 1.0)
