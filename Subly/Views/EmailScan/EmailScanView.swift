@@ -39,7 +39,7 @@ struct EmailScanView: View {
             .padding(20)
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(String(localized: "Scansiona Email"))
+        .navigationTitle(String(localized: "Scansione AI"))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingPermissionSheet) {
             EmailPermissionView {
@@ -226,8 +226,8 @@ struct EmailScanView: View {
                 FeatureRow(
                     icon: "sparkles",
                     color: .purple,
-                    title: String(localized: "Intelligente"),
-                    description: String(localized: "Riconosce automaticamente i servizi")
+                    title: String(localized: "Powered by AI"),
+                    description: String(localized: "L'AI riconosce automaticamente tutti i servizi")
                 )
             }
             .padding()

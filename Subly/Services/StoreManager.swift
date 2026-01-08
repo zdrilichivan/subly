@@ -8,14 +8,15 @@
 import Foundation
 import StoreKit
 import Combine
+import UIKit
 
 enum SubscriptionPlan: String, CaseIterable {
-    case monthly = "com.ivanzdrilich.Subly.pro.monthly"
+    case weekly = "com.ivanzdrilich.Subly.pro.weekly"
     case annual = "com.ivanzdrilich.Subly.pro.annual"
 
     var displayName: String {
         switch self {
-        case .monthly: return String(localized: "Mensile")
+        case .weekly: return String(localized: "Settimanale")
         case .annual: return String(localized: "Annuale")
         }
     }
@@ -28,34 +29,25 @@ class StoreManager: ObservableObject {
     static let shared = StoreManager()
 
     // MARK: - Product IDs
-    static let monthlyProductID = SubscriptionPlan.monthly.rawValue
+    static let weeklyProductID = SubscriptionPlan.weekly.rawValue
     static let annualProductID = SubscriptionPlan.annual.rawValue
-    static let allProductIDs = [monthlyProductID, annualProductID]
+    static let allProductIDs = [weeklyProductID, annualProductID]
 
     // MARK: - Published Properties
     @Published private(set) var products: [Product] = []
     @Published private(set) var isPro: Bool = false
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
-    @Published var selectedPlan: SubscriptionPlan = .annual
-
-    // MARK: - Debug
-    #if DEBUG
-    @Published var debugProEnabled: Bool = false {
-        didSet {
-            isPro = debugProEnabled
-            UserDefaults.standard.set(debugProEnabled, forKey: "debugProEnabled")
-        }
-    }
-    #endif
+    @Published var selectedPlan: SubscriptionPlan = .weekly
+    @Published var freeTrialEnabled: Bool = true
 
     // MARK: - Private Properties
     private var updateListenerTask: Task<Void, Error>?
 
     // MARK: - Computed Properties
 
-    var monthlyProduct: Product? {
-        products.first { $0.id == StoreManager.monthlyProductID }
+    var weeklyProduct: Product? {
+        products.first { $0.id == StoreManager.weeklyProductID }
     }
 
     var annualProduct: Product? {
@@ -64,34 +56,47 @@ class StoreManager: ObservableObject {
 
     var selectedProduct: Product? {
         switch selectedPlan {
-        case .monthly: return monthlyProduct
+        case .weekly: return weeklyProduct
         case .annual: return annualProduct
         }
     }
 
-    var monthlyPrice: String {
-        monthlyProduct?.displayPrice ?? "€1,99"
+    var weeklyPrice: String {
+        weeklyProduct?.displayPrice ?? "€2,99"
     }
 
     var annualPrice: String {
-        annualProduct?.displayPrice ?? "€19,99"
+        annualProduct?.displayPrice ?? "€39,99"
     }
 
-    var annualMonthlyEquivalent: String {
-        if let product = annualProduct {
-            let monthly = product.price / 12
+    /// Prezzo annuale se pagato settimanalmente (€2.99 × 52 = €155.48)
+    var annualPriceIfWeekly: String {
+        if let product = weeklyProduct {
+            let yearly = product.price * 52
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
             formatter.locale = product.priceFormatStyle.locale
-            return formatter.string(from: monthly as NSDecimalNumber) ?? "€1,67"
+            return formatter.string(from: yearly as NSDecimalNumber) ?? "€155,48"
         }
-        return "€1,67"
+        return "€155,48"
+    }
+
+    /// Equivalente settimanale del piano annuale (€39.99 / 52 = €0.77)
+    var annualWeeklyEquivalent: String {
+        if let product = annualProduct {
+            let weekly = product.price / 52
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = product.priceFormatStyle.locale
+            return formatter.string(from: weekly as NSDecimalNumber) ?? "€0,77"
+        }
+        return "€0,77"
     }
 
     var savingsPercentage: Int {
-        // €1,99 * 12 = €23,88 annuale se pagato mensilmente
-        // €19,99 annuale = risparmio di €3,89 = ~16%
-        return 16
+        // €2,99 * 52 = €155,48 annuale se pagato settimanalmente
+        // €39,99 annuale = risparmio di €115,49 = ~74%
+        return 74
     }
 
     /// Controlla se l'utente è idoneo per la prova gratuita
@@ -104,23 +109,25 @@ class StoreManager: ObservableObject {
     var trialDays: Int {
         guard let product = selectedProduct,
               let intro = product.subscription?.introductoryOffer else { return 0 }
-        // P1W = 7 giorni
-        return intro.period.value * (intro.period.unit == .week ? 7 : 1)
+        // P3D = 3 giorni, P1W = 7 giorni
+        switch intro.period.unit {
+        case .day:
+            return intro.period.value
+        case .week:
+            return intro.period.value * 7
+        case .month:
+            return intro.period.value * 30
+        case .year:
+            return intro.period.value * 365
+        @unknown default:
+            return intro.period.value
+        }
     }
 
     // MARK: - Init
     private init() {
         // Carica stato salvato
         isPro = UserDefaults.standard.bool(forKey: "isSublyPro")
-
-        #if DEBUG
-        // In debug, controlla se Pro è abilitato manualmente
-        let debugPro = UserDefaults.standard.bool(forKey: "debugProEnabled")
-        debugProEnabled = debugPro
-        if debugPro {
-            isPro = true
-        }
-        #endif
 
         // Avvia listener per aggiornamenti transazioni
         updateListenerTask = listenForTransactions()
@@ -144,7 +151,7 @@ class StoreManager: ObservableObject {
 
         do {
             let storeProducts = try await Product.products(for: StoreManager.allProductIDs)
-            // Ordina: annuale prima, mensile dopo
+            // Ordina: annuale prima, settimanale dopo
             products = storeProducts.sorted { $0.price > $1.price }
             print("✅ StoreKit: Loaded \(products.count) subscription products")
         } catch {

@@ -16,7 +16,6 @@ struct DashboardView: View {
     @State private var navigateToSettings = false
     @State private var showingServicePicker = false
     @State private var showingProUpgrade = false
-    @State private var showingLimitAlert = false
     @State private var showingSuccessAlert = false
     @State private var selectedServiceForAdd: Service?
     @State private var selectedCategoryForAdd: ServiceCategory = .other
@@ -114,20 +113,12 @@ struct DashboardView: View {
                 }
             }
             .sheet(isPresented: $showingProUpgrade) {
-                ProUpgradeView()
+                PaywallOnboardingView()
             }
             .alert("Abbonamento tracciato", isPresented: $showingSuccessAlert) {
                 Button("OK") { }
             } message: {
                 Text("L'abbonamento è stato aggiunto alla tua lista.")
-            }
-            .alert("Limite raggiunto", isPresented: $showingLimitAlert) {
-                Button("Passa a Pro") {
-                    showingProUpgrade = true
-                }
-                Button("Annulla", role: .cancel) { }
-            } message: {
-                Text("Hai raggiunto il limite di \(SubscriptionViewModel.freeSubscriptionLimit) abbonamenti gratuiti. Passa a Subly Pro per tracciare abbonamenti illimitati!")
             }
             .navigationDestination(isPresented: $navigateToSettings) {
                 SettingsView()
@@ -162,7 +153,7 @@ struct DashboardView: View {
                         selectedServiceForAdd = nil
                         showingServicePicker = true
                     } else {
-                        showingLimitAlert = true
+                        showingProUpgrade = true
                     }
                     Haptic.impact(.light)
                 } label: {
@@ -338,7 +329,7 @@ struct DashboardView: View {
                     selectedServiceForAdd = nil
                     showingServicePicker = true
                 } else {
-                    showingLimitAlert = true
+                    showingProUpgrade = true
                 }
                 Haptic.impact(.light)
             } label: {

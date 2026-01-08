@@ -101,7 +101,7 @@ struct ProUpgradeView: View {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "gift.fill")
                         .font(.title3)
-                    Text(String(localized: "7 giorni GRATIS"))
+                    Text(String(localized: "3 giorni GRATIS"))
                         .font(.title3)
                         .fontWeight(.bold)
                 }
@@ -137,7 +137,8 @@ struct ProUpgradeView: View {
                 title: String(localized: "Annuale"),
                 price: storeManager.annualPrice,
                 period: String(localized: "/anno"),
-                subtitle: "\(storeManager.annualMonthlyEquivalent)" + String(localized: "/mese"),
+                subtitle: "\(storeManager.annualWeeklyEquivalent)" + String(localized: "/settimana"),
+                originalPrice: storeManager.annualPriceIfWeekly,
                 savingsPercent: storeManager.savingsPercentage,
                 isSelected: storeManager.selectedPlan == .annual,
                 isRecommended: true
@@ -148,18 +149,19 @@ struct ProUpgradeView: View {
                 Haptic.selection()
             }
 
-            // Monthly Plan
+            // Weekly Plan
             PlanCard(
-                title: String(localized: "Mensile"),
-                price: storeManager.monthlyPrice,
-                period: String(localized: "/mese"),
+                title: String(localized: "Settimanale"),
+                price: storeManager.weeklyPrice,
+                period: String(localized: "/settimana"),
                 subtitle: nil,
+                originalPrice: nil,
                 savingsPercent: nil,
-                isSelected: storeManager.selectedPlan == .monthly,
+                isSelected: storeManager.selectedPlan == .weekly,
                 isRecommended: false
             ) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    storeManager.selectedPlan = .monthly
+                    storeManager.selectedPlan = .weekly
                 }
                 Haptic.selection()
             }
@@ -178,31 +180,17 @@ struct ProUpgradeView: View {
             )
 
             BenefitRow(
-                icon: "mail.and.text.magnifyingglass",
+                icon: "sparkles",
                 iconColor: .blue,
-                title: String(localized: "Scansione Email Completa"),
-                description: String(localized: "Trova tutti gli abbonamenti dalle tue email")
+                title: String(localized: "Scansione Email con AI"),
+                description: String(localized: "L'AI trova tutti gli abbonamenti dalle tue email")
             )
 
             BenefitRow(
-                icon: "lightbulb.fill",
-                iconColor: .orange,
-                title: String(localized: "Money Coach"),
-                description: String(localized: "Consigli giornalieri per risparmiare")
-            )
-
-            BenefitRow(
-                icon: "square.grid.2x2",
+                icon: "brain.head.profile",
                 iconColor: .purple,
-                title: String(localized: "Widget Home Screen"),
-                description: String(localized: "Monitora le spese dalla schermata Home")
-            )
-
-            BenefitRow(
-                icon: "heart.fill",
-                iconColor: .pink,
-                title: String(localized: "Supporta lo sviluppatore"),
-                description: String(localized: "Aiutami a migliorare Subly")
+                title: String(localized: "Money Coach AI"),
+                description: String(localized: "Consigli intelligenti per risparmiare")
             )
         }
         .padding(Spacing.md)
@@ -260,7 +248,7 @@ struct ProUpgradeView: View {
 
     private var subscribeButtonText: String {
         // Mostra sempre la prova gratuita nel pulsante
-        return String(localized: "Inizia 7 giorni gratis")
+        return String(localized: "Inizia 3 giorni gratis")
     }
 
     // MARK: - Restore Button
@@ -286,7 +274,7 @@ struct ProUpgradeView: View {
     // MARK: - Footer Text
 
     private var footerText: some View {
-        Text(String(localized: "Prova gratis per 7 giorni. Poi \(storeManager.selectedPlan == .annual ? storeManager.annualPrice + "/anno" : storeManager.monthlyPrice + "/mese"). Annulla quando vuoi dalle impostazioni Apple."))
+        Text(String(localized: "Prova gratis per 3 giorni. Poi \(storeManager.selectedPlan == .annual ? storeManager.annualPrice + "/anno" : storeManager.weeklyPrice + "/settimana"). Annulla quando vuoi dalle impostazioni Apple."))
             .font(.caption)
             .foregroundColor(.secondary)
             .multilineTextAlignment(.center)
@@ -301,6 +289,7 @@ struct PlanCard: View {
     let price: String
     let period: String
     let subtitle: String?
+    let originalPrice: String?
     let savingsPercent: Int?
     let isSelected: Bool
     let isRecommended: Bool
@@ -367,7 +356,20 @@ struct PlanCard: View {
                             }
                         }
 
-                        if let subtitle = subtitle {
+                        if let original = originalPrice {
+                            HStack(spacing: Spacing.xs) {
+                                Text(original)
+                                    .font(Typography.caption)
+                                    .strikethrough()
+                                    .foregroundColor(.secondary)
+
+                                if let subtitle = subtitle {
+                                    Text(subtitle)
+                                        .font(Typography.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        } else if let subtitle = subtitle {
                             Text(subtitle)
                                 .font(Typography.caption)
                                 .foregroundColor(.secondary)

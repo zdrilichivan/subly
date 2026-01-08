@@ -16,174 +16,410 @@ struct OnboardingView: View {
     @AppStorage("userName") private var userName = ""
     @State private var nameInput = ""
     @FocusState private var isNameFieldFocused: Bool
+    @State private var showPaywall = false
 
     private let totalPages = 5 // 4 info pages + 1 name page
 
-    private let pages: [OnboardingPage] = [
-        OnboardingPage(
-            icon: "questionmark.circle.fill",
-            iconColor: .orange,
-            gradientColors: [.orange, .red],
-            title: "Quanti abbonamenti hai?",
-            description: "L'italiano medio ne ha 12 attivi. Netflix, Spotify, palestra, cloud... Li usi davvero tutti?"
-        ),
-        OnboardingPage(
-            icon: "bell.badge.fill",
-            iconColor: .purple,
-            gradientColors: [.purple, .indigo],
-            title: "Ti chiediamo solo una cosa",
-            description: "\"Stai usando questo servizio?\" Prima di ogni rinnovo, ti aiutiamo a decidere con consapevolezza."
-        ),
-        OnboardingPage(
-            icon: "hand.raised.fill",
-            iconColor: .green,
-            gradientColors: [.green, .mint],
-            title: "Se non lo usi, via",
-            description: "Link diretto alla disdetta. Niente più abbonamenti dimenticati che si rinnovano in silenzio."
-        ),
-        OnboardingPage(
-            icon: "leaf.fill",
-            iconColor: .appPrimary,
-            gradientColors: [.appPrimary, .appSecondary],
-            title: "Paga solo ciò che ami",
-            description: "Il minimalismo digitale non è privarsi, è scegliere con intenzione. Meno abbonamenti, più valore."
-        )
-    ]
-
     var body: some View {
-        VStack(spacing: 0) {
-            // Skip button
-            HStack {
-                Spacer()
-                if currentPage < totalPages - 1 {
-                    Button("Salta") {
-                        withAnimation {
-                            currentPage = totalPages - 1
+        ZStack {
+            // Main onboarding content
+            VStack(spacing: 0) {
+                // Skip button
+                HStack {
+                    Spacer()
+                    if currentPage < totalPages - 1 {
+                        Button(String(localized: "Salta")) {
+                            withAnimation {
+                                currentPage = totalPages - 1
+                            }
                         }
+                        .foregroundColor(.secondary)
                     }
-                    .foregroundColor(.secondary)
                 }
-            }
-            .padding()
+                .padding()
 
-            // Page content
-            TabView(selection: $currentPage) {
-                // Info pages
-                ForEach(0..<pages.count, id: \.self) { index in
-                    pageView(for: pages[index])
-                        .tag(index)
+                // Page content
+                TabView(selection: $currentPage) {
+                    // Page 1: Welcome - Il problema
+                    welcomePage
+                        .tag(0)
+
+                    // Page 2: AI Email Scanning
+                    aiScanPage
+                        .tag(1)
+
+                    // Page 3: AI Money Coach
+                    aiCoachPage
+                        .tag(2)
+
+                    // Page 4: Smart Control
+                    smartControlPage
+                        .tag(3)
+
+                    // Page 5: Name input
+                    nameInputPage
+                        .tag(4)
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
-                // Name input page (last)
-                nameInputPage
-                    .tag(pages.count)
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+                // Page indicators
+                PageIndicator(
+                    totalPages: totalPages,
+                    currentPage: currentPage,
+                    activeColor: .appPrimary,
+                    size: 10,
+                    spacing: 10
+                )
+                .padding(.vertical, Spacing.lg)
 
-            // Page indicators - migliorati con design system
-            PageIndicator(
-                totalPages: totalPages,
-                currentPage: currentPage,
-                activeColor: .appPrimary,
-                size: 10,
-                spacing: 10
-            )
-            .padding(.vertical, Spacing.lg)
-
-            // Buttons - migliorati con stato disabled visibile
-            VStack(spacing: Spacing.sm) {
-                if currentPage == totalPages - 1 {
-                    // Last page - name input
-                    Button {
-                        saveNameAndComplete()
-                    } label: {
-                        Text("Inizia")
-                    }
-                    .buttonStyle(EnhancedPrimaryButtonStyle())
-                    .disabled(nameInput.trimmed.isEmpty)
-                    .opacity(nameInput.trimmed.isEmpty ? 0.5 : 1.0)
-                    .animation(.easeInOut(duration: 0.2), value: nameInput.trimmed.isEmpty)
-                } else {
-                    Button {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            currentPage += 1
+                // Buttons
+                VStack(spacing: Spacing.sm) {
+                    if currentPage == totalPages - 1 {
+                        Button {
+                            saveNameAndShowPaywall()
+                        } label: {
+                            Text(String(localized: "Iniziamo!"))
                         }
-                        Haptic.selection()
-                    } label: {
-                        Text("Continua")
+                        .buttonStyle(EnhancedPrimaryButtonStyle())
+                        .disabled(nameInput.trimmed.isEmpty)
+                        .opacity(nameInput.trimmed.isEmpty ? 0.5 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: nameInput.trimmed.isEmpty)
+                    } else {
+                        Button {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                currentPage += 1
+                            }
+                            Haptic.selection()
+                        } label: {
+                            Text(String(localized: "Continua"))
+                        }
+                        .buttonStyle(EnhancedPrimaryButtonStyle())
                     }
-                    .buttonStyle(EnhancedPrimaryButtonStyle())
                 }
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, 40)
             }
-            .padding(.horizontal, Spacing.xl)
-            .padding(.bottom, 40)
+            .background(Color(.systemGroupedBackground))
+
+            // Paywall overlay
+            if showPaywall {
+                PaywallOnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
-        .background(Color(.systemGroupedBackground))
+        .animation(.easeInOut(duration: 0.3), value: showPaywall)
     }
 
-    // MARK: - Page View
+    // MARK: - Page 1: Welcome
 
-    private func pageView(for page: OnboardingPage) -> some View {
-        VStack(spacing: 40) {
+    private var welcomePage: some View {
+        VStack(spacing: 32) {
             Spacer()
 
-            // Icon con gradient
+            // Animated icon
             ZStack {
-                // Cerchio esterno sfumato
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: page.gradientColors.isEmpty ? [page.iconColor.opacity(0.3), page.iconColor.opacity(0.1)] : page.gradientColors.map { $0.opacity(0.15) },
+                            colors: [Color.red.opacity(0.15), Color.orange.opacity(0.15)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(width: 140, height: 140)
 
-                // Cerchio interno
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: page.gradientColors.isEmpty ? [page.iconColor] : page.gradientColors,
+                            colors: [.red, .orange],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(width: 100, height: 100)
-                    .shadow(color: (page.gradientColors.first ?? page.iconColor).opacity(0.4), radius: 20, x: 0, y: 10)
+                    .shadow(color: Color.red.opacity(0.4), radius: 20, x: 0, y: 10)
 
-                Image(systemName: page.icon)
+                Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 44, weight: .semibold))
                     .foregroundColor(.white)
             }
 
-            // Text
             VStack(spacing: 16) {
-                Text(page.title)
+                Text(String(localized: "Stai sprecando soldi"))
                     .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
 
-                Text(page.description)
+                Text(String(localized: "L'italiano medio ha 12 abbonamenti attivi e ne dimentica almeno 3. Sono soldi che volano via ogni mese senza che tu te ne accorga."))
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 32)
                     .lineSpacing(4)
             }
+
+            // Stats highlight
+            HStack(spacing: 20) {
+                StatHighlight(value: "€247", label: String(localized: "sprecati/anno"))
+                StatHighlight(value: "12", label: String(localized: "abbonamenti medi"))
+                StatHighlight(value: "3+", label: String(localized: "dimenticati"))
+            }
+            .padding(.horizontal, 24)
 
             Spacer()
             Spacer()
         }
     }
 
-    // MARK: - Name Input Page
+    // MARK: - Page 2: AI Email Scanning
+
+    private var aiScanPage: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.15), Color.cyan.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.blue, .cyan],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: Color.blue.opacity(0.4), radius: 20, x: 0, y: 10)
+
+                Image(systemName: "sparkles")
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            VStack(spacing: 16) {
+                HStack(spacing: 6) {
+                    Text(String(localized: "Scansione Email"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+
+                    Text("AI")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .clipShape(Capsule())
+                }
+
+                Text(String(localized: "La nostra AI analizza le tue email e trova TUTTI gli abbonamenti attivi in pochi secondi. Netflix, Spotify, palestra, cloud... niente sfugge."))
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .lineSpacing(4)
+            }
+
+            // Feature highlights
+            VStack(spacing: 12) {
+                FeatureHighlight(
+                    icon: "envelope.badge",
+                    text: String(localized: "Analizza centinaia di email in secondi")
+                )
+                FeatureHighlight(
+                    icon: "checkmark.shield",
+                    text: String(localized: "Trova abbonamenti nascosti e dimenticati")
+                )
+                FeatureHighlight(
+                    icon: "bolt.fill",
+                    text: String(localized: "Setup automatico con un tap")
+                )
+            }
+            .padding(.horizontal, 32)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    // MARK: - Page 3: AI Money Coach
+
+    private var aiCoachPage: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.green.opacity(0.15), Color.mint.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.green, .mint],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: Color.green.opacity(0.4), radius: 20, x: 0, y: 10)
+
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            VStack(spacing: 16) {
+                HStack(spacing: 6) {
+                    Text(String(localized: "Money Coach"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+
+                    Text("AI")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            LinearGradient(
+                                colors: [.green, .teal],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .clipShape(Capsule())
+                }
+
+                Text(String(localized: "Il tuo coach finanziario personale. Ogni giorno ricevi consigli smart, sfide settimanali e strategie per risparmiare senza rinunciare a nulla."))
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .lineSpacing(4)
+            }
+
+            // Feature highlights
+            VStack(spacing: 12) {
+                FeatureHighlight(
+                    icon: "calendar.badge.clock",
+                    text: String(localized: "Consiglio del giorno personalizzato")
+                )
+                FeatureHighlight(
+                    icon: "target",
+                    text: String(localized: "Sfide settimanali per risparmiare")
+                )
+                FeatureHighlight(
+                    icon: "lightbulb.max",
+                    text: String(localized: "Trucchi e hack per spendere meno")
+                )
+            }
+            .padding(.horizontal, 32)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    // MARK: - Page 4: Smart Control
+
+    private var smartControlPage: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.purple.opacity(0.15), Color.pink.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.purple, .pink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: Color.purple.opacity(0.4), radius: 20, x: 0, y: 10)
+
+                Image(systemName: "bell.badge.fill")
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            VStack(spacing: 16) {
+                Text(String(localized: "Mai più sorprese"))
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text(String(localized: "Prima di ogni rinnovo ti chiediamo: \"Lo stai usando?\". Se la risposta è no, ti diamo il link diretto per disdire. Semplice."))
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .lineSpacing(4)
+            }
+
+            // Feature highlights
+            VStack(spacing: 12) {
+                FeatureHighlight(
+                    icon: "bell.and.waves.left.and.right",
+                    text: String(localized: "Notifiche prima di ogni rinnovo")
+                )
+                FeatureHighlight(
+                    icon: "link",
+                    text: String(localized: "Link diretto alla pagina di disdetta")
+                )
+                FeatureHighlight(
+                    icon: "chart.pie",
+                    text: String(localized: "Statistiche chiare sulle tue spese")
+                )
+            }
+            .padding(.horizontal, 32)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    // MARK: - Page 5: Name Input
 
     private var nameInputPage: some View {
         VStack(spacing: 32) {
             Spacer()
 
-            // Icon con gradient
+            // Icon
             ZStack {
                 Circle()
                     .fill(
@@ -206,19 +442,18 @@ struct OnboardingView: View {
                     .frame(width: 100, height: 100)
                     .shadow(color: Color.appPrimary.opacity(0.4), radius: 20, x: 0, y: 10)
 
-                Image(systemName: "person.fill")
+                Image(systemName: "hand.wave.fill")
                     .font(.system(size: 44, weight: .semibold))
                     .foregroundColor(.white)
             }
 
-            // Text
             VStack(spacing: 16) {
-                Text("Come ti chiami?")
+                Text(String(localized: "Come ti chiami?"))
                     .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
 
-                Text("Saremo la tua guida verso un rapporto più sano con i servizi digitali")
+                Text(String(localized: "Iniziamo a risparmiare insieme. La tua AI è pronta ad aiutarti!"))
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -227,7 +462,7 @@ struct OnboardingView: View {
             }
 
             // Name input field
-            TextField("Il tuo nome", text: $nameInput)
+            TextField(String(localized: "Il tuo nome"), text: $nameInput)
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding()
@@ -254,11 +489,16 @@ struct OnboardingView: View {
 
     // MARK: - Actions
 
-    private func saveNameAndComplete() {
+    private func saveNameAndShowPaywall() {
         userName = nameInput.trimmed
+        isNameFieldFocused = false
+
         Task {
             _ = await notificationService.requestAuthorization()
-            completeOnboarding()
+
+            withAnimation {
+                showPaywall = true
+            }
         }
     }
 
@@ -270,7 +510,56 @@ struct OnboardingView: View {
     }
 }
 
-// MARK: - Onboarding Page Model
+// MARK: - Stat Highlight Component
+
+private struct StatHighlight: View {
+    let value: String
+    let label: String
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundColor(.red)
+
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - Feature Highlight Component
+
+private struct FeatureHighlight: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.appPrimary)
+                .frame(width: 24)
+
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.primary)
+
+            Spacer()
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+    }
+}
+
+// MARK: - Onboarding Page Model (kept for compatibility)
 
 struct OnboardingPage {
     let icon: String

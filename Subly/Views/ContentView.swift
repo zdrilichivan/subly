@@ -36,10 +36,10 @@ struct ContentView: View {
                 }
                 .tag(1)
 
-            // Tab 3: Money Coach
+            // Tab 3: Money Coach AI
             DailyTipsView()
                 .tabItem {
-                    Label("Coach", systemImage: "lightbulb")
+                    Label("Coach AI", systemImage: "brain.head.profile")
                 }
                 .tag(2)
 

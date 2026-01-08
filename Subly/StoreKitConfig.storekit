@@ -74,23 +74,23 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "19.99",
+          "displayPrice" : "39.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "annual",
           "introductoryOffer" : {
             "internalID" : "annual_trial",
             "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
+            "subscriptionPeriod" : "P3D"
           },
           "localizations" : [
             {
-              "description" : "Risparmia il 16% con il piano annuale",
+              "description" : "Risparmia il 74% con il piano annuale",
               "displayName" : "Subly Pro Annuale",
               "locale" : "it"
             },
             {
-              "description" : "Save 16% with annual plan",
+              "description" : "Save 74% with annual plan",
               "displayName" : "Subly Pro Annual",
               "locale" : "en_US"
             }
@@ -111,30 +111,30 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "1.99",
+          "displayPrice" : "2.99",
           "familyShareable" : false,
           "groupNumber" : 2,
-          "internalID" : "monthly",
+          "internalID" : "weekly",
           "introductoryOffer" : {
-            "internalID" : "monthly_trial",
+            "internalID" : "weekly_trial",
             "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
+            "subscriptionPeriod" : "P3D"
           },
           "localizations" : [
             {
               "description" : "Tutte le funzionalità Pro",
-              "displayName" : "Subly Pro Mensile",
+              "displayName" : "Subly Pro Settimanale",
               "locale" : "it"
             },
             {
               "description" : "All Pro features",
-              "displayName" : "Subly Pro Monthly",
+              "displayName" : "Subly Pro Weekly",
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.ivanzdrilich.Subly.pro.monthly",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Subly Pro Monthly",
+          "productID" : "com.ivanzdrilich.Subly.pro.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Subly Pro Weekly",
           "subscriptionGroupID" : "subly_pro_group",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

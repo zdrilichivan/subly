@@ -41,16 +41,16 @@ struct EmailScanPromoCard: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Text(String(localized: "Trova abbonamenti nascosti"))
+                        Text(String(localized: "Scansione Email AI"))
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
 
-                        // Badge NEW
-                        Text("NEW")
+                        // Badge AI
+                        Text("AI")
                             .font(.system(size: 9, weight: .bold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 5)
+                            .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(
                                 Capsule()
@@ -64,7 +64,7 @@ struct EmailScanPromoCard: View {
                             )
                     }
 
-                    Text(String(localized: "Scansiona le email per trovare abbonamenti automaticamente"))
+                    Text(String(localized: "L'AI trova automaticamente tutti gli abbonamenti nascosti"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(2)

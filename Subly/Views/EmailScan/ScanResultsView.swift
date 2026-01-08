@@ -80,7 +80,7 @@ struct ScanResultsView: View {
                 Text(String(localized: "\(addedCount) abbonamenti sono stati aggiunti con successo."))
             }
             .sheet(isPresented: $showingProUpgrade) {
-                ProUpgradeView()
+                PaywallOnboardingView()
             }
             .onAppear {
                 // Seleziona automaticamente quelli con alta confidenza (solo visibili)

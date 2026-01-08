@@ -186,7 +186,7 @@ struct MilestonePromotionView: View {
                 .multilineTextAlignment(.leading)
 
             HStack {
-                Text(String(localized: "Da \(storeManager.monthlyPrice)/mese"))
+                Text(String(localized: "Da \(storeManager.weeklyPrice)/settimana"))
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundColor(.appPrimary)
 

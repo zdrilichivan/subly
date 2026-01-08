@@ -91,7 +91,7 @@ struct DailyTipsView: View {
                 .foregroundColor(.white.opacity(0.8))
                 .textCase(.uppercase)
 
-            Text("Money Coach")
+            Text("Money Coach AI")
                 .font(.system(size: 26, weight: .bold))
                 .foregroundColor(.white)
         }

@@ -69,11 +69,6 @@ struct SettingsView: View {
 
                             // Data Section
                             dataCard
-
-                            #if DEBUG
-                            // Debug Section
-                            debugCard
-                            #endif
                         }
                     }
                     .padding(.horizontal, Spacing.md)
@@ -91,7 +86,7 @@ struct SettingsView: View {
                 profileEditSheet
             }
             .sheet(isPresented: $showingProUpgrade) {
-                ProUpgradeView()
+                PaywallOnboardingView()
             }
             .fullScreenCover(isPresented: $showingOnboarding) {
                 OnboardingPreviewView(isPresented: $showingOnboarding)
@@ -321,7 +316,7 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        Text(String(localized: "Da \(storeManager.monthlyPrice)"))
+                        Text(String(localized: "Da \(storeManager.weeklyPrice)"))
                             .font(Typography.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -540,53 +535,6 @@ struct SettingsView: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    // MARK: - Debug Card
-
-    #if DEBUG
-    private var debugCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: "ladybug.fill")
-                    .foregroundColor(.orange)
-                Text("Debug")
-                    .font(Typography.headline)
-                    .foregroundColor(.orange)
-            }
-            .padding(.bottom, Spacing.xxs)
-
-            Toggle(isOn: $storeManager.debugProEnabled) {
-                HStack(spacing: Spacing.sm) {
-                    IconContainer(
-                        systemName: "crown.fill",
-                        size: IconContainerSize.sm,
-                        color: .yellow,
-                        backgroundOpacity: IconBackgroundOpacity.medium
-                    )
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Abilita Pro")
-                            .font(Typography.body)
-                        Text("Solo per test, non effettua acquisti")
-                            .font(Typography.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            .tint(.orange)
-        }
-        .padding(Spacing.md)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
-                .fill(Color(.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
-                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-        )
-    }
-    #endif
-
     // MARK: - Pro Section
 
     private var proSection: some View {
@@ -641,7 +589,7 @@ struct SettingsView: View {
 
                         Spacer()
 
-                        Text(String(localized: "Da \(storeManager.monthlyPrice)"))
+                        Text(String(localized: "Da \(storeManager.weeklyPrice)"))
                             .font(Typography.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)

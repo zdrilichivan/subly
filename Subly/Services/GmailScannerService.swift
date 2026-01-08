@@ -425,13 +425,13 @@ class GmailScannerService: ObservableObject {
         ]
 
         scanProgress = 0.3
-        logger.info("🤖 Claude Sonnet: Analyzing \(demoEmails.count) demo emails...")
+        logger.info("🤖 Gemini AI: Analyzing \(demoEmails.count) demo emails...")
 
         do {
-            let parsedResults = try await ClaudeParserService.shared.parseEmails(demoEmails)
+            let parsedResults = try await GeminiParserService.shared.parseEmails(demoEmails)
 
             scanProgress = 0.9
-            logger.info("🤖 Claude: Found \(parsedResults.count) subscriptions in demo")
+            logger.info("🤖 Gemini: Found \(parsedResults.count) subscriptions in demo")
 
             // Converti risultati in DetectedSubscription
             var detectedSubscriptions: [DetectedSubscription] = []
@@ -545,12 +545,12 @@ class GmailScannerService: ObservableObject {
 
             // Usa Claude Sonnet AI per analizzare le email con body completo
             scanProgress = 0.5
-            logger.info("🤖 Claude Sonnet: Analyzing \(emails.count) emails with full body...")
+            logger.info("🤖 Gemini AI: Analyzing \(emails.count) emails with full body...")
 
-            let parsedResults = try await ClaudeParserService.shared.parseEmails(emails)
+            let parsedResults = try await GeminiParserService.shared.parseEmails(emails)
 
             scanProgress = 0.9
-            logger.info("🤖 Claude: Found \(parsedResults.count) subscriptions")
+            logger.info("🤖 Gemini: Found \(parsedResults.count) subscriptions")
 
             // Converti risultati in DetectedSubscription
             var detectedSubscriptions: [DetectedSubscription] = []

@@ -38,9 +38,6 @@ struct CoachPromoView: View {
                         // Features
                         featuresSection
 
-                        // Testimonial / Value prop
-                        valuePropSection
-
                         // CTA Button
                         ctaSection
                     }
@@ -61,7 +58,7 @@ struct CoachPromoView: View {
                 }
             }
             .sheet(isPresented: $showingProUpgrade) {
-                ProUpgradeView()
+                PaywallOnboardingView()
             }
         }
     }
@@ -76,7 +73,7 @@ struct CoachPromoView: View {
                 .foregroundColor(.white.opacity(0.8))
                 .textCase(.uppercase)
 
-            Text("Money Coach")
+            Text("Money Coach AI")
                 .font(.system(size: 26, weight: .bold))
                 .foregroundColor(.white)
         }
@@ -108,7 +105,7 @@ struct CoachPromoView: View {
                     .frame(width: 70, height: 70)
                     .shadow(color: .green.opacity(0.3), radius: 10, x: 0, y: 5)
 
-                Image(systemName: "lightbulb.fill")
+                Image(systemName: "brain.head.profile")
                     .font(.system(size: 30))
                     .foregroundColor(.white)
             }
@@ -116,7 +113,7 @@ struct CoachPromoView: View {
             .opacity(animateItems ? 1 : 0)
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Il tuo consulente finanziario personale")
+                Text("Il tuo consulente finanziario AI")
                     .font(Typography.subheadline)
                     .foregroundColor(.secondary)
 
@@ -212,43 +209,6 @@ struct CoachPromoView: View {
         }
     }
 
-    // MARK: - Value Prop Section
-
-    private var valuePropSection: some View {
-        VStack(spacing: Spacing.sm) {
-            // Quote card compatta
-            HStack(spacing: Spacing.md) {
-                Image(systemName: "quote.opening")
-                    .font(.title3)
-                    .foregroundColor(.green.opacity(0.6))
-
-                Text("Chi controlla i propri soldi, controlla la propria vita.")
-                    .font(Typography.subheadline)
-                    .italic()
-                    .foregroundColor(.primary)
-            }
-            .padding(Spacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.md)
-                    .fill(
-                        LinearGradient(
-                            colors: [.green.opacity(0.1), .mint.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            )
-
-            // Stats
-            HStack(spacing: Spacing.sm) {
-                StatBadge(value: "365", label: "consigli/anno")
-                StatBadge(value: "6", label: "categorie")
-                StatBadge(value: "∞", label: "valore")
-            }
-        }
-    }
-
     // MARK: - CTA Section
 
     private var ctaSection: some View {
@@ -259,7 +219,7 @@ struct CoachPromoView: View {
             } label: {
                 HStack {
                     Image(systemName: "crown.fill")
-                    Text("Prova gratis per 7 giorni")
+                    Text("Prova gratis per 3 giorni")
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -315,31 +275,6 @@ private struct FeatureRow: View {
 
             Spacer()
         }
-    }
-}
-
-// MARK: - Stat Badge
-
-private struct StatBadge: View {
-    let value: String
-    let label: String
-
-    var body: some View {
-        VStack(spacing: Spacing.xxs) {
-            Text(value)
-                .font(Typography.title3)
-                .foregroundColor(.green)
-
-            Text(label)
-                .font(Typography.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Spacing.sm)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.sm)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
     }
 }
 
