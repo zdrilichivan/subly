@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subly - Gestiona tus suscripciones</title>
+    <meta name="description" content="Subly te ayuda a realizar un seguimiento de todas tus suscripciones, ahorrar dinero y vivir con menos pero mejor.">
+    <meta name="keywords" content="suscripciones, rastreador de suscripciones, gestión de suscripciones, ahorro, Netflix, Spotify">
+    <meta name="author" content="Ivan Zdrilich">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Subly - Gestiona tus suscripciones">
+    <meta property="og:description" content="Realiza un seguimiento de todas tus suscripciones. Ahorra. Vive con menos, pero mejor.">
+    <meta property="og:image" content="images/og-image.png">
+    <meta property="og:url" content="https://zdrilichivan.github.io/subly">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/favicon.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --secondary: #6366F1;
+            --accent-cyan: #22D3EE;
+            --accent-pink: #EC4899;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --background: #F2F2F7;
+            --surface: #FFFFFF;
+            --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --dark-bg: #0F0A1F;
+            --dark-surface: #1A1425;
+            --gradient-hero: linear-gradient(135deg, #1a0a2e 0%, #16082a 50%, #0d0620 100%);
+            --gradient-purple: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+            --gradient-accent: linear-gradient(135deg, #8B5CF6 0%, #22D3EE 50%, #EC4899 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--gradient-hero);
+            padding: 80px 20px 60px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .app-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero .tagline {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 32px;
+            font-weight: 500;
+        }
+
+        .store-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .store-badge {
+            height: 54px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .store-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .store-badge.coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .coming-soon-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            white-space: nowrap;
+        }
+
+        /* Screenshots Section */
+        .screenshots {
+            padding: 80px 20px;
+            background: var(--surface);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            font-size: 1.1rem;
+        }
+
+        .screenshots-scroll {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            padding: 20px 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screenshots-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .screenshot {
+            flex: 0 0 auto;
+            width: 280px;
+            scroll-snap-align: center;
+        }
+
+        .screenshot img {
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+            background: var(--background);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Unique Section */
+        .unique {
+            padding: 80px 20px;
+            background: var(--gradient-hero);
+            color: white;
+            text-align: center;
+        }
+
+        .unique h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .unique p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .unique-features {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .unique-feature {
+            background: rgba(255,255,255,0.15);
+            padding: 24px 32px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .unique-feature .emoji {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .unique-feature h4 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 80px 20px;
+            background: var(--surface);
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 20px;
+            background: var(--text-primary);
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+        }
+
+        footer a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--primary);
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-copy {
+            font-size: 0.875rem;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.25rem;
+            }
+
+            .hero .tagline {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .unique-features {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <img src="images/app-icon.png" alt="Subly App Icon" class="app-icon">
+            <h1>Subly</h1>
+            <p class="tagline">Controla tus suscripciones.<br>Ahorra. Vive con menos, pero mejor.</p>
+
+            <div class="store-badges">
+                <a href="https://apps.apple.com/app/subly/id6756615202" target="_blank">
+                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Descargar en App Store" class="store-badge">
+                </a>
+                <div style="position: relative;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Disponible en Google Play" class="store-badge coming-soon">
+                    <span class="coming-soon-label">Próximamente</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots">
+        <div class="container">
+            <h2 class="section-title">Simple e intuitivo</h2>
+            <p class="section-subtitle">Todo lo que necesitas, nada más</p>
+
+            <div class="screenshots-scroll">
+                <div class="screenshot">
+                    <img src="images/screenshot-1.png" alt="Panel de Subly">
+                </div>
+                <div class="screenshot">
+                    <img src="images/screenshot-2.png" alt="Detalle de suscripción">
+                </div>
+                <div class="screenshot">
+                    <img src="images/screenshot-3.png" alt="Estadísticas">
+                </div>
+                <div class="screenshot">
+                    <img src="images/screenshot-4.png" alt="Notificaciones inteligentes">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Funcionalidades</h2>
+            <p class="section-subtitle">Todo para gestionar tus suscripciones</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(0,122,255,0.1);">
+                        📊
+                    </div>
+                    <h3>Controla todo</h3>
+                    <p>Añade todas tus suscripciones de más de 80 servicios populares. Siempre sabrás cuánto gastas.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(255,149,0,0.1);">
+                        🔔
+                    </div>
+                    <h3>Notificaciones inteligentes</h3>
+                    <p>Te avisamos 3 días antes de la renovación preguntándote si todavía usas el servicio.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(52,199,89,0.1);">
+                        💰
+                    </div>
+                    <h3>Ahorra dinero</h3>
+                    <p>Descubre cuánto gastas y encuentra las suscripciones que no usas. Te ayudamos a cancelarlas.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(88,86,214,0.1);">
+                        🔗
+                    </div>
+                    <h3>Cancelación fácil</h3>
+                    <p>Enlace directo a la página de cancelación de cada servicio. Un toque y eres libre.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(0,199,190,0.1);">
+                        ☁️
+                    </div>
+                    <h3>Sincronizado con iCloud</h3>
+                    <p>Tus datos están seguros y sincronizados en todos tus dispositivos Apple.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(255,59,48,0.1);">
+                        🔒
+                    </div>
+                    <h3>Privacidad total</h3>
+                    <p>Sin acceso a tus cuentas bancarias. Tus datos son solo tuyos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Unique Section -->
+    <section class="unique">
+        <div class="container">
+            <h2>¿Qué hace diferente a Subly?</h2>
+            <p>No somos solo un rastreador. Te ayudamos activamente a vivir con menos suscripciones y más conciencia.</p>
+
+            <div class="unique-features">
+                <div class="unique-feature">
+                    <div class="emoji">🤔</div>
+                    <h4>"¿Estás usando Netflix?"</h4>
+                </div>
+                <div class="unique-feature">
+                    <div class="emoji">🚀</div>
+                    <h4>Enlace directo de cancelación</h4>
+                </div>
+                <div class="unique-feature">
+                    <div class="emoji">🌱</div>
+                    <h4>Filosofía minimalista</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Empieza a ahorrar hoy</h2>
+            <p>Descarga Subly gratis y recupera el control de tus suscripciones.</p>
+
+            <div class="store-badges">
+                <a href="https://apps.apple.com/app/subly/id6756615202" target="_blank">
+                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Descargar en App Store" class="store-badge">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="privacy-policy-es.html">Política de Privacidad</a>
+            <a href="terms_es.html">Términos y Condiciones</a>
+            <a href="mailto:info@zdrilichwebstudios.it">Contacto</a>
+        </div>
+        <p class="footer-copy">&copy; 2025 Ivan Zdrilich. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
