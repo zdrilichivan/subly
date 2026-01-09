@@ -33,8 +33,8 @@ class WisdomQuoteService: ObservableObject {
     private let cacheKey = "cachedWisdomQuote"
     private let cachedLanguageKey = "cachedWisdomQuoteLanguage"
 
-    // Gemini API (usa la stessa config di GeminiParserService)
-    private var geminiService: GeminiParserService { GeminiParserService.shared }
+    // Gemini API
+    private var geminiService: GeminiService { GeminiService.shared }
 
     // Citazioni statiche di fallback (localizzate)
     private var fallbackQuotes: [WisdomQuote] {
@@ -97,7 +97,7 @@ class WisdomQuoteService: ObservableObject {
     // MARK: - Private Methods
 
     private func generateQuoteWithGemini() async {
-        guard GeminiParserService.shared.isConfigured else {
+        guard GeminiService.shared.isConfigured else {
             logger.info("📖 Quote: Gemini not configured, using fallback")
             let fallback = getRandomFallbackQuote()
             todaysQuote = fallback

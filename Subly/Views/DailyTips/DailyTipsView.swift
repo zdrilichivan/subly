@@ -51,15 +51,6 @@ struct DailyTipsView: View {
 
                         // Card del consiglio del giorno
                         todaysTipCard
-
-                        // Toggle notifiche
-                        notificationSection
-
-                        // Categoria del giorno
-                        categorySection
-
-                        // Citazione motivazionale
-                        quoteSection
                     }
                     .padding(.horizontal, Spacing.md)
                     .padding(.bottom, Spacing.xxl)
@@ -175,16 +166,35 @@ struct DailyTipsView: View {
                 .foregroundColor(.secondary)
                 .lineSpacing(4)
 
-            // Action
+            // Action Button
             if let actionText = tipsService.todaysTip.actionText {
-                Text("\(actionText).")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.green)
-                    .padding(.top, 8)
-                    .onTapGesture {
-                        showingActionDetail = true
+                Button {
+                    Haptic.selection()
+                    showingActionDetail = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "lightbulb.max.fill")
+                            .font(.system(size: 14))
+
+                        Text(actionText)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
                     }
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.green.opacity(0.12))
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.top, 8)
             }
         }
         .padding(20)
@@ -197,132 +207,9 @@ struct DailyTipsView: View {
         .opacity(animateCard ? 1 : 0)
         .sheet(isPresented: $showingActionDetail) {
             ActionDetailSheet(tip: tipsService.todaysTip)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-    }
-
-    // MARK: - Notification Section
-
-    private var notificationSection: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(Color.orange.opacity(0.12))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: "bell.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.orange)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(String(localized: "Promemoria giornaliero"))
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-
-                    Text(String(localized: "Ricevi un consiglio ogni mattina alle 9:00"))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                Toggle("", isOn: Binding(
-                    get: { tipsService.notificationsEnabled },
-                    set: { newValue in
-                        if newValue {
-                            Task {
-                                await tipsService.requestNotificationPermission()
-                            }
-                        } else {
-                            tipsService.disableNotifications()
-                        }
-                    }
-                ))
-                .labelsHidden()
-                .tint(.green)
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.secondarySystemGroupedBackground))
-            )
-        }
-    }
-
-    // MARK: - Category Section
-
-    private var categorySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "square.grid.2x2.fill")
-                    .foregroundColor(.green)
-
-                Text(String(localized: "Categorie di consigli"))
-                    .font(.headline)
-            }
-
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 12) {
-                ForEach(DailyTip.TipCategory.allCases, id: \.self) { category in
-                    categoryCard(category)
-                }
-            }
-        }
-    }
-
-    private func categoryCard(_ category: DailyTip.TipCategory) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: category.icon)
-                .font(.system(size: 16))
-                .foregroundColor(color(for: category))
-                .frame(width: 32, height: 32)
-                .background(
-                    Circle()
-                        .fill(color(for: category).opacity(0.12))
-                )
-
-            Text(category.localizedName)
-                .font(.caption)
-                .fontWeight(.medium)
-                .lineLimit(1)
-
-            Spacer()
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-    }
-
-    // MARK: - Quote Section
-
-    private var quoteSection: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "quote.opening")
-                .font(.title)
-                .foregroundColor(.secondary.opacity(0.5))
-
-            Text(String(localized: "Non è quanto guadagni, ma quanto risparmi."))
-                .font(.body)
-                .italic()
-                .multilineTextAlignment(.center)
-
-            Text(String(localized: "— Warren Buffett"))
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
     }
 
     // MARK: - Helpers

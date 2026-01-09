@@ -12,13 +12,16 @@ import UIKit
 struct SettingsView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @StateObject private var notificationService = NotificationService.shared
+    @StateObject private var regionService = RegionService.shared
     @AppStorage("userName") private var userName = ""
     @AppStorage("userProfileImageData") private var profileImageData: Data?
 
     @State private var showingResetAlert = false
     @State private var showingProfileSheet = false
-    @State private var showingOnboarding = false
     @State private var showingProUpgrade = false
+    @State private var showingRegionPicker = false
+    @State private var showingNotificationTimePicker = false
+    @State private var selectedNotificationHour: Int = 17
     @ObservedObject private var storeManager = StoreManager.shared
     @State private var nameInput = ""
     @State private var selectedPhotoItem: PhotosPickerItem?
@@ -61,8 +64,14 @@ struct SettingsView: View {
                             // Pro Section
                             proCard
 
+                            // Region Section
+                            regionCard
+
                             // Notifications Section
                             notificationsCard
+
+                            // Legal & Support Section
+                            legalSupportCard
 
                             // App Info Section
                             appInfoCard
@@ -88,9 +97,6 @@ struct SettingsView: View {
             .sheet(isPresented: $showingProUpgrade) {
                 PaywallOnboardingView()
             }
-            .fullScreenCover(isPresented: $showingOnboarding) {
-                OnboardingPreviewView(isPresented: $showingOnboarding)
-            }
             .alert("Ripristina app", isPresented: $showingResetAlert) {
                 Button("Annulla", role: .cancel) { }
                 Button("Ripristina", role: .destructive) {
@@ -98,6 +104,11 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("Tutti gli abbonamenti e le impostazioni verranno eliminati. L'app tornerà come appena installata.\n\nQuesta azione non può essere annullata.")
+            }
+            .sheet(isPresented: $showingRegionPicker) {
+                RegionPickerView(selectedRegion: regionService.currentRegion) { region in
+                    regionService.setRegion(region)
+                }
             }
         }
     }
@@ -167,18 +178,29 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(userName.isEmpty ? "Aggiungi profilo" : userName)
+                    Text(userName.isEmpty ? String(localized: "Aggiungi profilo") : userName)
                         .font(Typography.headline)
                         .foregroundColor(.primary)
 
-                    HStack(spacing: Spacing.xxs) {
-                        Image(systemName: "checkmark.icloud.fill")
-                            .font(.caption2)
-                            .foregroundColor(.green)
-                        Text("Sincronizzato con iCloud")
-                            .foregroundColor(.secondary)
+                    if storeManager.isPro {
+                        HStack(spacing: Spacing.xxs) {
+                            Image(systemName: "checkmark.icloud.fill")
+                                .font(.caption2)
+                                .foregroundColor(.green)
+                            Text(String(localized: "Sincronizzato con iCloud"))
+                                .foregroundColor(.secondary)
+                        }
+                        .font(Typography.caption)
+                    } else {
+                        HStack(spacing: Spacing.xxs) {
+                            Image(systemName: "iphone")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(String(localized: "Salvato localmente"))
+                                .foregroundColor(.secondary)
+                        }
+                        .font(Typography.caption)
                     }
-                    .font(Typography.caption)
                 }
 
                 Spacer()
@@ -343,6 +365,7 @@ struct SettingsView: View {
 
     private var notificationsCard: some View {
         VStack(spacing: 0) {
+            // Main notification row
             HStack(spacing: Spacing.md) {
                 IconContainer(
                     systemName: "bell.fill",
@@ -391,34 +414,209 @@ struct SettingsView: View {
                 }
             }
             .padding(Spacing.md)
+
+            // Notification time picker (Pro only)
+            if notificationService.isAuthorized {
+                Divider().padding(.leading, 56)
+
+                Button {
+                    if storeManager.isPro {
+                        selectedNotificationHour = notificationService.notificationHour
+                        showingNotificationTimePicker = true
+                        Haptic.selection()
+                    } else {
+                        showingProUpgrade = true
+                        Haptic.impact(.light)
+                    }
+                } label: {
+                    HStack(spacing: Spacing.md) {
+                        IconContainer(
+                            systemName: "clock.fill",
+                            size: IconContainerSize.sm,
+                            color: .orange,
+                            backgroundOpacity: IconBackgroundOpacity.medium
+                        )
+
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(String(localized: "Orario notifiche"))
+                                .font(Typography.body)
+                                .foregroundColor(.primary)
+
+                            if storeManager.isPro {
+                                Text(formattedNotificationTime)
+                                    .font(Typography.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "crown.fill")
+                                        .font(.caption2)
+                                        .foregroundColor(.orange)
+                                    Text(String(localized: "Pro"))
+                                        .font(Typography.caption)
+                                        .foregroundColor(.orange)
+                                }
+                            }
+                        }
+
+                        Spacer()
+
+                        if storeManager.isPro {
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color(.tertiaryLabel))
+                        } else {
+                            Image(systemName: "lock.fill")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(Spacing.md)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.md)
                 .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
         )
+        .sheet(isPresented: $showingNotificationTimePicker) {
+            notificationTimePickerSheet
+        }
     }
 
-    // MARK: - App Info Card
+    private var formattedNotificationTime: String {
+        let hour = notificationService.notificationHour
+        return String(format: "%02d:00", hour)
+    }
 
-    private var appInfoCard: some View {
-        VStack(spacing: 0) {
-            // Tutorial
-            Button {
-                showingOnboarding = true
-                Haptic.selection()
-            } label: {
-                SettingsCardRow(
-                    icon: "book.fill",
-                    iconColor: .appPrimary,
-                    title: String(localized: "Rivedi il tutorial"),
-                    trailingIcon: "chevron.right"
-                )
+    private var notificationTimePickerSheet: some View {
+        NavigationStack {
+            VStack(spacing: Spacing.lg) {
+                Text(String(localized: "Scegli l'orario in cui vuoi ricevere i promemoria sui rinnovi."))
+                    .font(Typography.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.top, Spacing.md)
+
+                Picker(String(localized: "Orario"), selection: $selectedNotificationHour) {
+                    ForEach(8..<23, id: \.self) { hour in
+                        Text(String(format: "%02d:00", hour))
+                            .tag(hour)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .frame(height: 150)
+
+                Spacer()
+
+                Button {
+                    notificationService.setNotificationHour(selectedNotificationHour)
+                    showingNotificationTimePicker = false
+                    Haptic.notification(.success)
+                    // Rischedula notifiche con nuovo orario
+                    Task {
+                        await viewModel.refreshNotifications()
+                    }
+                } label: {
+                    Text(String(localized: "Conferma"))
+                        .font(Typography.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.md)
+                                .fill(Color.appPrimary)
+                        )
+                }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Spacing.lg)
             }
-            .buttonStyle(PlainButtonStyle())
+            .navigationTitle(String(localized: "Orario notifiche"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(String(localized: "Annulla")) {
+                        showingNotificationTimePicker = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
 
-            Divider().padding(.leading, 56)
+    // MARK: - Region Card
 
+    private var regionCard: some View {
+        Button {
+            if storeManager.isPro {
+                showingRegionPicker = true
+                Haptic.selection()
+            } else {
+                showingProUpgrade = true
+                Haptic.impact(.light)
+            }
+        } label: {
+            HStack(spacing: Spacing.md) {
+                // Flag emoji
+                Text(regionService.currentRegion.flagEmoji)
+                    .font(.system(size: 32))
+                    .frame(width: 44, height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.sm)
+                            .fill(Color(.systemGray6))
+                    )
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(String(localized: "Regione e valuta"))
+                        .font(Typography.headline)
+                        .foregroundColor(.primary)
+
+                    if storeManager.isPro {
+                        Text("\(regionService.currentRegion.localizedName) • \(regionService.currentRegion.currency)")
+                            .font(Typography.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        HStack(spacing: 4) {
+                            Image(systemName: "crown.fill")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                            Text(String(localized: "Pro"))
+                                .font(Typography.caption)
+                                .foregroundColor(.orange)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                if storeManager.isPro {
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(.tertiaryLabel))
+                } else {
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.md)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    // MARK: - Legal & Support Card
+
+    private var legalSupportCard: some View {
+        VStack(spacing: 0) {
             // Privacy Policy
             Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
                 SettingsCardRow(
@@ -452,9 +650,18 @@ struct SettingsView: View {
                     trailingIcon: "arrow.up.right"
                 )
             }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+        )
+    }
 
-            Divider().padding(.leading, 56)
+    // MARK: - App Info Card
 
+    private var appInfoCard: some View {
+        VStack(spacing: 0) {
             // Versione
             HStack(spacing: Spacing.md) {
                 IconContainer(
@@ -533,260 +740,6 @@ struct SettingsView: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
-    }
-
-    // MARK: - Pro Section
-
-    private var proSection: some View {
-        Section {
-            if storeManager.isPro {
-                // Utente Pro
-                HStack(spacing: Spacing.md) {
-                    GradientIconContainer(
-                        systemName: "crown.fill",
-                        size: IconContainerSize.md,
-                        gradientColors: [.yellow, .orange]
-                    )
-
-                    VStack(alignment: .leading, spacing: Spacing.xxs) {
-                        Text(String(localized: "Subly Pro"))
-                            .font(Typography.headline)
-
-                        Text(String(localized: "Tutte le funzionalità sbloccate"))
-                            .font(Typography.subheadline)
-                            .foregroundColor(.green)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.title2)
-                }
-                .padding(.vertical, Spacing.xxs)
-            } else {
-                // Utente Free - Card promozionale
-                Button {
-                    showingProUpgrade = true
-                    Haptic.impact(.light)
-                } label: {
-                    HStack(spacing: Spacing.md) {
-                        GradientIconContainer(
-                            systemName: "crown.fill",
-                            size: IconContainerSize.md,
-                            gradientColors: [.yellow, .orange]
-                        )
-
-                        VStack(alignment: .leading, spacing: Spacing.xxs) {
-                            Text(String(localized: "Passa a Subly Pro"))
-                                .font(Typography.headline)
-                                .foregroundColor(.primary)
-
-                            Text(String(localized: "Abbonamenti illimitati, coach, widget"))
-                                .font(Typography.caption)
-                                .foregroundColor(.secondary)
-                        }
-
-                        Spacer()
-
-                        Text(String(localized: "Da \(storeManager.weeklyPrice)"))
-                            .font(Typography.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, Spacing.sm)
-                            .padding(.vertical, Spacing.xs)
-                            .background(
-                                Capsule()
-                                    .fill(Color.appPrimary)
-                            )
-                    }
-                    .padding(.vertical, Spacing.xxs)
-                }
-            }
-        } header: {
-            Text(String(localized: "Subly Pro"))
-        }
-    }
-
-    // MARK: - Notifications Section
-
-    private var notificationsSection: some View {
-        Section {
-            HStack(spacing: Spacing.md) {
-                IconContainer(
-                    systemName: "bell.fill",
-                    size: IconContainerSize.md,
-                    color: .red,
-                    backgroundOpacity: IconBackgroundOpacity.medium
-                )
-
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(String(localized: "Notifiche"))
-                        .font(Typography.headline)
-
-                    if notificationService.isAuthorized {
-                        Text(String(localized: "Attive • \(notificationService.pendingNotificationsCount) programmate"))
-                            .font(Typography.caption)
-                            .foregroundColor(.green)
-                    } else {
-                        Text(String(localized: "Non attive"))
-                            .font(Typography.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Spacer()
-
-                if !notificationService.isAuthorized {
-                    Button {
-                        requestNotifications()
-                        Haptic.impact(.light)
-                    } label: {
-                        Text(String(localized: "Attiva"))
-                            .font(Typography.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, Spacing.sm)
-                            .padding(.vertical, Spacing.xs)
-                            .background(
-                                Capsule()
-                                    .fill(Color.appPrimary)
-                            )
-                    }
-                } else {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.title3)
-                }
-            }
-            .padding(.vertical, Spacing.xxs)
-        } header: {
-            Text(String(localized: "Notifiche"))
-        } footer: {
-            Text(String(localized: "3 giorni prima del rinnovo ti chiederemo se stai ancora utilizzando il servizio. Se rispondi no, ti aiuteremo a disdire. Riceverai anche promemoria 1 giorno prima e il giorno stesso."))
-        }
-    }
-
-    // MARK: - App Info Section
-
-    private var appInfoSection: some View {
-        Section {
-            // Tutorial
-            Button {
-                showingOnboarding = true
-                Haptic.selection()
-            } label: {
-                SettingsRow(
-                    icon: "book.fill",
-                    iconColor: .appPrimary,
-                    title: String(localized: "Rivedi il tutorial"),
-                    trailingIcon: "chevron.right"
-                )
-            }
-
-            // Privacy Policy
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
-                SettingsRow(
-                    icon: "hand.raised.fill",
-                    iconColor: .blue,
-                    title: String(localized: "Privacy Policy"),
-                    trailingIcon: "arrow.up.right"
-                )
-            }
-
-            // Terms of Service
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/terms.html")!) {
-                SettingsRow(
-                    icon: "doc.text.fill",
-                    iconColor: .purple,
-                    title: String(localized: "Termini e Condizioni"),
-                    trailingIcon: "arrow.up.right"
-                )
-            }
-
-            // Supporto
-            Link(destination: URL(string: "mailto:info@zdrilichwebstudios.it?subject=Supporto%20Subly")!) {
-                SettingsRow(
-                    icon: "envelope.fill",
-                    iconColor: .green,
-                    title: String(localized: "Contatta supporto"),
-                    trailingIcon: "arrow.up.right"
-                )
-            }
-
-            // Versione
-            HStack(spacing: Spacing.md) {
-                IconContainer(
-                    systemName: "info.circle.fill",
-                    size: IconContainerSize.sm,
-                    color: .gray,
-                    backgroundOpacity: IconBackgroundOpacity.medium
-                )
-
-                Text(String(localized: "Versione"))
-                    .font(Typography.body)
-
-                Spacer()
-
-                Text(appVersion)
-                    .font(Typography.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.vertical, Spacing.xxs)
-
-            // Sviluppatore
-            HStack(spacing: Spacing.md) {
-                IconContainer(
-                    systemName: "person.fill",
-                    size: IconContainerSize.sm,
-                    color: .gray,
-                    backgroundOpacity: IconBackgroundOpacity.medium
-                )
-
-                Text(String(localized: "Sviluppatore"))
-                    .font(Typography.body)
-
-                Spacer()
-
-                Text("Ivan Zdrilich")
-                    .font(Typography.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.vertical, Spacing.xxs)
-        } header: {
-            Text(String(localized: "Informazioni"))
-        }
-    }
-
-    // MARK: - Data Section
-
-    private var dataSection: some View {
-        Section {
-            Button {
-                showingResetAlert = true
-                Haptic.impact(.light)
-            } label: {
-                HStack(spacing: Spacing.md) {
-                    IconContainer(
-                        systemName: "arrow.counterclockwise",
-                        size: IconContainerSize.sm,
-                        color: .red,
-                        backgroundOpacity: IconBackgroundOpacity.medium
-                    )
-
-                    Text(String(localized: "Ripristina app"))
-                        .font(Typography.body)
-                        .foregroundColor(.red)
-
-                    Spacer()
-                }
-                .padding(.vertical, Spacing.xxs)
-            }
-        } header: {
-            Text(String(localized: "Dati"))
-        } footer: {
-            Text(String(localized: "Elimina tutti gli abbonamenti e le impostazioni. L'app verrà riportata allo stato iniziale come appena installata."))
-        }
     }
 
     // MARK: - Profile Edit Sheet

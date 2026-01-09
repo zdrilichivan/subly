@@ -9,6 +9,8 @@ import SwiftUI
 
 struct StatsView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
+    @ObservedObject private var storeManager = StoreManager.shared
+    @State private var showingProUpgrade = false
 
     var body: some View {
         NavigationStack {
@@ -31,26 +33,36 @@ struct StatsView: View {
                         // Custom Header
                         headerSection
 
-                        // Grafico spese per categoria
-                        if viewModel.activeSubscriptions.isNotEmpty {
-                            categoryChartSection
-                        }
-
-                        // Budget Status Card
-                        if let budgetStatus = viewModel.budgetStatus {
-                            budgetStatusCard(status: budgetStatus)
-                        }
-
-                        // Overview Stats
+                        // Overview Stats (disponibile a tutti)
                         overviewSection
 
-                        // Category Breakdown
-                        categoryBreakdownSection
+                        if storeManager.isPro {
+                            // PRO: Statistiche avanzate
 
-                        // Saving Suggestions
-                        let suggestions = viewModel.getSavingSuggestions()
-                        if suggestions.isNotEmpty {
-                            suggestionsSection(suggestions: suggestions)
+                            // Grafico spese per categoria
+                            if viewModel.activeSubscriptions.isNotEmpty {
+                                categoryChartSection
+                            }
+
+                            // Proiezioni future (Pro only)
+                            projectionsSection
+
+                            // Budget Status Card
+                            if let budgetStatus = viewModel.budgetStatus {
+                                budgetStatusCard(status: budgetStatus)
+                            }
+
+                            // Category Breakdown
+                            categoryBreakdownSection
+
+                            // Saving Suggestions
+                            let suggestions = viewModel.getSavingSuggestions()
+                            if suggestions.isNotEmpty {
+                                suggestionsSection(suggestions: suggestions)
+                            }
+                        } else {
+                            // FREE: Promo per sbloccare statistiche avanzate
+                            statsPromoCard
                         }
                     }
                     .padding(.horizontal, Spacing.md)
@@ -63,6 +75,9 @@ struct StatsView: View {
                 ToolbarItem(placement: .principal) {
                     Text("")
                 }
+            }
+            .sheet(isPresented: $showingProUpgrade) {
+                PaywallOnboardingView()
             }
         }
     }
@@ -381,6 +396,169 @@ struct StatsView: View {
             return "chart.bar.fill"
         case .unused:
             return "questionmark.circle.fill"
+        }
+    }
+
+    // MARK: - Projections Section (Pro Only)
+
+    private var projectionsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(String(localized: "Proiezioni future"), systemImage: "chart.line.uptrend.xyaxis")
+                .font(.headline)
+                .foregroundColor(.purple)
+
+            VStack(spacing: 8) {
+                ForEach(projectedCosts, id: \.years) { projection in
+                    HStack {
+                        Text(String(localized: "Tra \(projection.years) anni"))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        Spacer()
+
+                        Text(projection.amount.currencyFormatted)
+                            .font(.system(size: 17, weight: .semibold, design: .rounded))
+                            .foregroundColor(.primary)
+                    }
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.tertiarySystemGroupedBackground))
+                    )
+                }
+            }
+
+            Text(String(localized: "Basato sulla tua spesa mensile attuale di \(viewModel.totalMonthlyCost.currencyFormatted)"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.top, 4)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+    }
+
+    private var projectedCosts: [(years: Int, amount: Double)] {
+        let monthly = viewModel.totalMonthlyCost
+        return [
+            (2, monthly * 12 * 2),
+            (3, monthly * 12 * 3),
+            (5, monthly * 12 * 5)
+        ]
+    }
+
+    // MARK: - Stats Promo Card (Free Users)
+
+    private var statsPromoCard: some View {
+        VStack(spacing: 20) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.purple.opacity(0.2), Color.blue.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 80, height: 80)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.purple, .blue],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 60, height: 60)
+
+                Image(systemName: "chart.pie.fill")
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            // Text
+            VStack(spacing: 8) {
+                Text(String(localized: "Statistiche Avanzate"))
+                    .font(.title3)
+                    .fontWeight(.bold)
+
+                Text(String(localized: "Sblocca grafici dettagliati, proiezioni future e suggerimenti di risparmio personalizzati."))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+            }
+
+            // Features
+            VStack(alignment: .leading, spacing: 10) {
+                ProFeatureRow(icon: "chart.pie.fill", text: String(localized: "Grafico spese per categoria"))
+                ProFeatureRow(icon: "chart.line.uptrend.xyaxis", text: String(localized: "Proiezioni 2-5 anni"))
+                ProFeatureRow(icon: "lightbulb.fill", text: String(localized: "Suggerimenti di risparmio"))
+                ProFeatureRow(icon: "target", text: String(localized: "Monitoraggio budget"))
+            }
+
+            // CTA Button
+            Button {
+                showingProUpgrade = true
+                Haptic.impact(.medium)
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "crown.fill")
+                        .font(.subheadline)
+                    Text(String(localized: "Sblocca con Pro"))
+                        .fontWeight(.semibold)
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                colors: [.appPrimary, .appSecondary],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+            }
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+    }
+}
+
+// MARK: - Pro Feature Row
+
+private struct ProFeatureRow: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundColor(.purple)
+                .frame(width: 24)
+
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Image(systemName: "checkmark")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.green)
         }
     }
 }

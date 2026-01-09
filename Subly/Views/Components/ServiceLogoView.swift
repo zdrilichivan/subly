@@ -72,8 +72,8 @@ struct ServiceLogoView: View {
             return
         }
 
-        // Ottieni il dominio per Brandfetch
-        guard let domain = serviceDomains[serviceName] ?? guessDomain() else { return }
+        // Ottieni il dominio per Brandfetch (con fuzzy matching)
+        guard let domain = findDomain() else { return }
 
         isLoading = true
         Task {
@@ -89,6 +89,32 @@ struct ServiceLogoView: View {
                 }
             }
         }
+    }
+
+    /// Trova il dominio con matching flessibile
+    private func findDomain() -> String? {
+        // 1. Match esatto
+        if let exact = serviceDomains[serviceName] {
+            return exact
+        }
+
+        // 2. Match case-insensitive
+        let lowercaseName = serviceName.lowercased()
+        for (name, domain) in serviceDomains {
+            if name.lowercased() == lowercaseName {
+                return domain
+            }
+        }
+
+        // 3. Match parziale (il nome contiene una chiave conosciuta)
+        for (name, domain) in serviceDomains {
+            if lowercaseName.contains(name.lowercased()) || name.lowercased().contains(lowercaseName) {
+                return domain
+            }
+        }
+
+        // 4. Fallback: indovina dal nome
+        return guessDomain()
     }
 
     // MARK: - Fallback View (icona generica)
@@ -161,6 +187,10 @@ struct ServiceLogoView: View {
             "Apple Music Individuale": ["Apple Music"],
             "Apple Music Famiglia": ["Apple Music"],
             "Apple Music Studenti": ["Apple Music"],
+            // Amazon Prime
+            "Amazon Prime": ["Amazon Prime", "Amazon"],
+            "Amazon Prime Mensile": ["Amazon Prime", "Amazon"],
+            "Amazon Prime Annuale": ["Amazon Prime", "Amazon"],
             // iCloud
             "iCloud+ 200GB": ["iCloud+", "iCloud"],
             "iCloud+ 2TB": ["iCloud+", "iCloud"],
@@ -176,6 +206,14 @@ struct ServiceLogoView: View {
             "Xbox Game Pass Core": ["Xbox Game Pass", "Xbox"],
             "Xbox Game Pass Standard": ["Xbox Game Pass", "Xbox"],
             "Xbox Game Pass Ultimate": ["Xbox Game Pass", "Xbox"],
+            // YouTube
+            "YouTube Premium": ["YouTube Premium", "YouTube"],
+            "YouTube Premium Individual": ["YouTube Premium", "YouTube"],
+            "YouTube Premium Family": ["YouTube Premium", "YouTube"],
+            // Apple One
+            "Apple One Individual": ["Apple One", "Apple"],
+            "Apple One Family": ["Apple One", "Apple"],
+            "Apple One Premier": ["Apple One", "Apple"],
         ]
     }
 
@@ -199,7 +237,6 @@ struct ServiceLogoView: View {
             "Netflix Standard con pubblicità": "netflix.com",
             "Netflix Standard": "netflix.com",
             "Netflix Premium": "netflix.com",
-            "Amazon Prime Video": "primevideo.com",
             "Disney+": "disneyplus.com",
             "Disney+ Standard con pubblicità": "disneyplus.com",
             "Disney+ Standard": "disneyplus.com",
@@ -327,7 +364,9 @@ struct ServiceLogoView: View {
             "Sky WiFi": "sky.it",
 
             // Altro
-            "Amazon Prime": "amazon.it",
+            "Amazon Prime": "amazon.com",
+            "Amazon Prime Mensile": "amazon.com",
+            "Amazon Prime Annuale": "amazon.com",
             "Deliveroo Plus": "deliveroo.it",
             "Glovo Prime": "glovoapp.com",
             "Just Eat Plus": "justeat.it",

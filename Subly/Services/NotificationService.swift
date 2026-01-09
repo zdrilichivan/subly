@@ -117,6 +117,32 @@ class NotificationService: NSObject, ObservableObject {
 
     // MARK: - Schedule Notifications for Subscription
 
+    /// Giorni prima del rinnovo per le notifiche
+    /// - Free: solo 1 giorno prima
+    /// - Pro: 3 giorni, 1 giorno, giorno stesso
+    private var notificationDaysBefore: [Int] {
+        if StoreManager.shared.isPro {
+            return [3, 1, 0]
+        } else {
+            return [1] // Solo 24h prima per utenti free
+        }
+    }
+
+    /// Orario notifiche (Pro può personalizzare)
+    var notificationHour: Int {
+        if StoreManager.shared.isPro {
+            let customHour = UserDefaults.standard.integer(forKey: "notificationHour")
+            return customHour > 0 ? customHour : Constants.Notifications.defaultHour
+        }
+        return Constants.Notifications.defaultHour
+    }
+
+    /// Imposta orario notifiche personalizzato (solo Pro)
+    func setNotificationHour(_ hour: Int) {
+        guard StoreManager.shared.isPro else { return }
+        UserDefaults.standard.set(hour, forKey: "notificationHour")
+    }
+
     func scheduleNotifications(for subscription: Subscription) async {
         guard isAuthorized else {
             logger.warning("⚠️ Notifications not authorized, skipping schedule")
@@ -126,8 +152,8 @@ class NotificationService: NSObject, ObservableObject {
         // Cancel existing notifications for this subscription
         await cancelNotifications(for: subscription)
 
-        // Schedule new notifications
-        for daysBefore in Constants.Notifications.daysBefore {
+        // Schedule new notifications (basato su free/pro)
+        for daysBefore in notificationDaysBefore {
             await scheduleNotification(for: subscription, daysBefore: daysBefore)
         }
 
@@ -143,9 +169,9 @@ class NotificationService: NSObject, ObservableObject {
             to: subscription.nextBillingDate
         ) else { return }
 
-        // Set time to 17:30
+        // Set time (Pro può personalizzare l'ora)
         var components = calendar.dateComponents([.year, .month, .day], from: notificationDate)
-        components.hour = Constants.Notifications.defaultHour
+        components.hour = notificationHour
         components.minute = Constants.Notifications.defaultMinute
 
         guard let triggerDate = calendar.date(from: components) else { return }
@@ -203,7 +229,9 @@ class NotificationService: NSObject, ObservableObject {
     // MARK: - Cancel Notifications
 
     func cancelNotifications(for subscription: Subscription) async {
-        let identifiers = Constants.Notifications.daysBefore.map { daysBefore in
+        // Cancella tutte le possibili notifiche (sia free che pro)
+        let allPossibleDays = [3, 1, 0]
+        let identifiers = allPossibleDays.map { daysBefore in
             notificationIdentifier(for: subscription, daysBefore: daysBefore)
         }
         notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)

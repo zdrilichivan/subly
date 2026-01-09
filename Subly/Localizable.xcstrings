@@ -54,6 +54,7 @@
       }
     },
     "— Warren Buffett" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -154,6 +155,16 @@
     "/settimana" : {
 
     },
+    "%@ • %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@"
+          }
+        }
+      }
+    },
     "%@ si rinnova tra %lld giorni (%@)" : {
       "localizations" : {
         "en" : {
@@ -231,6 +242,7 @@
       }
     },
     "%@." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -312,6 +324,7 @@
       }
     },
     "%lld abbonamenti sono stati aggiunti con successo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -495,6 +508,7 @@
       }
     },
     "• %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -511,6 +525,7 @@
       }
     },
     "+%lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -527,6 +542,7 @@
       }
     },
     "+%lld abbonamenti nascosti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -871,6 +887,7 @@
 
     },
     "3 giorni prima del rinnovo ti chiederemo se stai ancora utilizzando il servizio. Se rispondi no, ti aiuteremo a disdire. Riceverai anche promemoria 1 giorno prima e il giorno stesso." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1133,6 +1150,7 @@
       }
     },
     "Abbonamenti aggiunti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1236,6 +1254,7 @@
       }
     },
     "Abbonamenti trovati" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1345,6 +1364,7 @@
       }
     },
     "Abilita Pro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1361,6 +1381,7 @@
       }
     },
     "Accedi con Google" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1377,6 +1398,7 @@
       }
     },
     "Accesso Email" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1457,6 +1479,7 @@
       }
     },
     "Aggiungi (%lld)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1527,7 +1550,6 @@
       }
     },
     "Aggiungi profilo" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1548,6 +1570,9 @@
           }
         }
       }
+    },
+    "Aggiungi qualsiasi abbonamento" : {
+
     },
     "Aggiungi tutti i tuoi abbonamenti da oltre 80 servizi. Saprai sempre quanto spendi ogni mese e ogni anno." : {
       "extractionState" : "stale",
@@ -1679,6 +1704,7 @@
       }
     },
     "Alta" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1717,6 +1743,7 @@
       }
     },
     "Analisi email in corso..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1898,6 +1925,7 @@
       }
     },
     "Apple non fornisce un'API pubblica per accedere alle email di iCloud Mail. Questa è una limitazione imposta da Apple, non da Subly. Gmail è l'unico servizio che offre un accesso sicuro via OAuth per la scansione delle email." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2071,6 +2099,7 @@
       }
     },
     "Avvia Scansione" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2086,7 +2115,14 @@
         }
       }
     },
+    "Backup Cloud" : {
+
+    },
+    "Basato sulla tua spesa mensile attuale di %@" : {
+
+    },
     "Bassa" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2536,6 +2572,7 @@
       }
     },
     "Categorie di consigli" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2966,6 +3003,7 @@
       }
     },
     "Collega il tuo account Gmail per trovare automaticamente gli abbonamenti dalle ricevute email." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3294,6 +3332,9 @@
         }
       }
     },
+    "Conferma" : {
+
+    },
     "Conferma il prezzo" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3559,6 +3600,7 @@
       }
     },
     "Continua con Google" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3638,6 +3680,9 @@
           }
         }
       }
+    },
+    "Converti EUR, USD, GBP e altre" : {
+
     },
     "Converti un mensile in annuale" : {
       "localizations" : {
@@ -3854,6 +3899,7 @@
       }
     },
     "Crea servizio" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3874,6 +3920,9 @@
           }
         }
       }
+    },
+    "Crea servizio personalizzato" : {
+
     },
     "Crea un fondo emergenza" : {
       "localizations" : {
@@ -3967,6 +4016,7 @@
       }
     },
     "Dati" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3989,6 +4039,7 @@
       }
     },
     "Debug" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4101,6 +4152,7 @@
       }
     },
     "Deseleziona" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4149,6 +4201,7 @@
       }
     },
     "Devi prima collegare il tuo account Gmail" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4184,6 +4237,7 @@
 
     },
     "Disconnetti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4428,6 +4482,7 @@
       }
     },
     "Elimina tutti gli abbonamenti e le impostazioni. L'app verrà riportata allo stato iniziale come appena installata." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4498,6 +4553,7 @@
       }
     },
     "Errore API Gmail (codice: %lld)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4512,6 +4568,12 @@
           }
         }
       }
+    },
+    "Errore di rete durante il download del catalogo" : {
+
+    },
+    "Errore nella lettura del catalogo" : {
+
     },
     "Esiste un'alternativa gratuita?" : {
       "localizations" : {
@@ -4608,6 +4670,9 @@
           }
         }
       }
+    },
+    "Fine" : {
+
     },
     "Fitness" : {
       "localizations" : {
@@ -4845,6 +4910,7 @@
       }
     },
     "Gmail collegato" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4859,6 +4925,12 @@
           }
         }
       }
+    },
+    "Grafici e proiezioni di spesa" : {
+
+    },
+    "Grafico spese per categoria" : {
+
     },
     "Grazie per aver acquistato Subly Pro! La pubblicità è stata rimossa." : {
       "localizations" : {
@@ -5096,6 +5168,7 @@
       }
     },
     "I dati restano sul tuo dispositivo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5246,6 +5319,7 @@
       }
     },
     "I tuoi dati restano sul tuo dispositivo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5557,6 +5631,7 @@
       }
     },
     "Il livello di confidenza indica quanto siamo sicuri del rilevamento. Puoi modificare i dettagli dopo l'aggiunta." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6019,6 +6094,7 @@
       }
     },
     "Importato da email" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6035,6 +6111,7 @@
       }
     },
     "Impossibile ottenere le informazioni utente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6256,6 +6333,7 @@
       }
     },
     "Informazioni" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6374,6 +6452,9 @@
           }
         }
       }
+    },
+    "Inizia la prova gratuita" : {
+
     },
     "Inizia oggi la sfida" : {
       "localizations" : {
@@ -6637,12 +6718,6 @@
         }
       }
     },
-    "L'AI riconosce automaticamente tutti i servizi" : {
-
-    },
-    "L'AI trova automaticamente tutti gli abbonamenti nascosti" : {
-
-    },
     "L'AI trova tutti gli abbonamenti dalle tue email" : {
 
     },
@@ -6788,6 +6863,9 @@
     "La nostra AI analizza le tue email e trova TUTTI gli abbonamenti attivi in pochi secondi. Netflix, Spotify, palestra, cloud... niente sfugge." : {
 
     },
+    "La regione determina quali servizi vengono mostrati e i prezzi suggeriti nella valuta locale." : {
+
+    },
     "La regola dei 30 giorni" : {
       "localizations" : {
         "en" : {
@@ -6917,6 +6995,7 @@
       }
     },
     "La tua privacy è importante" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7095,6 +7174,7 @@
       }
     },
     "Legge solo email di abbonamenti e ricevute" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7373,6 +7453,7 @@
       }
     },
     "Media" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7793,6 +7874,12 @@
         }
       }
     },
+    "Monitoraggio budget" : {
+
+    },
+    "Multi-Valuta" : {
+
+    },
     "Musica" : {
       "localizations" : {
         "en" : {
@@ -7919,6 +8006,7 @@
       }
     },
     "Nessun abbonamento trovato" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7949,6 +8037,12 @@
           }
         }
       }
+    },
+    "Nessun catalogo disponibile offline" : {
+
+    },
+    "Nessun risultato per \"%@\"" : {
+
     },
     "Nessuna pubblicità" : {
       "extractionState" : "stale",
@@ -8139,6 +8233,7 @@
       }
     },
     "Non abbiamo trovato email di abbonamenti nelle tue ultime email. Prova a cercare più indietro o aggiungi manualmente." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8226,6 +8321,7 @@
       }
     },
     "Non leggiamo email personali" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8258,6 +8354,7 @@
       }
     },
     "Non salviamo contenuto email" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8272,6 +8369,9 @@
           }
         }
       }
+    },
+    "Non trovi il tuo servizio?" : {
+
     },
     "Note" : {
       "extractionState" : "stale",
@@ -8379,6 +8479,9 @@
           }
         }
       }
+    },
+    "Notifiche Personalizzate" : {
+
     },
     "Notifiche prima di ogni rinnovo" : {
 
@@ -8666,6 +8769,12 @@
         }
       }
     },
+    "Orario" : {
+
+    },
+    "Orario notifiche" : {
+
+    },
     "Ottimo! Hai solo l'essenziale." : {
       "localizations" : {
         "en" : {
@@ -8831,6 +8940,7 @@
       }
     },
     "Passa a Pro per vedere tutti i risultati" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8999,6 +9109,7 @@
       }
     },
     "Perché solo Gmail?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9198,9 +9309,6 @@
           }
         }
       }
-    },
-    "Powered by AI" : {
-
     },
     "Pranzo da casa" : {
       "localizations" : {
@@ -9631,7 +9739,14 @@
         }
       }
     },
+    "Proiezioni 2-5 anni" : {
+
+    },
+    "Proiezioni future" : {
+
+    },
     "Promemoria giornaliero" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9846,9 +9961,6 @@
         }
       }
     },
-    "Prova gratuita di 3 giorni" : {
-
-    },
     "Prova la pausa" : {
       "localizations" : {
         "en" : {
@@ -9978,6 +10090,7 @@
       }
     },
     "Puoi disconnettere quando vuoi" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10252,6 +10365,12 @@
         }
       }
     },
+    "Regione" : {
+
+    },
+    "Regione e valuta" : {
+
+    },
     "Regola 50/30/20" : {
       "localizations" : {
         "en" : {
@@ -10375,6 +10494,7 @@
       }
     },
     "Ricevi un consiglio ogni mattina alle 9:00" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10801,6 +10921,7 @@
       }
     },
     "Risposta non valida dal server" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10833,6 +10954,7 @@
       }
     },
     "Rivedi il tutorial" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10931,6 +11053,9 @@
         }
       }
     },
+    "Salvato localmente" : {
+
+    },
     "Saper aspettare paga" : {
       "localizations" : {
         "en" : {
@@ -10963,6 +11088,12 @@
           }
         }
       }
+    },
+    "Sblocca con Pro" : {
+
+    },
+    "Sblocca grafici dettagliati, proiezioni future e suggerimenti di risparmio personalizzati." : {
+
     },
     "Sblocca Subly per aggiungere abbonamenti illimitati con un piccolo contributo di €0,99." : {
       "extractionState" : "stale",
@@ -11037,6 +11168,7 @@
       }
     },
     "Scansiona centinaia di email in pochi secondi" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11086,13 +11218,7 @@
         }
       }
     },
-    "Scansione AI" : {
-
-    },
     "Scansione Email" : {
-
-    },
-    "Scansione Email AI" : {
 
     },
     "Scansione email completa" : {
@@ -11146,6 +11272,7 @@
       }
     },
     "Scansione in corso..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11225,6 +11352,9 @@
         }
       }
     },
+    "Scegli l'orario in cui vuoi ricevere i promemoria sui rinnovi." : {
+
+    },
     "Scegli quale provare" : {
       "localizations" : {
         "en" : {
@@ -11240,6 +11370,9 @@
           }
         }
       }
+    },
+    "Scegli quando ricevere promemoria" : {
+
     },
     "Scegli solo quello che ami" : {
       "extractionState" : "stale",
@@ -11556,7 +11689,11 @@
         }
       }
     },
+    "Seleziona la tua regione" : {
+
+    },
     "Seleziona quelli da aggiungere" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11595,6 +11732,7 @@
       }
     },
     "Seleziona tutti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11733,6 +11871,7 @@
       }
     },
     "Sessione scaduta. Riconnetti Gmail" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12078,6 +12217,7 @@
       }
     },
     "Sicuro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12092,6 +12232,9 @@
           }
         }
       }
+    },
+    "Sincronizza su tutti i dispositivi" : {
+
     },
     "Sincronizzato con iCloud" : {
       "localizations" : {
@@ -12273,6 +12416,7 @@
       }
     },
     "Solo per test, non effettua acquisti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12615,6 +12759,9 @@
         }
       }
     },
+    "Statistiche Avanzate" : {
+
+    },
     "Statistiche chiare sulle tue spese" : {
 
     },
@@ -12729,6 +12876,7 @@
       }
     },
     "Subly legge solo le email di ricevute e abbonamenti. Non accediamo mai alle tue email personali, allegati o contatti. Puoi disconnettere in qualsiasi momento." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12792,6 +12940,9 @@
           }
         }
       }
+    },
+    "Suggerimenti di risparmio" : {
+
     },
     "Supporta lo sviluppatore" : {
       "extractionState" : "stale",
@@ -13280,6 +13431,9 @@
         }
       }
     },
+    "Tra %lld anni" : {
+
+    },
     "Tra %lld gg" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13518,6 +13672,7 @@
 
     },
     "Trova i tuoi abbonamenti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13582,9 +13737,6 @@
         }
       }
     },
-    "Trova tutti gli abbonamenti nascosti" : {
-
-    },
     "Trova un barattolo stasera" : {
       "localizations" : {
         "en" : {
@@ -13602,6 +13754,7 @@
       }
     },
     "Trovati %lld abbonamenti" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13856,7 +14009,11 @@
         }
       }
     },
+    "URL catalogo non valido" : {
+
+    },
     "URL non valido" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14025,6 +14182,7 @@
       }
     },
     "Vedi %lld abbonamenti trovati" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14041,6 +14199,7 @@
       }
     },
     "Veloce" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

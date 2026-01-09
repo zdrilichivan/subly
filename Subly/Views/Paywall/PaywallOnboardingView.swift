@@ -74,13 +74,6 @@ struct PaywallOnboardingView: View {
                 Spacer()
                     .frame(height: 12)
 
-                // Free trial toggle
-                freeTrialToggle
-                    .padding(.horizontal, 24)
-
-                Spacer()
-                    .frame(height: 10)
-
                 // Disclosure text (Apple compliance)
                 disclosureText
                     .padding(.horizontal, 24)
@@ -161,26 +154,47 @@ struct PaywallOnboardingView: View {
     // MARK: - Benefits Section
 
     private var benefitsSection: some View {
-        VStack(spacing: 12) {
-            PaywallBenefitRow(
-                icon: "sparkles",
-                iconColor: .blue,
-                title: String(localized: "Scansione Email con AI"),
-                description: String(localized: "Trova tutti gli abbonamenti nascosti")
-            )
-
-            PaywallBenefitRow(
-                icon: "brain.head.profile",
-                iconColor: .purple,
-                title: String(localized: "Money Coach AI"),
-                description: String(localized: "Consigli smart per risparmiare")
-            )
-
+        VStack(spacing: 10) {
             PaywallBenefitRow(
                 icon: "infinity",
                 iconColor: .green,
                 title: String(localized: "Abbonamenti Illimitati"),
                 description: String(localized: "Traccia tutti i tuoi servizi")
+            )
+
+            PaywallBenefitRow(
+                icon: "bell.badge",
+                iconColor: .blue,
+                title: String(localized: "Notifiche Personalizzate"),
+                description: String(localized: "Scegli quando ricevere promemoria")
+            )
+
+            PaywallBenefitRow(
+                icon: "chart.pie",
+                iconColor: .purple,
+                title: String(localized: "Statistiche Avanzate"),
+                description: String(localized: "Grafici e proiezioni di spesa")
+            )
+
+            PaywallBenefitRow(
+                icon: "icloud",
+                iconColor: .cyan,
+                title: String(localized: "Backup Cloud"),
+                description: String(localized: "Sincronizza su tutti i dispositivi")
+            )
+
+            PaywallBenefitRow(
+                icon: "dollarsign.circle",
+                iconColor: .orange,
+                title: String(localized: "Multi-Valuta"),
+                description: String(localized: "Converti EUR, USD, GBP e altre")
+            )
+
+            PaywallBenefitRow(
+                icon: "brain.head.profile",
+                iconColor: .pink,
+                title: String(localized: "Money Coach AI"),
+                description: String(localized: "Consigli smart per risparmiare")
             )
         }
     }
@@ -217,28 +231,6 @@ struct PaywallOnboardingView: View {
                 Haptic.selection()
             }
         }
-    }
-
-    // MARK: - Free Trial Toggle
-
-    private var freeTrialToggle: some View {
-        HStack {
-            Text(String(localized: "Prova gratuita di 3 giorni"))
-                .font(.body)
-                .foregroundColor(.primary)
-
-            Spacer()
-
-            Toggle("", isOn: $storeManager.freeTrialEnabled)
-                .tint(.green)
-                .labelsHidden()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
     }
 
     // MARK: - Disclosure Text (Apple Compliance)
@@ -308,11 +300,7 @@ struct PaywallOnboardingView: View {
     }
 
     private var buttonText: String {
-        if storeManager.freeTrialEnabled {
-            return String(localized: "Inizia 3 giorni gratis")
-        } else {
-            return String(localized: "Continua")
-        }
+        return String(localized: "Inizia la prova gratuita")
     }
 
     // MARK: - Footer Links
@@ -346,7 +334,7 @@ struct PaywallOnboardingView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy.html")!) {
+            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
                 Text(String(localized: "Privacy"))
                     .font(.caption)
                     .foregroundColor(.secondary)

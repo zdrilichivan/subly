@@ -62,6 +62,9 @@ class CloudKitService: ObservableObject {
 
     // MARK: - Save Subscription
     func saveSubscription(_ subscription: Subscription) async throws {
+        // Solo Pro può salvare su iCloud
+        guard StoreManager.shared.isPro else { return }
+
         let record = subscriptionToRecord(subscription)
 
         do {
@@ -75,6 +78,9 @@ class CloudKitService: ObservableObject {
 
     // MARK: - Update Subscription
     func updateSubscription(_ subscription: Subscription) async throws {
+        // Solo Pro può aggiornare su iCloud
+        guard StoreManager.shared.isPro else { return }
+
         // Fetch existing record first
         let recordID = CKRecord.ID(recordName: subscription.id.uuidString)
 
@@ -94,6 +100,9 @@ class CloudKitService: ObservableObject {
 
     // MARK: - Delete Subscription
     func deleteSubscription(_ subscription: Subscription) async throws {
+        // Solo Pro può eliminare da iCloud
+        guard StoreManager.shared.isPro else { return }
+
         let recordID = CKRecord.ID(recordName: subscription.id.uuidString)
 
         do {
@@ -145,6 +154,12 @@ class CloudKitService: ObservableObject {
 
     // MARK: - Sync
     func sync(localSubscriptions: [Subscription]) async -> [Subscription] {
+        // Solo gli utenti Pro possono sincronizzare con iCloud
+        guard StoreManager.shared.isPro else {
+            logger.info("ℹ️ iCloud sync is Pro only, using local data")
+            return localSubscriptions
+        }
+
         await MainActor.run {
             self.isSyncing = true
             self.syncError = nil

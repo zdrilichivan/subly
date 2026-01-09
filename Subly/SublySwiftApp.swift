@@ -7,7 +7,6 @@
 
 import SwiftUI
 import CloudKit
-import GoogleSignIn
 
 @main
 struct SublySwiftApp: App {
@@ -19,15 +18,6 @@ struct SublySwiftApp: App {
     @State private var showUsageCheckSheet = false
 
     init() {
-        // Ripristina sessione Google Sign-In precedente
-        GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
-            if let user = user {
-                Task { @MainActor in
-                    GmailScannerService.shared.handleRestoredUser(user)
-                }
-            }
-        }
-
         // Setup callback per aprire pagina di cancellazione dalle notifiche
         NotificationService.shared.onOpenCancellationPage = { serviceName in
             if let service = ServiceCatalog.find(byName: serviceName),
@@ -48,10 +38,6 @@ struct SublySwiftApp: App {
                     OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
                         .environmentObject(viewModel)
                 }
-            }
-            .onOpenURL { url in
-                // Gestisce il callback OAuth di Google Sign-In
-                GIDSignIn.sharedInstance.handle(url)
             }
             .onAppear {
                 checkiCloudStatus()

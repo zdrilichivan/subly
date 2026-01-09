@@ -19,6 +19,7 @@ struct DashboardView: View {
     @State private var showingSuccessAlert = false
     @State private var selectedServiceForAdd: Service?
     @State private var selectedCategoryForAdd: ServiceCategory = .other
+    @State private var selectedBillingCycleForAdd: BillingCycle = .monthly
     @ObservedObject private var storeManager = StoreManager.shared
 
     private let insightService = InsightService.shared
@@ -47,14 +48,6 @@ struct DashboardView: View {
 
                             // Cards statistiche
                             statsCardsSection
-
-                            // Email Scan Card (solo Pro)
-                            if storeManager.isPro {
-                                NavigationLink(destination: EmailScanView()) {
-                                    EmailScanPromoCard { }
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
 
                         // Insight: Cosa potresti fare (carousel con piu suggerimenti)
                         if viewModel.activeSubscriptions.isNotEmpty {
@@ -104,7 +97,8 @@ struct DashboardView: View {
             .sheet(isPresented: $showingServicePicker) {
                 ServicePickerView(
                     selectedService: $selectedServiceForAdd,
-                    category: $selectedCategoryForAdd
+                    category: $selectedCategoryForAdd,
+                    billingCycle: $selectedBillingCycleForAdd
                 )
             }
             .onChange(of: selectedServiceForAdd) { _, newService in
@@ -350,10 +344,14 @@ struct DashboardView: View {
     // MARK: - Actions
 
     private func addSubscription(_ service: Service) {
+        // Per servizi personalizzati (typicalCost settato dal form), usa il billing cycle selezionato
+        // Per servizi dal catalogo, usa il billing cycle del servizio
+        let billingCycle = service.typicalCost != nil ? selectedBillingCycleForAdd : service.billingCycle
+
         let subscription = Subscription(
             serviceName: service.name,
             cost: service.typicalCost ?? 0,
-            billingCycle: service.billingCycle,
+            billingCycle: billingCycle,
             nextBillingDate: Date(),
             category: service.category
         )
@@ -361,6 +359,7 @@ struct DashboardView: View {
         Task {
             await viewModel.addSubscription(subscription)
             selectedServiceForAdd = nil
+            selectedBillingCycleForAdd = .monthly  // Reset
             showingSuccessAlert = true
             Haptic.notification(.success)
         }

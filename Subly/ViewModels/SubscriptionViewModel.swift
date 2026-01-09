@@ -419,4 +419,9 @@ class SubscriptionViewModel: ObservableObject {
 
         logger.info("🗑️ All local data reset")
     }
+
+    /// Rischedula tutte le notifiche (utile dopo cambio orario)
+    func refreshNotifications() async {
+        await notificationService.rescheduleAllNotifications(for: activeSubscriptions)
+    }
 }

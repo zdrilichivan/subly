@@ -11,11 +11,17 @@ struct ServicePickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedService: Service?
     @Binding var category: ServiceCategory
+    @Binding var billingCycle: BillingCycle
+
+    @StateObject private var catalogManager = ServiceCatalogManager.shared
+    @StateObject private var regionService = RegionService.shared
 
     @State private var searchText = ""
     @State private var selectedCategory: ServiceCategory?
     @State private var showingCustomService = false
     @State private var customServiceName = ""
+    @State private var customServicePrice = ""
+    @State private var customServiceBillingCycle: BillingCycle = .monthly
     @State private var selectedGroup: ServiceGroup?
 
     private let columns = [
@@ -125,25 +131,102 @@ struct ServicePickerView: View {
 
     private var servicesGrid: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(filteredGroups) { group in
-                    BrandGridItem(
-                        group: group,
-                        action: {
-                            handleGroupTap(group)
-                        }
-                    )
+            VStack(spacing: Spacing.lg) {
+                // Services grid
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(filteredGroups) { group in
+                        BrandGridItem(
+                            group: group,
+                            action: {
+                                handleGroupTap(group)
+                            }
+                        )
+                    }
                 }
+
+                // "Service not found?" prompt
+                if filteredGroups.isEmpty || !searchText.isEmpty {
+                    serviceNotFoundPrompt
+                }
+
+                // Always show "Create Custom" option at the bottom
+                createCustomCard
             }
             .padding()
         }
     }
 
+    // MARK: - Service Not Found Prompt
+
+    private var serviceNotFoundPrompt: some View {
+        VStack(spacing: Spacing.sm) {
+            if filteredGroups.isEmpty && !searchText.isEmpty {
+                Text(String(localized: "Nessun risultato per \"\(searchText)\""))
+                    .font(Typography.body)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    // MARK: - Create Custom Card
+
+    private var createCustomCard: some View {
+        VStack(spacing: Spacing.sm) {
+            Divider()
+                .padding(.vertical, Spacing.sm)
+
+            Text(String(localized: "Non trovi il tuo servizio?"))
+                .font(Typography.caption)
+                .foregroundColor(.secondary)
+
+            Button {
+                Haptic.selection()
+                showingCustomService = true
+            } label: {
+                HStack(spacing: Spacing.sm) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: CornerRadius.md)
+                            .fill(Color.appPrimary.opacity(0.1))
+                            .frame(width: 44, height: 44)
+
+                        Image(systemName: "plus")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.appPrimary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(String(localized: "Crea servizio personalizzato"))
+                            .font(Typography.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+
+                        Text(String(localized: "Aggiungi qualsiasi abbonamento"))
+                            .font(Typography.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.secondary)
+                }
+                .padding(Spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+    }
+
     private var filteredGroups: [ServiceGroup] {
-        var groups = ServiceCatalog.groups(for: selectedCategory)
+        // Use ServiceCatalogManager for region-aware filtering
+        var groups = catalogManager.groups(for: selectedCategory)
 
         if !searchText.isEmpty {
-            groups = ServiceCatalog.searchGroups(searchText)
+            groups = catalogManager.searchGroups(searchText)
             if let cat = selectedCategory {
                 groups = groups.filter { $0.category == cat }
             }
@@ -157,18 +240,36 @@ struct ServicePickerView: View {
     private var customServiceForm: some View {
         Form {
             Section {
-                TextField("Nome del servizio", text: $customServiceName)
+                TextField(String(localized: "Nome del servizio"), text: $customServiceName)
 
-                Picker("Categoria", selection: $category) {
+                Picker(String(localized: "Categoria"), selection: $category) {
                     ForEach(ServiceCategory.allCases, id: \.self) { cat in
                         Label(cat.displayName, systemImage: cat.iconName)
                             .tag(cat)
                     }
                 }
             } header: {
-                Text("Servizio personalizzato")
+                Text(String(localized: "Servizio personalizzato"))
             } footer: {
-                Text("Inserisci il nome di un servizio non presente nel catalogo.")
+                Text(String(localized: "Inserisci il nome di un servizio non presente nel catalogo."))
+            }
+
+            Section {
+                HStack {
+                    Text(regionService.currentRegion.currencySymbol)
+                        .foregroundColor(.secondary)
+
+                    TextField("0,00", text: $customServicePrice)
+                        .keyboardType(.decimalPad)
+                }
+
+                Picker(String(localized: "Frequenza"), selection: $customServiceBillingCycle) {
+                    ForEach(BillingCycle.allCases, id: \.self) { cycle in
+                        Text(cycle.displayName).tag(cycle)
+                    }
+                }
+            } header: {
+                Text(String(localized: "Costo"))
             }
 
             Section {
@@ -177,14 +278,21 @@ struct ServicePickerView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("Crea servizio")
+                        Text(String(localized: "Aggiungi abbonamento"))
                             .fontWeight(.semibold)
                         Spacer()
                     }
                 }
-                .disabled(customServiceName.trimmed.isEmpty)
+                .disabled(customServiceName.trimmed.isEmpty || !isCustomPriceValid)
             }
         }
+    }
+
+    private var isCustomPriceValid: Bool {
+        guard !customServicePrice.isEmpty else { return false }
+        let normalized = customServicePrice.replacingOccurrences(of: ",", with: ".")
+        guard let value = Double(normalized), value > 0 else { return false }
+        return true
     }
 
     // MARK: - Actions
@@ -210,10 +318,14 @@ struct ServicePickerView: View {
     }
 
     private func createCustomService() {
+        let priceValue = Double(customServicePrice.replacingOccurrences(of: ",", with: "."))
         let customService = ServiceCatalog.createCustomService(
             name: customServiceName.trimmed,
-            category: category
+            category: category,
+            typicalCost: priceValue
         )
+        // Set the billing cycle from custom form
+        billingCycle = customServiceBillingCycle
         selectService(customService)
     }
 }
@@ -310,6 +422,8 @@ struct VariantRow: View {
     let service: Service
     let action: () -> Void
 
+    private var catalogManager: ServiceCatalogManager { ServiceCatalogManager.shared }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: Spacing.md) {
@@ -328,12 +442,8 @@ struct VariantRow: View {
 
                 Spacer()
 
-                // Price
-                if let cost = service.typicalCost {
-                    Text(cost.currencyFormatted)
-                        .font(Typography.numericSmall())
-                        .foregroundColor(.appPrimary)
-                }
+                // Price (region-aware)
+                priceView
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
@@ -346,6 +456,28 @@ struct VariantRow: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+    }
+
+    @ViewBuilder
+    private var priceView: some View {
+        if let price = catalogManager.price(for: service) {
+            HStack(spacing: 4) {
+                Text(price.formattedAmount)
+                    .font(Typography.numericSmall())
+                    .foregroundColor(price.isEstimated ? .secondary : .appPrimary)
+
+                if price.isEstimated {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+            }
+        } else if let cost = service.typicalCost {
+            // Fallback to typicalCost
+            Text(cost.currencyFormatted)
+                .font(Typography.numericSmall())
+                .foregroundColor(.appPrimary)
+        }
     }
 }
 
@@ -383,6 +515,7 @@ struct CategoryChip: View {
 #Preview {
     ServicePickerView(
         selectedService: .constant(nil),
-        category: .constant(.other)
+        category: .constant(.other),
+        billingCycle: .constant(.monthly)
     )
 }

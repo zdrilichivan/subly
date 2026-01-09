@@ -2,44 +2,145 @@
 //  ServiceCatalog.swift
 //  SublySwift
 //
-//  Catalogo di 80+ servizi di abbonamento italiani
+//  Catalogo di servizi di abbonamento multi-regione
 //
 
 import Foundation
 import SwiftUI
 
+// MARK: - Price Source
+enum PriceSource: String, Codable {
+    case catalog = "catalog"           // Database manuale
+    case userReported = "user"         // Crowdsourcing utenti
+    case emailDetected = "email"       // Rilevato da email scan
+    case estimated = "estimated"       // Stima/conversione valuta
+}
+
+// MARK: - Pricing Plan
+struct PricingPlan: Codable, Equatable {
+    let billingCycle: BillingCycle
+    let price: Double
+    let priceSource: PriceSource
+    let lastVerified: Date?
+
+    init(
+        billingCycle: BillingCycle,
+        price: Double,
+        priceSource: PriceSource = .catalog,
+        lastVerified: Date? = nil
+    ) {
+        self.billingCycle = billingCycle
+        self.price = price
+        self.priceSource = priceSource
+        self.lastVerified = lastVerified
+    }
+}
+
+// MARK: - Region Pricing
+struct RegionPricing: Codable, Equatable {
+    let region: String      // "IT", "US", etc.
+    let currency: String    // "EUR", "USD", etc.
+    let plans: [PricingPlan]
+
+    init(region: String, currency: String, plans: [PricingPlan]) {
+        self.region = region
+        self.currency = currency
+        self.plans = plans
+    }
+
+    /// Ottiene il prezzo per un ciclo specifico
+    func price(for cycle: BillingCycle) -> PricingPlan? {
+        plans.first { $0.billingCycle == cycle }
+    }
+}
+
 // MARK: - Service Model
-struct Service: Identifiable, Equatable {
+struct Service: Identifiable, Equatable, Codable {
     let id: UUID
+    let serviceId: String           // ID stabile per sync (es: "netflix_standard")
     let name: String
     let category: ServiceCategory
     let iconName: String
-    let typicalCost: Double?
+    let domain: String?             // Per fetch icone (es: "netflix.com")
+    let typicalCost: Double?        // Costo legacy (EUR) - mantiene retrocompatibilità
     let billingCycle: BillingCycle
     let cancellationURL: String?
-    let brandName: String  // Nome del brand (es. "Netflix" per "Netflix Standard")
-    let variantName: String?  // Nome della variante (es. "Standard", "Premium")
+    let brandName: String           // Nome del brand (es. "Netflix")
+    let variantName: String?        // Nome della variante (es. "Standard", "Premium")
 
+    // Multi-region support
+    let availableRegions: [String]  // ["*"] = globale, ["IT", "UK"] = specifico
+    let pricing: [RegionPricing]    // Prezzi per regione
+    let cancellationURLs: [String: String]? // URL per regione: ["IT": "url", "US": "url"]
+
+    // MARK: - Init (retrocompatibile)
     init(
         id: UUID = UUID(),
+        serviceId: String? = nil,
         name: String,
         category: ServiceCategory,
         iconName: String = "",
+        domain: String? = nil,
         typicalCost: Double? = nil,
         billingCycle: BillingCycle = .monthly,
         cancellationURL: String? = nil,
         brandName: String? = nil,
-        variantName: String? = nil
+        variantName: String? = nil,
+        availableRegions: [String] = ["*"],
+        pricing: [RegionPricing] = [],
+        cancellationURLs: [String: String]? = nil
     ) {
         self.id = id
+        self.serviceId = serviceId ?? name.slugified
         self.name = name
         self.category = category
         self.iconName = iconName.isEmpty ? category.iconName : iconName
+        self.domain = domain
         self.typicalCost = typicalCost
         self.billingCycle = billingCycle
         self.cancellationURL = cancellationURL
-        self.brandName = brandName ?? name  // Default: usa il nome come brand
+        self.brandName = brandName ?? name
         self.variantName = variantName
+        self.availableRegions = availableRegions
+        self.pricing = pricing
+        self.cancellationURLs = cancellationURLs
+    }
+
+    // MARK: - Region Helpers
+
+    /// Verifica se il servizio è disponibile in una regione
+    func isAvailable(in regionId: String) -> Bool {
+        availableRegions.contains("*") || availableRegions.contains(regionId.uppercased())
+    }
+
+    /// Ottiene il prezzo per una regione specifica
+    func price(for regionId: String, cycle: BillingCycle = .monthly) -> PricingPlan? {
+        // Cerca prezzo esatto per regione
+        if let regionPricing = pricing.first(where: { $0.region == regionId }) {
+            return regionPricing.price(for: cycle)
+        }
+        // Fallback: usa typicalCost come EUR
+        if let cost = typicalCost, cycle == billingCycle {
+            return PricingPlan(billingCycle: billingCycle, price: cost, priceSource: .catalog)
+        }
+        return nil
+    }
+
+    /// Ottiene l'URL di cancellazione per una regione
+    func cancellationURL(for regionId: String) -> String? {
+        cancellationURLs?[regionId] ?? cancellationURL
+    }
+}
+
+// MARK: - String Extension for Service ID
+extension String {
+    var slugified: String {
+        self.lowercased()
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "+", with: "plus")
+            .replacingOccurrences(of: "&", with: "and")
+            .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_")).inverted)
+            .joined()
     }
 }
 
@@ -73,8 +174,6 @@ struct ServiceCatalog {
         Service(name: "Netflix Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 6.99, cancellationURL: "https://www.netflix.com/cancelplan", brandName: "Netflix", variantName: "Standard con pubblicità"),
         Service(name: "Netflix Standard", category: .streaming, iconName: "play.tv.fill", typicalCost: 13.99, cancellationURL: "https://www.netflix.com/cancelplan", brandName: "Netflix", variantName: "Standard"),
         Service(name: "Netflix Premium", category: .streaming, iconName: "play.tv.fill", typicalCost: 18.99, cancellationURL: "https://www.netflix.com/cancelplan", brandName: "Netflix", variantName: "Premium"),
-
-        Service(name: "Amazon Prime Video", category: .streaming, iconName: "play.tv.fill", typicalCost: 4.99, cancellationURL: "https://www.amazon.it/gp/video/settings"),
 
         // Disney+ - tutti i piani
         Service(name: "Disney+ Standard con pubblicità", category: .streaming, iconName: "play.tv.fill", typicalCost: 5.99, cancellationURL: "https://www.disneyplus.com/account/subscription", brandName: "Disney+", variantName: "Standard con pubblicità"),
@@ -203,16 +302,330 @@ struct ServiceCatalog {
         Service(name: "Sky WiFi", category: .phone, iconName: "wifi", typicalCost: 29.90, cancellationURL: "https://www.sky.it/assistenza/info-disdette"),
 
         // MARK: Altro
-        Service(name: "Amazon Prime", category: .other, iconName: "shippingbox.fill", typicalCost: 4.99, billingCycle: .monthly, cancellationURL: "https://www.amazon.it/gp/primecentral"),
-        Service(name: "Deliveroo Plus", category: .other, iconName: "bag.fill", typicalCost: 3.99, cancellationURL: "https://deliveroo.it/account/subscription"),
-        Service(name: "Glovo Prime", category: .other, iconName: "bag.fill", typicalCost: 5.99, cancellationURL: "https://glovoapp.com/it/profile/"),
-        Service(name: "Just Eat Plus", category: .other, iconName: "bag.fill", typicalCost: 4.99, cancellationURL: "https://www.justeat.it/account/"),
-        Service(name: "Satispay", category: .other, iconName: "creditcard.fill", typicalCost: 0),
-        Service(name: "Revolut Premium", category: .other, iconName: "creditcard.fill", typicalCost: 7.99, cancellationURL: "https://app.revolut.com/settings/subscription"),
-        Service(name: "N26 You", category: .other, iconName: "creditcard.fill", typicalCost: 9.90, cancellationURL: "https://app.n26.com/settings/membership"),
-        Service(name: "Enjoy", category: .other, iconName: "car.fill", typicalCost: 0),
-        Service(name: "ShareNow", category: .other, iconName: "car.fill", typicalCost: 0, cancellationURL: "https://www.share-now.com/it/it/account/"),
+        // Amazon Prime - varianti mensile/annuale
+        Service(
+            name: "Amazon Prime Mensile",
+            category: .other,
+            iconName: "shippingbox.fill",
+            domain: "amazon.com",
+            typicalCost: 4.99,
+            billingCycle: .monthly,
+            brandName: "Amazon Prime",
+            variantName: "Mensile",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 4.99)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 14.99)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 8.99)]),
+                RegionPricing(region: "DE", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 8.99)]),
+                RegionPricing(region: "ES", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 4.99)]),
+                RegionPricing(region: "FR", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 6.99)]),
+                RegionPricing(region: "BR", currency: "BRL", plans: [PricingPlan(billingCycle: .monthly, price: 19.90)]),
+                RegionPricing(region: "MX", currency: "MXN", plans: [PricingPlan(billingCycle: .monthly, price: 99.00)])
+            ],
+            cancellationURLs: [
+                "IT": "https://www.amazon.it/gp/primecentral",
+                "US": "https://www.amazon.com/gp/primecentral",
+                "UK": "https://www.amazon.co.uk/gp/primecentral",
+                "DE": "https://www.amazon.de/gp/primecentral",
+                "ES": "https://www.amazon.es/gp/primecentral",
+                "FR": "https://www.amazon.fr/gp/primecentral",
+                "BR": "https://www.amazon.com.br/gp/primecentral",
+                "MX": "https://www.amazon.com.mx/gp/primecentral"
+            ]
+        ),
+        Service(
+            name: "Amazon Prime Annuale",
+            category: .other,
+            iconName: "shippingbox.fill",
+            domain: "amazon.com",
+            typicalCost: 49.90,
+            billingCycle: .yearly,
+            brandName: "Amazon Prime",
+            variantName: "Annuale",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .yearly, price: 49.90)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .yearly, price: 139.00)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .yearly, price: 95.00)]),
+                RegionPricing(region: "DE", currency: "EUR", plans: [PricingPlan(billingCycle: .yearly, price: 89.90)]),
+                RegionPricing(region: "ES", currency: "EUR", plans: [PricingPlan(billingCycle: .yearly, price: 49.90)]),
+                RegionPricing(region: "FR", currency: "EUR", plans: [PricingPlan(billingCycle: .yearly, price: 69.90)]),
+                RegionPricing(region: "BR", currency: "BRL", plans: [PricingPlan(billingCycle: .yearly, price: 166.80)]),
+                RegionPricing(region: "MX", currency: "MXN", plans: [PricingPlan(billingCycle: .yearly, price: 899.00)])
+            ],
+            cancellationURLs: [
+                "IT": "https://www.amazon.it/gp/primecentral",
+                "US": "https://www.amazon.com/gp/primecentral",
+                "UK": "https://www.amazon.co.uk/gp/primecentral"
+            ]
+        ),
+        Service(name: "Deliveroo Plus", category: .other, iconName: "bag.fill", domain: "deliveroo.com", typicalCost: 3.99, cancellationURL: "https://deliveroo.it/account/subscription", availableRegions: ["IT", "UK", "FR", "ES", "DE"]),
+        Service(name: "Glovo Prime", category: .other, iconName: "bag.fill", domain: "glovoapp.com", typicalCost: 5.99, cancellationURL: "https://glovoapp.com/it/profile/", availableRegions: ["IT", "ES"]),
+        Service(name: "Just Eat Plus", category: .other, iconName: "bag.fill", domain: "justeat.com", typicalCost: 4.99, cancellationURL: "https://www.justeat.it/account/", availableRegions: ["IT", "UK"]),
+        Service(name: "Satispay", category: .other, iconName: "creditcard.fill", domain: "satispay.com", typicalCost: 0, availableRegions: ["IT"]),
+        Service(name: "Revolut Premium", category: .other, iconName: "creditcard.fill", domain: "revolut.com", typicalCost: 7.99, cancellationURL: "https://app.revolut.com/settings/subscription"),
+        Service(name: "N26 You", category: .other, iconName: "creditcard.fill", domain: "n26.com", typicalCost: 9.90, cancellationURL: "https://app.n26.com/settings/membership", availableRegions: ["IT", "DE", "ES", "FR"]),
+        Service(name: "Enjoy", category: .other, iconName: "car.fill", typicalCost: 0, availableRegions: ["IT"]),
+        Service(name: "ShareNow", category: .other, iconName: "car.fill", domain: "share-now.com", typicalCost: 0, cancellationURL: "https://www.share-now.com/it/it/account/", availableRegions: ["IT", "DE", "FR", "ES"]),
         Service(name: "Altro", category: .other, iconName: "square.grid.2x2.fill", typicalCost: nil),
+
+        // MARK: - Servizi Regionali US
+        // HBO Max (US, ES, MX, BR)
+        Service(
+            name: "HBO Max",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "max.com",
+            typicalCost: 15.99,
+            availableRegions: ["US", "ES", "MX", "BR"],
+            pricing: [
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 15.99)]),
+                RegionPricing(region: "ES", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 13.99)]),
+                RegionPricing(region: "MX", currency: "MXN", plans: [PricingPlan(billingCycle: .monthly, price: 199.00)]),
+                RegionPricing(region: "BR", currency: "BRL", plans: [PricingPlan(billingCycle: .monthly, price: 34.90)])
+            ],
+            cancellationURLs: ["US": "https://www.max.com/account"]
+        ),
+        Service(
+            name: "Hulu",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "hulu.com",
+            typicalCost: 7.99,
+            availableRegions: ["US"],
+            pricing: [
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 7.99)])
+            ],
+            cancellationURLs: ["US": "https://secure.hulu.com/account"]
+        ),
+        Service(
+            name: "Peacock",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "peacocktv.com",
+            typicalCost: 5.99,
+            availableRegions: ["US", "UK"],
+            pricing: [
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 5.99)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 4.99)])
+            ],
+            cancellationURLs: ["US": "https://www.peacocktv.com/account"]
+        ),
+        Service(
+            name: "ESPN+",
+            category: .streaming,
+            iconName: "sportscourt.fill",
+            domain: "espn.com",
+            typicalCost: 10.99,
+            availableRegions: ["US"],
+            pricing: [
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 10.99)])
+            ],
+            cancellationURLs: ["US": "https://plus.espn.com/account"]
+        ),
+
+        // MARK: - Servizi Regionali UK
+        Service(
+            name: "BBC iPlayer",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "bbc.co.uk",
+            typicalCost: 0,
+            availableRegions: ["UK"]
+        ),
+        Service(
+            name: "NOW TV",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "nowtv.com",
+            typicalCost: 9.99,
+            availableRegions: ["UK"],
+            pricing: [
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 9.99)])
+            ],
+            cancellationURLs: ["UK": "https://www.nowtv.com/account"]
+        ),
+        Service(
+            name: "BritBox",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "britbox.com",
+            typicalCost: 5.99,
+            availableRegions: ["UK", "US"],
+            pricing: [
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 5.99)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 8.99)])
+            ],
+            cancellationURLs: ["UK": "https://www.britbox.com/account"]
+        ),
+
+        // MARK: - Servizi Regionali ES
+        Service(
+            name: "Movistar+",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "movistarplus.es",
+            typicalCost: 10.00,
+            availableRegions: ["ES"],
+            pricing: [
+                RegionPricing(region: "ES", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 10.00)])
+            ],
+            cancellationURLs: ["ES": "https://www.movistar.es/particulares/"]
+        ),
+        Service(
+            name: "Orange TV",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "orange.es",
+            typicalCost: 7.00,
+            availableRegions: ["ES", "FR"],
+            pricing: [
+                RegionPricing(region: "ES", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 7.00)]),
+                RegionPricing(region: "FR", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 9.99)])
+            ]
+        ),
+
+        // MARK: - Servizi Regionali BR
+        Service(
+            name: "Globoplay",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "globoplay.globo.com",
+            typicalCost: 24.90,
+            availableRegions: ["BR"],
+            pricing: [
+                RegionPricing(region: "BR", currency: "BRL", plans: [PricingPlan(billingCycle: .monthly, price: 24.90)])
+            ],
+            cancellationURLs: ["BR": "https://globoplay.globo.com/minha-conta"]
+        ),
+        Service(
+            name: "Telecine",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "telecineplay.com.br",
+            typicalCost: 37.90,
+            availableRegions: ["BR"],
+            pricing: [
+                RegionPricing(region: "BR", currency: "BRL", plans: [PricingPlan(billingCycle: .monthly, price: 37.90)])
+            ]
+        ),
+
+        // MARK: - Servizi Regionali MX
+        Service(
+            name: "Blim",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "blim.com",
+            typicalCost: 109.00,
+            availableRegions: ["MX"],
+            pricing: [
+                RegionPricing(region: "MX", currency: "MXN", plans: [PricingPlan(billingCycle: .monthly, price: 109.00)])
+            ]
+        ),
+        Service(
+            name: "Claro Video",
+            category: .streaming,
+            iconName: "play.tv.fill",
+            domain: "clarovideo.com",
+            typicalCost: 99.00,
+            availableRegions: ["MX", "BR"],
+            pricing: [
+                RegionPricing(region: "MX", currency: "MXN", plans: [PricingPlan(billingCycle: .monthly, price: 99.00)]),
+                RegionPricing(region: "BR", currency: "BRL", plans: [PricingPlan(billingCycle: .monthly, price: 19.90)])
+            ]
+        ),
+
+        // MARK: - Apple One (varianti globali)
+        Service(
+            name: "Apple One Individual",
+            category: .software,
+            iconName: "apple.logo",
+            domain: "apple.com",
+            typicalCost: 19.95,
+            brandName: "Apple One",
+            variantName: "Individual",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 19.95)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 19.95)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 18.95)])
+            ],
+            cancellationURLs: ["IT": "https://support.apple.com/it-it/HT202039"]
+        ),
+        Service(
+            name: "Apple One Family",
+            category: .software,
+            iconName: "apple.logo",
+            domain: "apple.com",
+            typicalCost: 25.95,
+            brandName: "Apple One",
+            variantName: "Family",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 25.95)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 25.95)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 24.95)])
+            ],
+            cancellationURLs: ["IT": "https://support.apple.com/it-it/HT202039"]
+        ),
+        Service(
+            name: "Apple One Premier",
+            category: .software,
+            iconName: "apple.logo",
+            domain: "apple.com",
+            typicalCost: 34.95,
+            brandName: "Apple One",
+            variantName: "Premier",
+            availableRegions: ["US", "UK"],
+            pricing: [
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 37.95)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 34.95)])
+            ],
+            cancellationURLs: ["US": "https://support.apple.com/en-us/HT202039"]
+        ),
+
+        // MARK: - YouTube Premium (varianti)
+        Service(
+            name: "YouTube Premium Individual",
+            category: .streaming,
+            iconName: "play.rectangle.fill",
+            domain: "youtube.com",
+            typicalCost: 11.99,
+            brandName: "YouTube Premium",
+            variantName: "Individual",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 11.99)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 13.99)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 12.99)])
+            ],
+            cancellationURLs: ["IT": "https://www.youtube.com/paid_memberships"]
+        ),
+        Service(
+            name: "YouTube Premium Family",
+            category: .streaming,
+            iconName: "play.rectangle.fill",
+            domain: "youtube.com",
+            typicalCost: 17.99,
+            brandName: "YouTube Premium",
+            variantName: "Family",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 17.99)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 22.99)]),
+                RegionPricing(region: "UK", currency: "GBP", plans: [PricingPlan(billingCycle: .monthly, price: 19.99)])
+            ],
+            cancellationURLs: ["IT": "https://www.youtube.com/paid_memberships"]
+        ),
+        Service(
+            name: "YouTube Premium Student",
+            category: .streaming,
+            iconName: "play.rectangle.fill",
+            domain: "youtube.com",
+            typicalCost: 6.99,
+            brandName: "YouTube Premium",
+            variantName: "Student",
+            pricing: [
+                RegionPricing(region: "IT", currency: "EUR", plans: [PricingPlan(billingCycle: .monthly, price: 6.99)]),
+                RegionPricing(region: "US", currency: "USD", plans: [PricingPlan(billingCycle: .monthly, price: 7.99)])
+            ],
+            cancellationURLs: ["IT": "https://www.youtube.com/paid_memberships"]
+        ),
     ]
 
     // MARK: - Grouped by Category
@@ -300,13 +713,64 @@ struct ServiceCatalog {
     }
 
     // MARK: - Custom Service
-    static func createCustomService(name: String, category: ServiceCategory) -> Service {
+    static func createCustomService(name: String, category: ServiceCategory, typicalCost: Double? = nil) -> Service {
         Service(
             name: name,
             category: category,
             iconName: category.iconName,
-            typicalCost: nil,
+            typicalCost: typicalCost,
             cancellationURL: nil
         )
+    }
+
+    // MARK: - Region-aware Methods
+
+    /// Servizi disponibili per una regione specifica
+    static func services(for regionId: String) -> [Service] {
+        allServices.filter { $0.isAvailable(in: regionId) }
+    }
+
+    /// Servizi raggruppati per brand, filtrati per regione
+    static func groupedByBrand(for regionId: String) -> [ServiceGroup] {
+        let regionServices = services(for: regionId)
+        let grouped = Dictionary(grouping: regionServices, by: { $0.brandName })
+        return grouped.map { brandName, services in
+            ServiceGroup(
+                brandName: brandName,
+                services: services.sorted { ($0.typicalCost ?? 0) < ($1.typicalCost ?? 0) },
+                category: services.first?.category ?? .other
+            )
+        }.sorted { $0.brandName < $1.brandName }
+    }
+
+    /// Cerca servizi filtrati per regione
+    static func search(_ query: String, in regionId: String) -> [Service] {
+        guard query.isNotEmpty else { return services(for: regionId) }
+        let lowercasedQuery = query.lowercased()
+        return services(for: regionId).filter { service in
+            service.name.lowercased().contains(lowercasedQuery) ||
+            service.category.displayName.lowercased().contains(lowercasedQuery)
+        }
+    }
+
+    /// Cerca gruppi di servizi filtrati per regione
+    static func searchGroups(_ query: String, in regionId: String) -> [ServiceGroup] {
+        guard query.isNotEmpty else { return groupedByBrand(for: regionId) }
+        let lowercasedQuery = query.lowercased()
+        return groupedByBrand(for: regionId).filter { group in
+            group.brandName.lowercased().contains(lowercasedQuery) ||
+            group.services.contains { $0.name.lowercased().contains(lowercasedQuery) }
+        }
+    }
+
+    /// Gruppi per categoria, filtrati per regione
+    static func groups(for category: ServiceCategory?, in regionId: String) -> [ServiceGroup] {
+        guard let category = category else { return groupedByBrand(for: regionId) }
+        return groupedByBrand(for: regionId).filter { $0.category == category }
+    }
+
+    /// Trova servizio per ID stabile
+    static func find(byServiceId serviceId: String) -> Service? {
+        allServices.first { $0.serviceId == serviceId }
     }
 }

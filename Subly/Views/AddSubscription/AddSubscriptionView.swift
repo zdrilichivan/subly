@@ -64,7 +64,7 @@ struct AddSubscriptionView: View {
                 }
             }
             .sheet(isPresented: $showingServicePicker) {
-                ServicePickerView(selectedService: $selectedService, category: $category)
+                ServicePickerView(selectedService: $selectedService, category: $category, billingCycle: $billingCycle)
             }
             .alert("Abbonamento tracciato", isPresented: $showingSuccessAlert) {
                 Button("OK") {
