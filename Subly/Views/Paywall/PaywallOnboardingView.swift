@@ -3,6 +3,7 @@
 //  Subly
 //
 //  Paywall mostrato alla fine dell'onboarding
+//  Design Apple-compliant basato su template approvato
 //
 
 import SwiftUI
@@ -20,6 +21,7 @@ struct PaywallOnboardingView: View {
     @State private var isPurchasing = false
     @State private var showSuccessAlert = false
     @State private var showErrorAlert = false
+    @State private var freeTrialEnabled = true
 
     // Inizializzatore per onboarding
     init(hasCompletedOnboarding: Binding<Bool>) {
@@ -35,63 +37,76 @@ struct PaywallOnboardingView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Header con X per chiudere
-                HStack {
-                    Spacer()
-                    Button {
-                        completeOnboarding()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .frame(width: 32, height: 32)
-                            .background(Color(.systemGray5))
-                            .clipShape(Circle())
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Header con X per chiudere (a sinistra)
+                    HStack {
+                        Button {
+                            completeOnboarding()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 36, height: 36)
+                                .background(Color.appPrimary.opacity(0.8))
+                                .clipShape(Circle())
+                        }
+                        Spacer()
                     }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, geometry.safeAreaInsets.top + 8)
+                    .padding(.horizontal, 20)
+                    .padding(.top, isSheet ? 12 : geometry.safeAreaInsets.top + 16)
 
-                // Logo/Icon
-                headerSection
-                    .padding(.top, 8)
+                    // Logo/Icon
+                    headerSection
+                        .padding(.top, 16)
 
-                Spacer()
-                    .frame(height: 20)
+                    Spacer()
+                        .frame(height: 24)
 
-                // Benefits list
-                benefitsSection
-                    .padding(.horizontal, 24)
+                    // Benefits card
+                    benefitsCard
+                        .padding(.horizontal, 20)
 
-                Spacer()
-                    .frame(height: 20)
+                    Spacer()
+                        .frame(height: 20)
 
-                // Plan cards
-                planCardsSection
-                    .padding(.horizontal, 24)
+                    // Plan cards (affiancate)
+                    planCardsSection
+                        .padding(.horizontal, 20)
 
-                Spacer()
-                    .frame(height: 12)
+                    Spacer()
+                        .frame(height: 16)
 
-                // Disclosure text (Apple compliance)
-                disclosureText
-                    .padding(.horizontal, 24)
+                    // Free Trial Toggle
+                    freeTrialToggle
+                        .padding(.horizontal, 20)
 
-                Spacer()
-                    .frame(height: 12)
+                    Spacer()
+                        .frame(height: 20)
 
-                // Bottom section
-                VStack(spacing: 10) {
+                    // Purchase button
                     purchaseButton
+                        .padding(.horizontal, 20)
 
+                    Spacer()
+                        .frame(height: 12)
+
+                    // Disclosure text (Apple compliance)
+                    disclosureText
+                        .padding(.horizontal, 20)
+
+                    Spacer()
+                        .frame(height: 16)
+
+                    // Footer links
                     footerLinks
+
+                    Spacer()
+                        .frame(height: geometry.safeAreaInsets.bottom + 20)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, geometry.safeAreaInsets.bottom + 16)
             }
         }
-        .background(Color(.systemBackground))
+        .background(Color(.systemGray6))
         .ignoresSafeArea()
         .alert(String(localized: "Abbonamento attivato!"), isPresented: $showSuccessAlert) {
             Button("OK") {
@@ -111,142 +126,101 @@ struct PaywallOnboardingView: View {
 
     private var headerSection: some View {
         VStack(spacing: 8) {
-            // App Icon
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.appPrimary.opacity(0.2), .appSecondary.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+            // Crown icon (senza cerchio, come nello screenshot)
+            Image(systemName: "crown.fill")
+                .font(.system(size: 50))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.yellow, Color.orange],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    .frame(width: 90, height: 90)
+                )
 
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.appPrimary, .appSecondary],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 70, height: 70)
-                    .shadow(color: Color.appPrimary.opacity(0.4), radius: 10, x: 0, y: 4)
-
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-
-            Text(String(localized: "Sblocca tutto il potenziale"))
-                .font(.title3)
+            Text(String(localized: "Sblocca Premium"))
+                .font(.title)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
 
-            Text(String(localized: "Prendi il controllo dei tuoi abbonamenti"))
-                .font(.caption)
+            Text(String(localized: "Accesso illimitato a tutte le funzioni"))
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
     }
 
-    // MARK: - Benefits Section
+    // MARK: - Benefits Card
 
-    private var benefitsSection: some View {
-        VStack(spacing: 10) {
-            PaywallBenefitRow(
-                icon: "infinity",
-                iconColor: .green,
-                title: String(localized: "Abbonamenti Illimitati"),
-                description: String(localized: "Traccia tutti i tuoi servizi")
-            )
-
-            PaywallBenefitRow(
-                icon: "bell.badge",
-                iconColor: .blue,
-                title: String(localized: "Notifiche Personalizzate"),
-                description: String(localized: "Scegli quando ricevere promemoria")
-            )
-
-            PaywallBenefitRow(
-                icon: "chart.pie",
-                iconColor: .purple,
-                title: String(localized: "Statistiche Avanzate"),
-                description: String(localized: "Grafici e proiezioni di spesa")
-            )
-
-            PaywallBenefitRow(
-                icon: "icloud",
-                iconColor: .cyan,
-                title: String(localized: "Backup Cloud"),
-                description: String(localized: "Sincronizza su tutti i dispositivi")
-            )
-
-            PaywallBenefitRow(
-                icon: "dollarsign.circle",
-                iconColor: .orange,
-                title: String(localized: "Multi-Valuta"),
-                description: String(localized: "Converti EUR, USD, GBP e altre")
-            )
-
-            PaywallBenefitRow(
-                icon: "brain.head.profile",
-                iconColor: .pink,
-                title: String(localized: "Money Coach AI"),
-                description: String(localized: "Consigli smart per risparmiare")
-            )
+    private var benefitsCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            PaywallBenefitItem(icon: "infinity", iconColor: .green, text: String(localized: "Abbonamenti illimitati"))
+            PaywallBenefitItem(icon: "bell.badge.fill", iconColor: .blue, text: String(localized: "Notifiche personalizzate"))
+            PaywallBenefitItem(icon: "chart.pie.fill", iconColor: .purple, text: String(localized: "Statistiche avanzate"))
+            PaywallBenefitItem(icon: "icloud.fill", iconColor: .cyan, text: String(localized: "Backup e sincronizzazione"))
+            PaywallBenefitItem(icon: "brain.head.profile", iconColor: .pink, text: String(localized: "Money Coach AI"))
         }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemBackground))
+        )
     }
 
-    // MARK: - Plan Cards Section
+    // MARK: - Plan Cards Section (Affiancate)
 
     private var planCardsSection: some View {
-        VStack(spacing: 12) {
+        HStack(spacing: 12) {
             // Annual Plan Card
-            PaywallPlanCardInternal(
-                title: String(localized: "Piano Annuale"),
-                price: storeManager.annualPrice,
-                period: String(localized: "all'anno"),
+            AnnualPlanCard(
                 savingsPercent: storeManager.savingsPercentage,
-                isSelected: storeManager.selectedPlan == .annual
+                price: storeManager.annualPrice,
+                isSelected: storeManager.selectedPlan == .annual && !freeTrialEnabled
             ) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     storeManager.selectedPlan = .annual
+                    freeTrialEnabled = false
                 }
                 Haptic.selection()
             }
 
-            // Weekly Plan Card
-            PaywallPlanCardInternal(
-                title: String(localized: "Piano Settimanale"),
-                price: storeManager.weeklyPrice,
-                period: String(localized: "a settimana"),
-                savingsPercent: nil,
-                isSelected: storeManager.selectedPlan == .weekly
+            // Weekly Plan with Trial Card
+            TrialPlanCard(
+                weeklyPrice: storeManager.weeklyPrice,
+                isSelected: storeManager.selectedPlan == .weekly || freeTrialEnabled
             ) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     storeManager.selectedPlan = .weekly
+                    freeTrialEnabled = true
                 }
                 Haptic.selection()
             }
         }
     }
 
-    // MARK: - Disclosure Text (Apple Compliance)
+    // MARK: - Free Trial Toggle
 
-    private var disclosureText: some View {
-        Text(disclosureString)
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-            .lineSpacing(2)
-    }
+    private var freeTrialToggle: some View {
+        HStack {
+            Text(String(localized: "Prova gratuita attiva"))
+                .font(.subheadline)
+                .foregroundColor(.primary)
 
-    private var disclosureString: String {
-        let price = storeManager.selectedPlan == .annual ? storeManager.annualPrice : storeManager.weeklyPrice
-        let period = storeManager.selectedPlan == .annual ? String(localized: "anno") : String(localized: "settimana")
-        return String(localized: "Dopo la prova gratuita di 3 giorni, l'abbonamento si rinnova automaticamente a \(price)/\(period). Puoi annullare in qualsiasi momento dalle impostazioni del tuo account Apple almeno 24 ore prima della fine del periodo corrente.")
+            Spacer()
+
+            Toggle("", isOn: $freeTrialEnabled)
+                .labelsHidden()
+                .tint(.appPrimary)
+                .onChange(of: freeTrialEnabled) { _, newValue in
+                    if newValue {
+                        storeManager.selectedPlan = .weekly
+                    }
+                }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+        )
     }
 
     // MARK: - Purchase Button
@@ -273,10 +247,8 @@ struct PaywallOnboardingView: View {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 } else {
-                    Text(buttonText)
+                    Text(freeTrialEnabled ? String(localized: "Prova Gratis") : String(localized: "Abbonati Ora"))
                         .fontWeight(.semibold)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
                 }
             }
             .font(.headline)
@@ -285,29 +257,84 @@ struct PaywallOnboardingView: View {
             .frame(height: 54)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(
-                        LinearGradient(
-                            colors: [.appPrimary, .appSecondary],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .fill(Color.appPrimary)
             )
-            .shadow(color: Color.appPrimary.opacity(0.3), radius: 8, x: 0, y: 4)
             .opacity((isPurchasing || storeManager.isLoading) ? 0.7 : 1.0)
         }
         .disabled(isPurchasing || storeManager.isLoading)
     }
 
-    private var buttonText: String {
-        return String(localized: "Inizia la prova gratuita")
+    // MARK: - Disclosure Text (Apple Compliance)
+
+    private var disclosureText: some View {
+        Text(disclosureString)
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 8)
+    }
+
+    private var disclosureString: String {
+        if freeTrialEnabled || storeManager.selectedPlan == .weekly {
+            return String(localized: "Abbonamento Settimanale Premium: prova gratuita di 3 giorni, poi \(storeManager.weeklyPrice)/settimana. Rinnovo automatico settimanale. Puoi annullare in qualsiasi momento dalle Impostazioni.")
+        } else {
+            return String(localized: "Abbonamento Annuale Premium: \(storeManager.annualPrice)/anno. Rinnovo automatico annuale. Puoi annullare in qualsiasi momento dalle Impostazioni.")
+        }
     }
 
     // MARK: - Footer Links
 
+    private var termsURL: URL {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        switch languageCode {
+        case "it":
+            return URL(string: "https://zdrilichivan.github.io/subly/terms.html")!
+        case "es":
+            return URL(string: "https://zdrilichivan.github.io/subly/terms_es.html")!
+        default:
+            return URL(string: "https://zdrilichivan.github.io/subly/terms_en.html")!
+        }
+    }
+
+    private var privacyURL: URL {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        switch languageCode {
+        case "it":
+            return URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!
+        case "es":
+            return URL(string: "https://zdrilichivan.github.io/subly/privacy-policy-es.html")!
+        default:
+            return URL(string: "https://zdrilichivan.github.io/subly/privacy-policy-en.html")!
+        }
+    }
+
     private var footerLinks: some View {
-        HStack(spacing: 12) {
-            Button(String(localized: "Ripristina")) {
+        VStack(spacing: 12) {
+            // Terms & Privacy links con icone (colorati come nello screenshot)
+            HStack(spacing: 20) {
+                Link(destination: termsURL) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "doc.text.fill")
+                            .font(.caption)
+                        Text(String(localized: "Termini di Utilizzo"))
+                            .font(.subheadline)
+                    }
+                    .foregroundColor(.appPrimary)
+                }
+
+                Link(destination: privacyURL) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hand.raised.fill")
+                            .font(.caption)
+                        Text(String(localized: "Privacy Policy"))
+                            .font(.subheadline)
+                    }
+                    .foregroundColor(.appPrimary)
+                }
+            }
+
+            // Restore Purchases
+            Button {
                 Task {
                     await storeManager.restorePurchases()
                     if storeManager.isPro {
@@ -316,28 +343,10 @@ struct PaywallOnboardingView: View {
                         showErrorAlert = true
                     }
                 }
-            }
-            .font(.caption)
-            .foregroundColor(.secondary)
-
-            Text("•")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/terms.html")!) {
-                Text(String(localized: "Termini"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Text("•")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
-                Text(String(localized: "Privacy"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            } label: {
+                Text(String(localized: "Ripristina acquisti"))
+                    .font(.subheadline)
+                    .foregroundColor(.appPrimary)
             }
         }
     }
@@ -356,118 +365,145 @@ struct PaywallOnboardingView: View {
     }
 }
 
-// MARK: - Paywall Benefit Row
+// MARK: - Paywall Benefit Item (Semplificato)
 
-private struct PaywallBenefitRow: View {
+private struct PaywallBenefitItem: View {
     let icon: String
     let iconColor: Color
-    let title: String
-    let description: String
+    let text: String
 
     var body: some View {
         HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(iconColor.opacity(0.12))
-                    .frame(width: 42, height: 42)
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundColor(iconColor)
+                .frame(width: 24)
 
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(iconColor)
-            }
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.primary)
 
             Spacer()
         }
     }
 }
 
-// MARK: - Paywall Plan Card Internal
+// MARK: - Annual Plan Card
 
-private struct PaywallPlanCardInternal: View {
-    let title: String
+private struct AnnualPlanCard: View {
+    let savingsPercent: Int
     let price: String
-    let period: String
-    let savingsPercent: Int?
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                // Checkbox
-                ZStack {
-                    Circle()
-                        .stroke(
-                            isSelected ? Color.appPrimary : Color(.systemGray4),
-                            lineWidth: 2
-                        )
-                        .frame(width: 24, height: 24)
+            VStack(spacing: 8) {
+                // Save badge
+                Text("SAVE \(savingsPercent)%")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(Color.red)
+                    )
 
-                    if isSelected {
-                        Circle()
-                            .fill(Color.appPrimary)
-                            .frame(width: 16, height: 16)
-                    }
-                }
-
-                // Plan info
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 8) {
-                        Text(title)
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
-
-                        if let savings = savingsPercent {
-                            Text("-\(savings)%")
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.green)
-                                )
-                        }
-                    }
-                }
-
-                Spacer()
+                // Title
+                Text(String(localized: "Annuale"))
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
 
                 // Price
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(price)
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundColor(isSelected ? .appPrimary : .primary)
+                Text("\(price) " + String(localized: "all'anno"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
 
-                    Text(period)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                // Selection indicator
+                Circle()
+                    .stroke(isSelected ? Color.appPrimary : Color(.systemGray4), lineWidth: 2)
+                    .frame(width: 24, height: 24)
+                    .overlay(
+                        Circle()
+                            .fill(isSelected ? Color.appPrimary : Color.clear)
+                            .frame(width: 12, height: 12)
+                    )
             }
-            .padding(16)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 8)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemGroupedBackground))
+                    .fill(Color(.systemBackground))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        isSelected ? Color.appPrimary : Color.clear,
-                        lineWidth: 2
+                    .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Trial Plan Card
+
+private struct TrialPlanCard: View {
+    let weeklyPrice: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                // FREE badge
+                Text(String(localized: "GRATIS"))
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(Color.appPrimary)
                     )
+
+                // Title
+                Text(String(localized: "Prova 3 Giorni"))
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+
+                // Price after trial (IMPORTANTE per Apple)
+                Text(String(localized: "poi \(weeklyPrice)/settimana"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                // Selection indicator (checkmark quando selezionato)
+                ZStack {
+                    Circle()
+                        .stroke(isSelected ? Color.appPrimary : Color(.systemGray4), lineWidth: 2)
+                        .frame(width: 24, height: 24)
+
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.appPrimary)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.appPrimary.opacity(0.1) : Color(.systemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 2)
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -483,7 +519,7 @@ struct PaywallBenefitCard: View {
     let description: String
 
     var body: some View {
-        PaywallBenefitRow(icon: icon, iconColor: iconColor, title: title, description: description)
+        BenefitRow(icon: icon, iconColor: iconColor, title: title, description: description)
     }
 }
 
@@ -498,14 +534,10 @@ struct PaywallPlanCard: View {
     let action: () -> Void
 
     var body: some View {
-        PaywallPlanCardInternal(
-            title: title,
-            price: price,
-            period: period,
-            savingsPercent: savingsPercent,
-            isSelected: isSelected,
-            action: action
-        )
+        Button(action: action) {
+            Text(title)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

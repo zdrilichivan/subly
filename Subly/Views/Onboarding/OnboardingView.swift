@@ -61,6 +61,14 @@ struct OnboardingView: View {
                         .tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                .onChange(of: currentPage) { _, newValue in
+                    // Limita la navigazione ai valori validi
+                    if newValue < 0 {
+                        currentPage = 0
+                    } else if newValue >= totalPages {
+                        currentPage = totalPages - 1
+                    }
+                }
 
                 // Page indicators
                 PageIndicator(
@@ -86,6 +94,8 @@ struct OnboardingView: View {
                         .animation(.easeInOut(duration: 0.2), value: nameInput.trimmed.isEmpty)
                     } else {
                         Button {
+                            // Verifica che non siamo già all'ultima pagina
+                            guard currentPage < totalPages - 1 else { return }
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 currentPage += 1
                             }
@@ -100,14 +110,13 @@ struct OnboardingView: View {
                 .padding(.bottom, 40)
             }
             .background(Color(.systemGroupedBackground))
-
-            // Paywall overlay
-            if showPaywall {
-                PaywallOnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-            }
         }
-        .animation(.easeInOut(duration: 0.3), value: showPaywall)
+        .sheet(isPresented: $showPaywall, onDismiss: {
+            // Quando la sheet viene chiusa, completa l'onboarding
+            hasCompletedOnboarding = true
+        }) {
+            PaywallOnboardingView()
+        }
     }
 
     // MARK: - Page 1: Welcome
@@ -490,6 +499,9 @@ struct OnboardingView: View {
     // MARK: - Actions
 
     private func saveNameAndShowPaywall() {
+        // Guard: verifica che il nome non sia vuoto
+        guard !nameInput.trimmed.isEmpty else { return }
+
         userName = nameInput.trimmed
         isNameFieldFocused = false
 

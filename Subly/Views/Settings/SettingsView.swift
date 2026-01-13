@@ -35,6 +35,30 @@ struct SettingsView: View {
         return "\(version) (\(build))"
     }
 
+    private var termsURL: URL {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        switch languageCode {
+        case "it":
+            return URL(string: "https://zdrilichivan.github.io/subly/terms.html")!
+        case "es":
+            return URL(string: "https://zdrilichivan.github.io/subly/terms_es.html")!
+        default:
+            return URL(string: "https://zdrilichivan.github.io/subly/terms_en.html")!
+        }
+    }
+
+    private var privacyURL: URL {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        switch languageCode {
+        case "it":
+            return URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!
+        case "es":
+            return URL(string: "https://zdrilichivan.github.io/subly/privacy-policy-es.html")!
+        default:
+            return URL(string: "https://zdrilichivan.github.io/subly/privacy-policy-en.html")!
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -618,7 +642,7 @@ struct SettingsView: View {
     private var legalSupportCard: some View {
         VStack(spacing: 0) {
             // Privacy Policy
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/privacy-policy.html")!) {
+            Link(destination: privacyURL) {
                 SettingsCardRow(
                     icon: "hand.raised.fill",
                     iconColor: .blue,
@@ -630,7 +654,7 @@ struct SettingsView: View {
             Divider().padding(.leading, 56)
 
             // Terms of Service
-            Link(destination: URL(string: "https://zdrilichivan.github.io/subly/terms.html")!) {
+            Link(destination: termsURL) {
                 SettingsCardRow(
                     icon: "doc.text.fill",
                     iconColor: .purple,
