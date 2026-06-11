@@ -38,8 +38,7 @@ class StoreManager: ObservableObject {
     @Published private(set) var isPro: Bool = false
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
-    @Published var selectedPlan: SubscriptionPlan = .weekly
-    @Published var freeTrialEnabled: Bool = true
+    @Published var selectedPlan: SubscriptionPlan = .annual
 
     // MARK: - Private Properties
     private var updateListenerTask: Task<Void, Error>?
@@ -61,36 +60,34 @@ class StoreManager: ObservableObject {
         }
     }
 
+    // Prezzi visualizzati: nessun fallback hardcoded in EUR, il placeholder
+    // evita di mostrare una valuta sbagliata a utenti fuori dall'eurozona
     var weeklyPrice: String {
-        weeklyProduct?.displayPrice ?? "€2,99"
+        weeklyProduct?.displayPrice ?? "—"
     }
 
     var annualPrice: String {
-        annualProduct?.displayPrice ?? "€39,99"
+        annualProduct?.displayPrice ?? "—"
     }
 
-    /// Prezzo annuale se pagato settimanalmente (€2.99 × 52 = €155.48)
+    /// Prezzo annuale se pagato settimanalmente (es. €2.99 × 52)
     var annualPriceIfWeekly: String {
-        if let product = weeklyProduct {
-            let yearly = product.price * 52
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.locale = product.priceFormatStyle.locale
-            return formatter.string(from: yearly as NSDecimalNumber) ?? "€155,48"
-        }
-        return "€155,48"
+        guard let product = weeklyProduct else { return "—" }
+        let yearly = product.price * 52
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = product.priceFormatStyle.locale
+        return formatter.string(from: yearly as NSDecimalNumber) ?? "—"
     }
 
-    /// Equivalente settimanale del piano annuale (€39.99 / 52 = €0.77)
+    /// Equivalente settimanale del piano annuale (es. €39.99 / 52)
     var annualWeeklyEquivalent: String {
-        if let product = annualProduct {
-            let weekly = product.price / 52
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.locale = product.priceFormatStyle.locale
-            return formatter.string(from: weekly as NSDecimalNumber) ?? "€0,77"
-        }
-        return "€0,77"
+        guard let product = annualProduct else { return "—" }
+        let weekly = product.price / 52
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = product.priceFormatStyle.locale
+        return formatter.string(from: weekly as NSDecimalNumber) ?? "—"
     }
 
     var savingsPercentage: Int {
@@ -243,6 +240,14 @@ class StoreManager: ObservableObject {
     // MARK: - Update Purchased Products
 
     func updatePurchasedProducts() async {
+        #if DEBUG
+        // Stato Pro forzato per screenshot/ispezione UI da simctl
+        if UITestAutopilot.forcePro {
+            isPro = true
+            return
+        }
+        #endif
+
         var hasPro = false
 
         for await result in Transaction.currentEntitlements {

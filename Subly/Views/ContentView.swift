@@ -18,6 +18,12 @@ struct ContentView: View {
         appearance.backgroundColor = UIColor.systemBackground
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
+
+        #if DEBUG
+        if let tab = UITestAutopilot.initialTab {
+            _selectedTab = State(initialValue: tab)
+        }
+        #endif
     }
 
     var body: some View {

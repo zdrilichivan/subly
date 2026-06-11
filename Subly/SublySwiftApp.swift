@@ -18,6 +18,10 @@ struct SublySwiftApp: App {
     @State private var showUsageCheckSheet = false
 
     init() {
+        #if DEBUG
+        UITestAutopilot.applyOnLaunch()
+        #endif
+
         // Setup callback per aprire pagina di cancellazione dalle notifiche
         NotificationService.shared.onOpenCancellationPage = { serviceName in
             if let service = ServiceCatalog.find(byName: serviceName),
@@ -71,6 +75,10 @@ struct SublySwiftApp: App {
     }
 
     private func checkiCloudStatus() {
+        #if DEBUG
+        // Niente alert iCloud durante screenshot/ispezione UI da simctl
+        guard !UITestAutopilot.isActive else { return }
+        #endif
         CKContainer.default().accountStatus { status, error in
             DispatchQueue.main.async {
                 switch status {

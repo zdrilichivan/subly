@@ -64,6 +64,18 @@ struct OnboardingView: View {
         estimatedMonthlyCost * 12
     }
 
+    init(hasCompletedOnboarding: Binding<Bool>) {
+        self._hasCompletedOnboarding = hasCompletedOnboarding
+        #if DEBUG
+        if let page = UITestAutopilot.onboardingPage {
+            _currentPage = State(initialValue: page)
+        }
+        if UITestAutopilot.showPaywall {
+            _showPaywall = State(initialValue: true)
+        }
+        #endif
+    }
+
     var body: some View {
         ZStack {
             // Main onboarding content
