@@ -10,6 +10,12 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var viewModel: SubscriptionViewModel
     @State private var selectedTab = 0
+    @State private var showingWhatsNew = false
+    @AppStorage("whatsNewShownVersion") private var whatsNewShownVersion = ""
+
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
+    }
 
     init() {
         // Tab bar meno trasparente
@@ -57,6 +63,19 @@ struct ContentView: View {
                 .tag(3)
         }
         .tint(Color(red: 0.25, green: 0.30, blue: 0.55)) // Indaco più intenso
+        .onAppear {
+            // What's New: solo alla prima apertura dopo un aggiornamento.
+            // I nuovi utenti non la vedono (l'onboarding marca la versione).
+            if whatsNewShownVersion != appVersion {
+                whatsNewShownVersion = appVersion
+                showingWhatsNew = true
+            }
+            // Controllo aggiornamenti (max 1/giorno, silenzioso)
+            Task { await UpdateCheckService.shared.checkIfNeeded() }
+        }
+        .sheet(isPresented: $showingWhatsNew) {
+            WhatsNewView { showingWhatsNew = false }
+        }
     }
 }
 

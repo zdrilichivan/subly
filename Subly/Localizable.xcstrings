@@ -959,6 +959,22 @@
         }
       }
     },
+    "Aggiorna": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar"
+          }
+        }
+      }
+    },
     "Aggiungi abbonamento": {
       "localizations": {
         "en": {
@@ -1420,6 +1436,22 @@
       }
     },
     "Avvisi 3 giorni prima di ogni rinnovo, all'orario che scegli tu": {},
+    "Avvisi in tempo reale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Real-time alerts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisos en tiempo real"
+          }
+        }
+      }
+    },
     "Backup e sincronizzazione": {
       "localizations": {
         "en": {
@@ -1606,6 +1638,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Buongiorno"
+          }
+        }
+      }
+    },
+    "C'è una nuova versione di Subly": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new version of Subly is available"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay una nueva versión de Subly"
           }
         }
       }
@@ -2057,6 +2105,22 @@
         }
       }
     },
+    "Coach AI personale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personal AI coach"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coach de IA personal"
+          }
+        }
+      }
+    },
     "Collega Gmail e lascia che l'intelligenza artificiale trovi automaticamente tutti gli abbonamenti nascosti nelle tue ricevute.": {
       "extractionState": "stale",
       "localizations": {
@@ -2460,6 +2524,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Considera el coste total de la próxima compra"
+          }
+        }
+      }
+    },
+    "Consigli generati sui tuoi abbonamenti, sfide settimanali e streak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advice generated on your subscriptions, weekly challenges and streaks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consejos generados sobre tus suscripciones, retos semanales y rachas"
           }
         }
       }
@@ -2916,6 +2996,22 @@
         }
       }
     },
+    "Date senza pensieri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dates without the hassle"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fechas sin preocupaciones"
+          }
+        }
+      }
+    },
     "Decidi di iniziare oggi, non domani.": {
       "localizations": {
         "en": {
@@ -3024,6 +3120,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detalle de categorías"
+          }
+        }
+      }
+    },
+    "Disdette che valgono": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancellations that count"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelaciones que cuentan"
           }
         }
       }
@@ -3163,6 +3275,22 @@
       }
     },
     "E ti dà il link diretto per disdire ciò che non usi": {},
+    "Ecco cosa trovi in questa versione": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Here's what's new in this version"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto es lo nuevo en esta versión"
+          }
+        }
+      }
+    },
     "Elenca le spese fisse": {
       "localizations": {
         "en": {
@@ -4491,6 +4619,22 @@
         }
       }
     },
+    "Il prossimo rinnovo sempre sott'occhio, senza aprire l'app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your next renewal always in sight, without opening the app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu próxima renovación siempre a la vista, sin abrir la app"
+          }
+        }
+      }
+    },
     "Il segreto della ricchezza è semplice: spendi meno di quanto guadagni.": {
       "localizations": {
         "en": {
@@ -5755,6 +5899,22 @@
         }
       }
     },
+    "Lock screen e Dynamic Island il giorno del rinnovo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Screen and Dynamic Island on renewal day"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pantalla de bloqueo y Dynamic Island el día de la renovación"
+          }
+        }
+      }
+    },
     "Magari più tardi": {
       "localizations": {
         "en": {
@@ -6563,6 +6723,22 @@
         }
       }
     },
+    "Non ricordi quando ti addebitano? Lo stimiamo noi, tu confermi con un tocco": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't remember when you get charged? We estimate it, you confirm with a tap"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿No recuerdas cuándo te cobran? Lo estimamos nosotros, tú confirmas con un toque"
+          }
+        }
+      }
+    },
     "Non rimandare: i migliori risultati vengono dall'azione immediata.": {
       "localizations": {
         "en": {
@@ -7256,6 +7432,22 @@
         }
       }
     },
+    "Più tardi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más tarde"
+          }
+        }
+      }
+    },
     "Posso coinvolgere qualcuno per motivarmi?": {
       "localizations": {
         "en": {
@@ -7886,6 +8078,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Prueba todas las funciones Pro sin compromiso"
+          }
+        }
+      }
+    },
+    "Prova tutto gratis per 3 giorni": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try everything free for 3 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pruébalo todo gratis durante 3 días"
           }
         }
       }
@@ -10331,6 +10539,22 @@
       }
     },
     "Subly ti avvisa prima di ogni rinnovo": {},
+    "Subly è cresciuta!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subly has grown!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Subly ha crecido!"
+          }
+        }
+      }
+    },
     "Suggerimenti": {
       "localizations": {
         "en": {
@@ -11141,6 +11365,22 @@
         }
       }
     },
+    "Vedi quanto liberi ogni anno quando tagli un abbonamento": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See how much you free up each year when you cut a subscription"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mira cuánto liberas cada año al cortar una suscripción"
+          }
+        }
+      }
+    },
     "Vendi quello che non usi": {
       "localizations": {
         "en": {
@@ -11272,6 +11512,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fin de semana a 0€"
+          }
+        }
+      }
+    },
+    "Widget per la schermata Home": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home Screen widget"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget para la pantalla de inicio"
           }
         }
       }

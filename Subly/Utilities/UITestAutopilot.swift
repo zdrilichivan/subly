@@ -48,6 +48,16 @@ enum UITestAutopilot {
         if skipOnboarding {
             UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
         }
+        // La sheet What's New comparirebbe in ogni screenshot:
+        // soppressa di default, forzabile con UITEST_WHATSNEW=1
+        if env["UITEST_WHATSNEW"] == "1" {
+            UserDefaults.standard.set("0.0", forKey: "whatsNewShownVersion")
+        } else {
+            UserDefaults.standard.set(
+                Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0",
+                forKey: "whatsNewShownVersion"
+            )
+        }
         if forcePro {
             UserDefaults.standard.set(true, forKey: "isSublyPro")
         }

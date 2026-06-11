@@ -186,6 +186,11 @@ struct OnboardingView: View {
                 }
             }
             AnalyticsService.shared.track(.onboardingCompleted)
+            // I nuovi utenti hanno appena visto tutto: niente What's New
+            UserDefaults.standard.set(
+                Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0",
+                forKey: "whatsNewShownVersion"
+            )
             hasCompletedOnboarding = true
         }) {
             PaywallOnboardingView(source: "onboarding")

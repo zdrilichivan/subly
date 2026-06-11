@@ -32,6 +32,7 @@ struct DashboardView: View {
     @ObservedObject private var storeManager = StoreManager.shared
     @StateObject private var coachService = PersonalCoachService.shared
     @StateObject private var tipsService = DailyTipsService.shared
+    @StateObject private var updateService = UpdateCheckService.shared
 
     private let insightService = InsightService.shared
 
@@ -56,6 +57,11 @@ struct DashboardView: View {
                         VStack(spacing: Spacing.lg) {
                             // Custom Header
                             headerSection
+
+                            // Nuova versione disponibile sull'App Store
+                            if updateService.shouldShowBanner {
+                                updateBanner
+                            }
 
                             // Cards statistiche
                             statsCardsSection
@@ -344,6 +350,47 @@ struct DashboardView: View {
                 color: .appSecondary
             )
         }
+    }
+
+    // MARK: - Update Banner
+
+    private var updateBanner: some View {
+        HStack(spacing: Spacing.sm) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.title3)
+                .foregroundColor(.white)
+
+            Text(String(localized: "C'è una nuova versione di Subly"))
+                .font(Typography.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+
+            Spacer()
+
+            if let url = updateService.storeURL {
+                Link(String(localized: "Aggiorna"), destination: url)
+                    .font(Typography.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.appPrimary)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.white))
+            }
+
+            Button {
+                updateService.dismissBanner()
+                Haptic.selection()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.8))
+            }
+        }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color.white.opacity(0.15))
+        )
     }
 
     // MARK: - Savings Banner
