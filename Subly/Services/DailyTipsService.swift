@@ -74,6 +74,11 @@ class DailyTipsService: ObservableObject {
 
     private let tips: [DailyTip] = DailyTipsService.loadTips()
 
+    /// Sfide settimanali (usate da PersonalCoachService per la rotazione)
+    var challengeTips: [DailyTip] {
+        tips.filter { $0.category == .challenge }
+    }
+
     private init() {
         self.todaysTip = DailyTipsService.loadTips().first!
         self.todaysTip = getTodaysTip()

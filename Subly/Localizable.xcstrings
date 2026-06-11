@@ -179,6 +179,22 @@
         }
       }
     },
+    "%lld giorni di fila": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-day streak"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld días seguidos"
+          }
+        }
+      }
+    },
     "%lld mesi di fondo emergenza": {
       "localizations": {
         "en": {
@@ -3352,6 +3368,22 @@
         }
       }
     },
+    "Fatto oggi ✓": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done today ✓"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho hoy ✓"
+          }
+        }
+      }
+    },
     "Felicità ≠ Acquisti": {
       "localizations": {
         "en": {
@@ -4263,6 +4295,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "El truco del termostato"
+          }
+        }
+      }
+    },
+    "Il coach sta analizzando i tuoi abbonamenti…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The coach is analyzing your subscriptions…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El coach está analizando tus suscripciones…"
           }
         }
       }
@@ -7048,6 +7096,22 @@
         }
       }
     },
+    "Per i tuoi abbonamenti": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For your subscriptions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para tus suscripciones"
+          }
+        }
+      }
+    },
     "Per ogni abbonamento, chiediti: l'ho usato nell'ultima settimana?": {
       "localizations": {
         "en": {
@@ -9134,6 +9198,22 @@
         }
       }
     },
+    "Segna come fatto oggi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as done today"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcar como hecho hoy"
+          }
+        }
+      }
+    },
     "Segna la scadenza del prossimo rinnovo": {
       "localizations": {
         "en": {
@@ -9385,6 +9465,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reto"
+          }
+        }
+      }
+    },
+    "Sfida completata! 🎉": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Challenge completed! 🎉"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Reto completado! 🎉"
+          }
+        }
+      }
+    },
+    "Sfida della settimana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Challenge of the week"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reto de la semana"
           }
         }
       }
@@ -11350,6 +11462,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "luego %@/semana"
+          }
+        }
+      }
+    },
+    "rinnovo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "renewal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "renovación"
           }
         }
       }

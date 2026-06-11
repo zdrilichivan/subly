@@ -1,0 +1,66 @@
+{
+  "sourceLanguage" : "it",
+  "strings" : {
+    "Oggi" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Hoy" } }
+      }
+    },
+    "Domani" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tomorrow" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mañana" } }
+      }
+    },
+    "Tra %lld giorni" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "In %lld days" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "En %lld días" } }
+      }
+    },
+    "Prossimo rinnovo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next renewal" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Próxima renovación" } }
+      }
+    },
+    "Tieni d'occhio i rinnovi senza aprire l'app." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep an eye on renewals without opening the app." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Vigila las renovaciones sin abrir la app." } }
+      }
+    },
+    "Totale" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Total" } }
+      }
+    },
+    "/mese" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "/month" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "/mes" } }
+      }
+    },
+    "Widget incluso in Subly Pro" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Widget included in Subly Pro" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Widget incluido en Subly Pro" } }
+      }
+    },
+    "Apri l'app per sbloccarlo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open the app to unlock it" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abre la app para desbloquearlo" } }
+      }
+    },
+    "Apri Subly e aggiungi i tuoi abbonamenti" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Subly and add your subscriptions" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abre Subly y añade tus suscripciones" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

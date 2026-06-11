@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct DailyTipsView: View {
+    @EnvironmentObject var viewModel: SubscriptionViewModel
     @StateObject private var tipsService = DailyTipsService.shared
+    @StateObject private var coachService = PersonalCoachService.shared
     @ObservedObject private var storeManager = StoreManager.shared
     @State private var showingNotificationAlert = false
     @State private var animateCard = false
@@ -43,14 +45,20 @@ struct DailyTipsView: View {
                     .offset(y: -220)
 
                     VStack(spacing: 24) {
-                        // Page Header
+                        // Page Header (con streak)
                         pageHeaderSection
 
                         // Header
                         headerSection
 
+                        // Consiglio AI sui suoi abbonamenti reali
+                        personalizedTipCard
+
                         // Card del consiglio del giorno
                         todaysTipCard
+
+                        // Sfida della settimana con progresso
+                        challengeCard
                     }
                     .padding(.horizontal, Spacing.md)
                     .padding(.bottom, Spacing.xxl)
@@ -65,6 +73,11 @@ struct DailyTipsView: View {
             }
             .onAppear {
                 tipsService.refreshTodaysTip()
+                coachService.registerVisit()
+                coachService.loadChallenge()
+                Task {
+                    await coachService.loadPersonalizedTip(subscriptions: viewModel.subscriptions)
+                }
                 withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
                     animateCard = true
                 }
@@ -75,19 +88,222 @@ struct DailyTipsView: View {
     // MARK: - Page Header Section
 
     private var pageHeaderSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(formattedDate)
-                .font(Typography.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.white.opacity(0.8))
-                .textCase(.uppercase)
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(formattedDate)
+                    .font(Typography.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white.opacity(0.8))
+                    .textCase(.uppercase)
 
-            Text("Money Coach AI")
-                .font(.system(size: 26, weight: .bold))
-                .foregroundColor(.white)
+                Text("Money Coach AI")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(.white)
+            }
+
+            Spacer()
+
+            // Streak di giorni consecutivi
+            if coachService.streak >= 2 {
+                HStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 13))
+                    Text(String(localized: "\(coachService.streak) giorni di fila"))
+                        .font(.caption)
+                        .fontWeight(.bold)
+                }
+                .foregroundColor(.orange)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(Color.orange.opacity(0.18))
+                )
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, Spacing.sm)
+    }
+
+    // MARK: - Personalized Tip Card (Gemini)
+
+    @ViewBuilder
+    private var personalizedTipCard: some View {
+        if coachService.isLoadingTip {
+            HStack(spacing: Spacing.sm) {
+                ProgressView()
+                Text(String(localized: "Il coach sta analizzando i tuoi abbonamenti…"))
+                    .font(Typography.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+        } else if let tip = coachService.personalizedTip {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack {
+                    HStack(spacing: 5) {
+                        Image(systemName: "sparkles")
+                            .font(.caption)
+                        Text(String(localized: "Per i tuoi abbonamenti"))
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                    .foregroundColor(.appPrimary)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(Color.appPrimary.opacity(0.12))
+                    )
+
+                    Spacer()
+                }
+
+                Text(tip)
+                    .font(.body)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(.secondarySystemGroupedBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(
+                        LinearGradient(
+                            colors: [.appPrimary.opacity(0.5), .appSecondary.opacity(0.5)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
+            )
+        }
+    }
+
+    // MARK: - Challenge Card
+
+    @ViewBuilder
+    private var challengeCard: some View {
+        if let challenge = coachService.challengeTip {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                HStack {
+                    Label(String(localized: "Sfida della settimana"), systemImage: "flame.fill")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(Color.orange.opacity(0.15))
+                        )
+
+                    Spacer()
+
+                    Text("\(coachService.challengeCompletedDays.count)/7")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.secondary)
+                }
+
+                Text(challenge.title)
+                    .font(.title3)
+                    .fontWeight(.bold)
+
+                Text(challenge.content)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineSpacing(3)
+
+                // 7 giorni della settimana
+                HStack(spacing: Spacing.xs) {
+                    ForEach(1...7, id: \.self) { day in
+                        challengeDayCircle(day)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                if coachService.isChallengeCompleted {
+                    Label(String(localized: "Sfida completata! 🎉"), systemImage: "checkmark.seal.fill")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.green)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.sm)
+                } else {
+                    Button {
+                        coachService.toggleTodayChallenge()
+                        if coachService.isChallengeCompleted {
+                            Haptic.notification(.success)
+                        } else {
+                            Haptic.selection()
+                        }
+                    } label: {
+                        Label(
+                            coachService.isTodayChallengeDone
+                                ? String(localized: "Fatto oggi ✓")
+                                : String(localized: "Segna come fatto oggi"),
+                            systemImage: coachService.isTodayChallengeDone ? "checkmark.circle.fill" : "circle"
+                        )
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(coachService.isTodayChallengeDone ? .white : .orange)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(coachService.isTodayChallengeDone ? Color.orange : Color.orange.opacity(0.12))
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
+            )
+        }
+    }
+
+    /// Cerchietto del giorno (lunedì = 1): pieno se fatto, evidenziato se oggi
+    private func challengeDayCircle(_ day: Int) -> some View {
+        let symbols = Calendar.current.veryShortWeekdaySymbols // [0] = domenica
+        let symbol = symbols[day % 7]
+        let isDone = coachService.challengeCompletedDays.contains(day)
+        let isToday = coachService.todayWeekdayIndex == day
+
+        return VStack(spacing: 4) {
+            Text(symbol.uppercased())
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(.secondary)
+
+            ZStack {
+                Circle()
+                    .fill(isDone ? Color.orange : Color(.systemGray5))
+                    .frame(width: 30, height: 30)
+
+                if isDone {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                }
+            }
+            .overlay(
+                Circle()
+                    .stroke(isToday ? Color.orange : Color.clear, lineWidth: 2)
+                    .frame(width: 36, height: 36)
+            )
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var formattedDate: String {

@@ -19,7 +19,12 @@ class SubscriptionViewModel: ObservableObject {
     static let freeSubscriptionLimit = 3
 
     // MARK: - Published Properties
-    @Published var subscriptions: [Subscription] = []
+    @Published var subscriptions: [Subscription] = [] {
+        didSet {
+            // Mantiene aggiornata la spesa annua stimata usata dal paywall personalizzato
+            UserDefaults.standard.set(totalYearlyCost, forKey: "estimatedYearlySpend")
+        }
+    }
     @Published var isLoading = false
     @Published var isSyncing = false
     @Published var searchText = ""
@@ -170,6 +175,8 @@ class SubscriptionViewModel: ObservableObject {
             userDefaults.set(encoded, forKey: Constants.UserDefaults.subscriptions)
             logger.info("✅ Saved \(self.subscriptions.count) subscriptions to cache")
         }
+        // Aggiorna lo snapshot per il widget
+        WidgetDataBridge.publish(subscriptions: subscriptions)
     }
 
     /// Aggiorna automaticamente le date di rinnovo passate

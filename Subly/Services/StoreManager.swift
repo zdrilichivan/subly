@@ -269,6 +269,7 @@ class StoreManager: ObservableObject {
         // Aggiorna stato
         isPro = hasPro
         UserDefaults.standard.set(hasPro, forKey: "isSublyPro")
+        WidgetDataBridge.publishProStatus(hasPro)
 
         print("📱 StoreKit: isPro = \(isPro)")
     }

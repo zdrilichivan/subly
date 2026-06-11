@@ -84,6 +84,22 @@ enum UITestAutopilot {
         // Risparmi da disdette per il banner in dashboard
         defaults.set(311.76, forKey: "totalCancelledYearlySavings")
         defaults.set(2, forKey: "cancelledSubscriptionsCount")
+
+        // Coach: streak attiva (ieri + 4 → oggi diventa 5), consiglio AI
+        // in cache (così lo screenshot non dipende dalla rete) e sfida a metà
+        defaults.set(calendar.date(byAdding: .day, value: -1, to: Date()), forKey: "coachLastVisit")
+        defaults.set(4, forKey: "coachStreak")
+
+        let tipFormatter = DateFormatter()
+        tipFormatter.dateFormat = "yyyy-MM-dd"
+        defaults.set(
+            "Netflix e Prime Video insieme ti costano 211 € l'anno: valuta di tenerne uno alla volta e alternarli ogni 3 mesi. Solo così risparmi circa 100 € senza rinunciare alle serie che segui.",
+            forKey: "personalCoachTip-" + tipFormatter.string(from: Date())
+        )
+
+        let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        defaults.set("\(comps.yearForWeekOfYear ?? 0)-W\(comps.weekOfYear ?? 0)", forKey: "challengeWeek")
+        defaults.set(try? JSONEncoder().encode(Set([1, 2, 3])), forKey: "challengeDoneDays")
     }
 }
 #endif
