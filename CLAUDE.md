@@ -10,13 +10,13 @@
 - **Pattern**: MVVM + Service Layer
 - **Persistenza**: CloudKit (iCloud sync)
 - **Target iOS**: 17.0+
-- **Bundle ID**: `com.ivanzdrilich.SublySwift`
+- **Bundle ID**: `com.ivanzdrilich.Subly`
 
 ## Modello di Business
 
 ### Abbonamento Pro (Subscription)
 - **Piano Settimanale**: €2,99/settimana
-- **Piano Annuale**: €39,99/anno (risparmio ~74%)
+- **Piano Annuale**: €19,99/anno (≈87% in meno del settimanale; % calcolata dinamicamente in StoreManager.savingsPercentage)
 - **Prova gratuita**: 3 giorni (sempre inclusa)
 - **Limite Free**: 3 abbonamenti
 
@@ -65,9 +65,9 @@ com.ivanzdrilich.Subly.pro.annual
 **Piano Annuale (com.ivanzdrilich.Subly.pro.annual)**
 | Lingua | Display Name | Description |
 |--------|--------------|-------------|
-| IT | Subly Pro Annuale | Risparmia il 74% con il piano annuale |
-| EN | Subly Pro Annual | Save 74% with annual plan |
-| ES | Subly Pro Anual | Ahorra un 74% con el plan anual |
+| IT | Subly Pro Annuale | Tutte le funzionalità Pro, un anno intero |
+| EN | Subly Pro Annual | All Pro features, a full year |
+| ES | Subly Pro Anual | Todas las funciones Pro, un año entero |
 
 ## Funzionalità Principali
 
@@ -77,25 +77,36 @@ com.ivanzdrilich.Subly.pro.annual
 - Lista abbonamenti ordinata per rinnovo
 - Carousel "Cosa potresti fare" (insight spesa)
 
-### 2. Scansione Email AI (Pro)
-- Scansione Gmail per trovare abbonamenti nascosti
-- Parser AI con Gemini (GeminiParserService)
-- Fallback offline (OfflineEmailParser)
-- OAuth2 per autenticazione Google
-
-### 3. Money Coach AI (Pro)
+### 2. Money Coach AI (Pro)
 - Consigli giornalieri personalizzati
-- Quote motivazionali (WisdomQuoteService)
+- Quote motivazionali (WisdomQuoteService via GeminiService, modello gemini-2.5-flash-lite)
 - Sfide settimanali di risparmio
+- Fallback su contenuti statici localizzati se l'API non risponde
 
-### 4. Statistiche
+### 3. Statistiche
 - Grafico a torta per categoria
 - Trend spesa mensile
 - Prossimi rinnovi
 
-### 5. Notifiche Smart
-- 3 giorni, 1 giorno, giorno del rinnovo
+### 4. Notifiche Smart
+- Pro: 3 giorni, 1 giorno, giorno del rinnovo / Free: solo 1 giorno
 - Notifiche interattive "Stai usando [Servizio]?"
+- Reminder trial il giorno dopo se l'utente chiude il paywall onboarding senza acquistare
+
+### 5. Onboarding orientato al valore
+- Problema → quick-pick servizi popolari → spesa annua rivelata → funzioni → nome (facoltativo) → paywall
+- I servizi selezionati vengono aggiunti come abbonamenti
+- La spesa stimata (`estimatedYearlySpend` in UserDefaults) personalizza l'header del paywall
+
+### 6. Analytics di funnel
+- `AnalyticsService` con backend pluggabile (default: OSLog + contatori locali)
+- Eventi: onboarding step, paywall visto/chiuso, piano selezionato, acquisto avviato/completato/fallito/annullato, milestone
+- Pronto per TelemetryDeck: implementare `AnalyticsBackend` e assegnarlo a `AnalyticsService.shared.backend`
+
+### ⚠️ Scansione Email AI — NON ESISTE in questa versione
+La feature era solo pianificata: non c'è GmailScannerService/EmailScanView nel progetto.
+Non promuoverla in onboarding, paywall o metadata App Store finché non viene implementata.
+(Le privacy policy in docs/ la menzionano ancora: da aggiornare o lasciare in vista di implementazione futura.)
 
 ## Struttura Chiave
 

@@ -90,10 +90,18 @@ class StoreManager: ObservableObject {
         return formatter.string(from: weekly as NSDecimalNumber) ?? "—"
     }
 
+    /// Risparmio dell'annuale rispetto a 52 settimane di piano settimanale,
+    /// calcolato dai prezzi reali dello store: resta corretto anche se i
+    /// prezzi cambiano su App Store Connect. Fallback solo per prodotti
+    /// non ancora caricati (2,99×52=155,48 vs 19,99 ≈ 87%).
     var savingsPercentage: Int {
-        // €2,99 * 52 = €155,48 annuale se pagato settimanalmente
-        // €39,99 annuale = risparmio di €115,49 = ~74%
-        return 74
+        guard let weekly = weeklyProduct,
+              let annual = annualProduct,
+              weekly.price > 0 else { return 87 }
+        let yearlyIfWeekly = weekly.price * 52
+        guard yearlyIfWeekly > annual.price else { return 0 }
+        let ratio = (annual.price / yearlyIfWeekly) as NSDecimalNumber
+        return Int(((1 - ratio.doubleValue) * 100).rounded())
     }
 
     /// Controlla se l'utente è idoneo per la prova gratuita

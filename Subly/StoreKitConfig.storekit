@@ -10,6 +10,8 @@
     "_applicationInternalID" : "6756615202",
     "_developerTeamID" : "2A61533CCD",
     "_failTransactionsEnabled" : false,
+    "_locale" : "it_IT",
+    "_storefront" : "ITA",
     "_lastSynchronizedDate" : 756518400,
     "_storeKitErrors" : [
       {
@@ -74,7 +76,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "39.99",
+          "displayPrice" : "19.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "annual",
@@ -85,12 +87,12 @@
           },
           "localizations" : [
             {
-              "description" : "Risparmia il 74% con il piano annuale",
+              "description" : "Tutte le funzionalità Pro, un anno intero",
               "displayName" : "Subly Pro Annuale",
               "locale" : "it"
             },
             {
-              "description" : "Save 74% with annual plan",
+              "description" : "All Pro features, a full year",
               "displayName" : "Subly Pro Annual",
               "locale" : "en_US"
             }

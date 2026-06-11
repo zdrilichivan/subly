@@ -47,7 +47,7 @@ CAPISCI DOVE VANNO I SOLDI
 • Sincronizzazione iCloud tra i tuoi dispositivi
 
 SUBLY PRO
-Prova gratis tutte le funzioni per 3 giorni, poi scegli il piano annuale (risparmi il 74%) o quello settimanale. Il piano gratuito include il monitoraggio di 3 abbonamenti con notifiche di rinnovo.
+Prova gratis tutte le funzioni per 3 giorni, poi scegli il piano annuale (risparmi l'87% rispetto al settimanale) o quello settimanale. Il piano gratuito include il monitoraggio di 3 abbonamenti con notifiche di rinnovo.
 
 L'abbonamento si rinnova automaticamente salvo disdetta almeno 24 ore prima della scadenza. Puoi gestirlo o disdirlo in qualsiasi momento dalle impostazioni del tuo account App Store.
 
@@ -98,7 +98,7 @@ KNOW WHERE YOUR MONEY GOES
 • iCloud sync across your devices
 
 SUBLY PRO
-Try every feature free for 3 days, then pick the annual plan (save 74%) or the weekly one. The free plan includes tracking for 3 subscriptions with renewal notifications.
+Try every feature free for 3 days, then pick the annual plan (87% cheaper than weekly) or the weekly one. The free plan includes tracking for 3 subscriptions with renewal notifications.
 
 Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period. You can manage or cancel anytime from your App Store account settings.
 
@@ -149,7 +149,7 @@ ENTIENDE A DÓNDE VA TU DINERO
 • Sincronización con iCloud entre tus dispositivos
 
 SUBLY PRO
-Prueba todas las funciones gratis durante 3 días y luego elige el plan anual (ahorra un 74%) o el semanal. El plan gratuito incluye el seguimiento de 3 suscripciones con notificaciones de renovación.
+Prueba todas las funciones gratis durante 3 días y luego elige el plan anual (un 87% más barato que el semanal) o el semanal. El plan gratuito incluye el seguimiento de 3 suscripciones con notificaciones de renovación.
 
 La suscripción se renueva automáticamente salvo que se cancele al menos 24 horas antes del final del período. Puedes gestionarla o cancelarla en cualquier momento desde los ajustes de tu cuenta del App Store.
 
