@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "generatedAt": "2026-01-09T12:00:00Z",
+  "services": [
+    {
+      "serviceId": "netflix_standard_ads",
+      "name": "Netflix Standard con pubblicità",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "netflix.com",
+      "brandName": "Netflix",
+      "variantName": "Standard con pubblicità",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 6.99, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 6.99, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 4.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 5.49, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 4.99, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 5.99, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 20.90, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 99.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.netflix.com/cancelplan",
+        "US": "https://www.netflix.com/cancelplan",
+        "UK": "https://www.netflix.com/cancelplan"
+      }
+    },
+    {
+      "serviceId": "netflix_standard",
+      "name": "Netflix Standard",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "netflix.com",
+      "brandName": "Netflix",
+      "variantName": "Standard",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 13.99, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 15.49, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 10.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 12.99, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 12.99, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 13.49, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 44.90, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 199.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.netflix.com/cancelplan",
+        "US": "https://www.netflix.com/cancelplan"
+      }
+    },
+    {
+      "serviceId": "netflix_premium",
+      "name": "Netflix Premium",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "netflix.com",
+      "brandName": "Netflix",
+      "variantName": "Premium",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 18.99, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 22.99, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 19.99, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 59.90, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 299.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.netflix.com/cancelplan",
+        "US": "https://www.netflix.com/cancelplan"
+      }
+    },
+    {
+      "serviceId": "spotify_individual",
+      "name": "Spotify Individual",
+      "category": "music",
+      "iconName": "music.note",
+      "domain": "spotify.com",
+      "brandName": "Spotify",
+      "variantName": "Individual",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 10.99, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 11.99, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 11.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 10.99, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 10.99, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 10.99, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 21.90, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 115.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.spotify.com/it/account/subscription/",
+        "US": "https://www.spotify.com/us/account/subscription/"
+      }
+    },
+    {
+      "serviceId": "spotify_family",
+      "name": "Spotify Family",
+      "category": "music",
+      "iconName": "music.note",
+      "domain": "spotify.com",
+      "brandName": "Spotify",
+      "variantName": "Family",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 19.99, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 19.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 17.99, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 34.90, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 179.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.spotify.com/it/account/subscription/"
+      }
+    },
+    {
+      "serviceId": "amazon_prime_mensile",
+      "name": "Amazon Prime Mensile",
+      "category": "other",
+      "iconName": "shippingbox.fill",
+      "domain": "amazon.com",
+      "brandName": "Amazon Prime",
+      "variantName": "Mensile",
+      "billingCycle": "monthly",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 4.99, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 14.99, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 8.99, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 8.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 4.99, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 6.99, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 19.90, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 99.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.amazon.it/gp/primecentral",
+        "US": "https://www.amazon.com/gp/primecentral",
+        "UK": "https://www.amazon.co.uk/gp/primecentral"
+      }
+    },
+    {
+      "serviceId": "amazon_prime_annuale",
+      "name": "Amazon Prime Annuale",
+      "category": "other",
+      "iconName": "shippingbox.fill",
+      "domain": "amazon.com",
+      "brandName": "Amazon Prime",
+      "variantName": "Annuale",
+      "billingCycle": "yearly",
+      "availableRegions": ["*"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "yearly", "price": 49.90, "priceSource": "catalog"}]},
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "yearly", "price": 139.00, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "yearly", "price": 95.00, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "yearly", "price": 89.90, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "yearly", "price": 49.90, "priceSource": "catalog"}]},
+        {"region": "FR", "currency": "EUR", "plans": [{"billingCycle": "yearly", "price": 69.90, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "yearly", "price": 166.80, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "yearly", "price": 899.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.amazon.it/gp/primecentral",
+        "US": "https://www.amazon.com/gp/primecentral"
+      }
+    },
+    {
+      "serviceId": "hbo_max",
+      "name": "HBO Max",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "max.com",
+      "brandName": "HBO Max",
+      "availableRegions": ["US", "ES", "MX", "BR"],
+      "pricing": [
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 15.99, "priceSource": "catalog"}]},
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 13.99, "priceSource": "catalog"}]},
+        {"region": "MX", "currency": "MXN", "plans": [{"billingCycle": "monthly", "price": 199.00, "priceSource": "catalog"}]},
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 34.90, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "US": "https://www.max.com/account"
+      }
+    },
+    {
+      "serviceId": "hulu",
+      "name": "Hulu",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "hulu.com",
+      "brandName": "Hulu",
+      "availableRegions": ["US"],
+      "pricing": [
+        {"region": "US", "currency": "USD", "plans": [{"billingCycle": "monthly", "price": 7.99, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "US": "https://secure.hulu.com/account"
+      }
+    },
+    {
+      "serviceId": "sky_go",
+      "name": "Sky Go",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "sky.it",
+      "brandName": "Sky",
+      "variantName": "Go",
+      "availableRegions": ["IT", "UK", "DE"],
+      "pricing": [
+        {"region": "IT", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 29.90, "priceSource": "catalog"}]},
+        {"region": "UK", "currency": "GBP", "plans": [{"billingCycle": "monthly", "price": 26.00, "priceSource": "catalog"}]},
+        {"region": "DE", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 25.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "IT": "https://www.sky.it/assistenza/info-disdette",
+        "UK": "https://www.sky.com/help/articles/cancel-sky-tv"
+      }
+    },
+    {
+      "serviceId": "globoplay",
+      "name": "Globoplay",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "globoplay.globo.com",
+      "brandName": "Globoplay",
+      "availableRegions": ["BR"],
+      "pricing": [
+        {"region": "BR", "currency": "BRL", "plans": [{"billingCycle": "monthly", "price": 24.90, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "BR": "https://globoplay.globo.com/minha-conta"
+      }
+    },
+    {
+      "serviceId": "movistar_plus",
+      "name": "Movistar+",
+      "category": "streaming",
+      "iconName": "play.tv.fill",
+      "domain": "movistarplus.es",
+      "brandName": "Movistar+",
+      "availableRegions": ["ES"],
+      "pricing": [
+        {"region": "ES", "currency": "EUR", "plans": [{"billingCycle": "monthly", "price": 10.00, "priceSource": "catalog"}]}
+      ],
+      "cancellationURLs": {
+        "ES": "https://www.movistar.es/particulares/"
+      }
+    }
+  ]
+}
