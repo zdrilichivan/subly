@@ -61,8 +61,10 @@ struct StatsView: View {
                                 suggestionsSection(suggestions: suggestions)
                             }
                         } else {
-                            // FREE: Promo per sbloccare statistiche avanzate
-                            statsPromoCard
+                            // FREE: i grafici veri (sui dati dell'utente)
+                            // sfocati, con lock e CTA. "Vedere cosa ti perdi"
+                            // converte più di un cartello statico.
+                            lockedStatsPreview
                         }
                     }
                     .padding(.horizontal, Spacing.md)
@@ -77,7 +79,7 @@ struct StatsView: View {
                 }
             }
             .sheet(isPresented: $showingProUpgrade) {
-                PaywallOnboardingView()
+                PaywallOnboardingView(source: "stats_promo")
             }
         }
     }
@@ -449,118 +451,95 @@ struct StatsView: View {
         ]
     }
 
-    // MARK: - Stats Promo Card (Free Users)
+    // MARK: - Locked Stats Preview (Free Users)
 
-    private var statsPromoCard: some View {
-        VStack(spacing: 20) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.purple.opacity(0.2), Color.blue.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 80, height: 80)
-
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.purple, .blue],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 60, height: 60)
-
-                Image(systemName: "chart.pie.fill")
-                    .font(.system(size: 26, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-
-            // Text
-            VStack(spacing: 8) {
-                Text(String(localized: "Statistiche Avanzate"))
-                    .font(.title3)
-                    .fontWeight(.bold)
-
-                Text(String(localized: "Sblocca grafici dettagliati, proiezioni future e suggerimenti di risparmio personalizzati."))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-            }
-
-            // Features
-            VStack(alignment: .leading, spacing: 10) {
-                ProFeatureRow(icon: "chart.pie.fill", text: String(localized: "Grafico spese per categoria"))
-                ProFeatureRow(icon: "chart.line.uptrend.xyaxis", text: String(localized: "Proiezioni 2-5 anni"))
-                ProFeatureRow(icon: "lightbulb.fill", text: String(localized: "Suggerimenti di risparmio"))
-                ProFeatureRow(icon: "target", text: String(localized: "Monitoraggio budget"))
-            }
-
-            // CTA Button
-            Button {
-                showingProUpgrade = true
-                Haptic.impact(.medium)
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "crown.fill")
-                        .font(.subheadline)
-                    Text(String(localized: "Sblocca con Pro"))
-                        .fontWeight(.semibold)
+    /// Anteprima reale e sfocata delle statistiche Pro: l'utente vede i
+    /// SUOI grafici dietro il vetro, non una promessa generica.
+    private var lockedStatsPreview: some View {
+        // alignment .top: il lock deve stare sopra il primo grafico,
+        // visibile senza scrollare, non al centro dell'intera colonna
+        ZStack(alignment: .top) {
+            VStack(spacing: 20) {
+                if viewModel.activeSubscriptions.isNotEmpty {
+                    categoryChartSection
                 }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
+
+                projectionsSection
+
+                if viewModel.activeSubscriptions.isNotEmpty {
+                    categoryBreakdownSection
+                }
+            }
+            .blur(radius: 6.5)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+
+            // Overlay con lock e CTA
+            VStack(spacing: Spacing.md) {
+                ZStack {
+                    Circle()
                         .fill(
                             LinearGradient(
                                 colors: [.appPrimary, .appSecondary],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
                         )
-                )
+                        .frame(width: 60, height: 60)
+
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+
+                VStack(spacing: Spacing.xs) {
+                    Text(String(localized: "Le tue statistiche sono pronte"))
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+
+                    Text(String(localized: "Grafici per categoria, proiezioni e suggerimenti calcolati sui tuoi abbonamenti."))
+                        .font(Typography.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
+                Button {
+                    showingProUpgrade = true
+                    Haptic.impact(.medium)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "crown.fill")
+                            .font(.subheadline)
+                        Text(String(localized: "Sblocca con Pro"))
+                            .fontWeight(.semibold)
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.lg)
+                    .frame(height: 46)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.appPrimary, .appSecondary],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
+                }
             }
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-    }
-}
-
-// MARK: - Pro Feature Row
-
-private struct ProFeatureRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundColor(.purple)
-                .frame(width: 24)
-
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(.primary)
-
-            Spacer()
-
-            Image(systemName: "checkmark")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(.green)
+            .padding(Spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.18), radius: 16, x: 0, y: 6)
+            )
+            .padding(.horizontal, Spacing.lg)
+            .padding(.top, 70)
         }
     }
+
 }
 
 // MARK: - Category Row

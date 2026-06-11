@@ -39,6 +39,7 @@ enum UITestAutopilot {
     static var showPaywall: Bool { env["UITEST_SHOW_PAYWALL"] == "1" }
     static var forcePro: Bool { env["UITEST_PRO"] == "1" }
     static var showDateSheet: Bool { env["UITEST_DATE_SHEET"] == "1" }
+    static var showCelebration: Bool { env["UITEST_CELEBRATION"] == "1" }
 
     /// Da chiamare in SublySwiftApp.init, prima che il view model carichi i dati
     static func applyOnLaunch() {
@@ -79,6 +80,10 @@ enum UITestAutopilot {
             defaults.set(data, forKey: Constants.UserDefaults.subscriptions)
         }
         defaults.set(subscriptions.reduce(0) { $0 + $1.monthlyCost * 12 }, forKey: "estimatedYearlySpend")
+
+        // Risparmi da disdette per il banner in dashboard
+        defaults.set(311.76, forKey: "totalCancelledYearlySavings")
+        defaults.set(2, forKey: "cancelledSubscriptionsCount")
     }
 }
 #endif

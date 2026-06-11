@@ -15,7 +15,10 @@ struct SubscriptionDetailView: View {
 
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
+    @State private var showingCelebration = false
     @State private var showingReactivateAlert = false
+    @AppStorage("totalCancelledYearlySavings") private var totalCancelledSavings: Double = 0
+    @AppStorage("cancelledSubscriptionsCount") private var cancelledCount = 0
     @State private var showingSplitSheet = false
     @State private var showingShareSheet = false
     @State private var splitPeopleCount: Int = 2
@@ -90,13 +93,31 @@ struct SubscriptionDetailView: View {
         .sheet(isPresented: $showingEditSheet) {
             EditSubscriptionView(subscription: subscription)
         }
-        .alert(String(localized: "Elimina abbonamento"), isPresented: $showingDeleteAlert) {
-            Button(String(localized: "Annulla"), role: .cancel) { }
-            Button(String(localized: "Elimina"), role: .destructive) {
+        .confirmationDialog(
+            String(localized: "Rimuovi \(subscription.displayName)?"),
+            isPresented: $showingDeleteAlert,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "L'ho disdetto: festeggiamo 🎉")) {
+                celebrateCancellation()
+            }
+            Button(String(localized: "Rimuovi e basta"), role: .destructive) {
                 deleteSubscription()
             }
+            Button(String(localized: "Annulla"), role: .cancel) { }
         } message: {
-            Text(String(localized: "Sei sicuro di voler eliminare \(subscription.displayName)? Questa azione non può essere annullata."))
+            Text(String(localized: "Se l'hai disdetto davvero, vogliamo farti vedere quanto hai appena risparmiato."))
+        }
+        .sheet(isPresented: $showingCelebration, onDismiss: { dismiss() }) {
+            CancellationCelebrationView(
+                subscriptionName: subscription.displayName,
+                yearlySavings: subscription.yearlyCost,
+                totalYearlySavings: totalCancelledSavings,
+                cancelledCount: cancelledCount
+            ) {
+                showingCelebration = false
+            }
+            .interactiveDismissDisabled(false)
         }
         .alert(String(localized: "Riattiva abbonamento"), isPresented: $showingReactivateAlert) {
             Button(String(localized: "Annulla"), role: .cancel) { }
@@ -631,6 +652,19 @@ struct SubscriptionDetailView: View {
         Task {
             await viewModel.deleteSubscription(subscription)
             dismiss()
+        }
+    }
+
+    /// Disdetta vera: aggiorna il contatore dei risparmi e festeggia
+    private func celebrateCancellation() {
+        totalCancelledSavings += subscription.yearlyCost
+        cancelledCount += 1
+        AnalyticsService.shared.track(.subscriptionCancelled, properties: [
+            "yearly_savings": String(format: "%.0f", subscription.yearlyCost)
+        ])
+        Task {
+            await viewModel.deleteSubscription(subscription)
+            showingCelebration = true
         }
     }
 

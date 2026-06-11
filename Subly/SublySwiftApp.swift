@@ -79,6 +79,12 @@ struct SublySwiftApp: App {
         // Niente alert iCloud durante screenshot/ispezione UI da simctl
         guard !UITestAutopilot.isActive else { return }
         #endif
+
+        // Mai bloccare il primo contatto col prodotto: l'alert appare solo
+        // dopo l'onboarding e una volta sola (i dati restano comunque locali)
+        guard hasCompletedOnboarding,
+              !UserDefaults.standard.bool(forKey: "iCloudAlertShown") else { return }
+
         CKContainer.default().accountStatus { status, error in
             DispatchQueue.main.async {
                 switch status {
@@ -88,9 +94,11 @@ struct SublySwiftApp: App {
                 case .noAccount:
                     iCloudAlertMessage = "Non hai effettuato l'accesso a iCloud. I tuoi dati non verranno sincronizzati tra i dispositivi. Vai su Impostazioni > Apple ID > iCloud per accedere."
                     showingICloudAlert = true
+                    UserDefaults.standard.set(true, forKey: "iCloudAlertShown")
                 case .restricted:
                     iCloudAlertMessage = "L'accesso a iCloud è limitato. I tuoi dati potrebbero non essere sincronizzati."
                     showingICloudAlert = true
+                    UserDefaults.standard.set(true, forKey: "iCloudAlertShown")
                 case .couldNotDetermine:
                     // Non mostrare alert, potrebbe essere temporaneo
                     break

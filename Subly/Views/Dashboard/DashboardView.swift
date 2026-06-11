@@ -23,6 +23,12 @@ struct DashboardView: View {
     @State private var selectedCategoryForAdd: ServiceCategory = .other
     @State private var selectedBillingCycleForAdd: BillingCycle = .monthly
     @State private var serviceForDateSheet: Service?
+    @State private var statsRevealed = false
+    #if DEBUG
+    @State private var showingCelebrationPreview = false
+    #endif
+    @AppStorage("totalCancelledYearlySavings") private var totalCancelledSavings: Double = 0
+    @AppStorage("cancelledSubscriptionsCount") private var cancelledCount = 0
     @ObservedObject private var storeManager = StoreManager.shared
 
     private let insightService = InsightService.shared
@@ -51,6 +57,19 @@ struct DashboardView: View {
 
                             // Cards statistiche
                             statsCardsSection
+
+                        // Hero: il rinnovo più vicino, con azione diretta
+                        if let nextRenewal = viewModel.subscriptionsByRenewalDate.first {
+                            NavigationLink(destination: SubscriptionDetailView(subscription: nextRenewal)) {
+                                NextRenewalHeroCard(subscription: nextRenewal)
+                            }
+                            .buttonStyle(StatCardButtonStyle())
+                        }
+
+                        // Risparmi liberati con le disdette
+                        if totalCancelledSavings > 0 {
+                            savingsBanner
+                        }
 
                         // Insight: Cosa potresti fare (carousel con piu suggerimenti)
                         if viewModel.activeSubscriptions.isNotEmpty {
@@ -135,12 +154,33 @@ struct DashboardView: View {
                 SettingsView()
             }
             .onAppear {
+                // Roll dei numeri solo al primo ingresso, non a ogni cambio tab
+                if !statsRevealed {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                        withAnimation(.spring(response: 1.0, dampingFraction: 0.9)) {
+                            statsRevealed = true
+                        }
+                    }
+                }
                 #if DEBUG
                 if UITestAutopilot.showDateSheet, serviceForDateSheet == nil {
                     serviceForDateSheet = ServiceCatalog.find(byName: "Netflix Standard")
                 }
+                if UITestAutopilot.showCelebration {
+                    showingCelebrationPreview = true
+                }
                 #endif
             }
+            #if DEBUG
+            .sheet(isPresented: $showingCelebrationPreview) {
+                CancellationCelebrationView(
+                    subscriptionName: "DAZN",
+                    yearlySavings: 359.88,
+                    totalYearlySavings: 671.64,
+                    cancelledCount: 3
+                ) { showingCelebrationPreview = false }
+            }
+            #endif
         }
     }
 
@@ -268,21 +308,55 @@ struct DashboardView: View {
     // MARK: - Stats Cards Section
 
     private var statsCardsSection: some View {
+        // I valori partono da zero e "rollano" fino al totale al primo
+        // ingresso (contentTransition numericText dentro StatCard)
         HStack(spacing: Spacing.sm) {
             StatCard(
                 title: String(localized: "Spesa mensile"),
-                value: viewModel.totalMonthlyCost.currencyFormatted,
+                value: (statsRevealed ? viewModel.totalMonthlyCost : 0).currencyFormatted,
                 icon: "calendar",
                 color: .appPrimary
             )
 
             StatCard(
                 title: String(localized: "Spesa annuale"),
-                value: viewModel.totalYearlyCost.currencyFormatted,
+                value: (statsRevealed ? viewModel.totalYearlyCost : 0).currencyFormatted,
                 icon: "calendar.badge.clock",
                 color: .appSecondary
             )
         }
+    }
+
+    // MARK: - Savings Banner
+
+    private var savingsBanner: some View {
+        HStack(spacing: Spacing.md) {
+            IconContainer(
+                systemName: "party.popper.fill",
+                size: IconContainerSize.md,
+                color: .green,
+                backgroundOpacity: IconBackgroundOpacity.medium
+            )
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(String(localized: "Hai liberato \(totalCancelledSavings.currencyFormatted)/anno"))
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+
+                Text(cancelledCount == 1
+                     ? String(localized: "1 abbonamento disdetto con Subly")
+                     : String(localized: "\(cancelledCount) abbonamenti disdetti con Subly"))
+                    .font(Typography.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.lg)
+                .fill(Color.green.opacity(0.12))
+        )
     }
 
     // MARK: - Subscriptions Section

@@ -34,6 +34,7 @@ enum AnalyticsEvent: String {
     case milestoneShown = "milestone_shown"
     case trialReminderScheduled = "trial_reminder_scheduled"
     case freeLimitReached = "free_limit_reached"
+    case subscriptionCancelled = "subscription_cancelled"
 }
 
 // MARK: - Backend pluggabile

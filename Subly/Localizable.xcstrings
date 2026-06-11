@@ -147,6 +147,22 @@
         }
       }
     },
+    "%lld abbonamenti disdetti con Subly": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld subscriptions cancelled with Subly"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld suscripciones canceladas con Subly"
+          }
+        }
+      }
+    },
     "%lld cene fuori con amici o famiglia": {
       "localizations": {
         "en": {
@@ -335,6 +351,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 suscripción"
+          }
+        }
+      }
+    },
+    "1 abbonamento disdetto con Subly": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 subscription cancelled with Subly"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 suscripción cancelada con Subly"
           }
         }
       }
@@ -875,6 +907,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cargo recibido hoy"
+          }
+        }
+      }
+    },
+    "Addio %@: soldi che restano in tasca tua. 💪": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goodbye %@: money that stays in your pocket. 💪"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adiós %@: dinero que se queda en tu bolsillo. 💪"
           }
         }
       }
@@ -3531,6 +3579,22 @@
         }
       }
     },
+    "Grafici per categoria, proiezioni e suggerimenti calcolati sui tuoi abbonamenti.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category charts, projections and tips calculated on your subscriptions."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gráficos por categoría, proyecciones y consejos calculados sobre tus suscripciones."
+          }
+        }
+      }
+    },
     "Grafici per categoria, proiezioni e suggerimenti di risparmio": {},
     "Grafico spese per categoria": {
       "localizations": {
@@ -3544,6 +3608,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gráfico de gastos por categoría"
+          }
+        }
+      }
+    },
+    "Grande!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Awesome!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Genial!"
           }
         }
       }
@@ -3689,6 +3769,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "¿De verdad necesitas Netflix, Prime Video Y Disney+? Prueba a quedarte solo con uno durante un mes."
+          }
+        }
+      }
+    },
+    "Hai liberato": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've freed up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has liberado"
+          }
+        }
+      }
+    },
+    "Hai liberato %@/anno": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've freed up %@/year"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has liberado %@/año"
           }
         }
       }
@@ -4996,6 +5108,22 @@
         }
       }
     },
+    "L'ho disdetto: festeggiamo 🎉": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I cancelled it: let's celebrate 🎉"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo cancelé: celebremos 🎉"
+          }
+        }
+      }
+    },
     "L'inizio del tuo fondo emergenza": {
       "localizations": {
         "en": {
@@ -5413,6 +5541,22 @@
         }
       }
     },
+    "Le tue statistiche sono pronte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your stats are ready"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus estadísticas están listas"
+          }
+        }
+      }
+    },
     "Libera un cassetto oggi": {
       "localizations": {
         "en": {
@@ -5425,6 +5569,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Libera un cajón hoy"
+          }
+        }
+      }
+    },
+    "Liberati finora con Subly: %@/anno": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freed up so far with Subly: %@/year"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liberado hasta ahora con Subly: %@/año"
           }
         }
       }
@@ -7422,6 +7582,22 @@
         }
       }
     },
+    "Prossimo rinnovo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next renewal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próxima renovación"
+          }
+        }
+      }
+    },
     "Prossimo rinnovo: %@": {
       "localizations": {
         "en": {
@@ -8112,6 +8288,22 @@
         }
       }
     },
+    "Rimuovi %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar %@?"
+          }
+        }
+      }
+    },
     "Rimuovi budget": {
       "localizations": {
         "en": {
@@ -8146,6 +8338,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rimuovi da Subly"
+          }
+        }
+      }
+    },
+    "Rimuovi e basta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just remove it"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo eliminar"
           }
         }
       }
@@ -8890,6 +9098,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Si tienes tarifa con discriminación horaria, poner lavadora y lavavajillas de noche o fin de semana cuesta un 20-30% menos. Mismo resultado, menos dinero."
+          }
+        }
+      }
+    },
+    "Se l'hai disdetto davvero, vogliamo farti vedere quanto hai appena risparmiato.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you really cancelled it, we want to show you how much you just saved."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si de verdad la cancelaste, queremos enseñarte cuánto acabas de ahorrar."
           }
         }
       }

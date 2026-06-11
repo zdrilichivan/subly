@@ -30,6 +30,7 @@ struct StatCard: View {
                     .foregroundColor(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .contentTransition(.numericText())
 
                 Text(title)
                     .font(.system(size: 11, weight: .semibold))
