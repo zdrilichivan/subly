@@ -30,6 +30,8 @@ struct DashboardView: View {
     @AppStorage("totalCancelledYearlySavings") private var totalCancelledSavings: Double = 0
     @AppStorage("cancelledSubscriptionsCount") private var cancelledCount = 0
     @ObservedObject private var storeManager = StoreManager.shared
+    @StateObject private var coachService = PersonalCoachService.shared
+    @StateObject private var tipsService = DailyTipsService.shared
 
     private let insightService = InsightService.shared
 
@@ -69,6 +71,16 @@ struct DashboardView: View {
                         // Risparmi liberati con le disdette
                         if totalCancelledSavings > 0 {
                             savingsBanner
+                        }
+
+                        // Il coach in home: consiglio del giorno → tab Coach
+                        CoachInsightCard(
+                            isPro: storeManager.isPro,
+                            personalizedTip: coachService.personalizedTip,
+                            fallbackTip: tipsService.todaysTip
+                        ) {
+                            Haptic.selection()
+                            withAnimation { selectedTab = 2 }
                         }
 
                         // Insight: Cosa potresti fare (carousel con piu suggerimenti)
@@ -154,6 +166,13 @@ struct DashboardView: View {
                 SettingsView()
             }
             .onAppear {
+                // Il consiglio del coach è in cache giornaliera: caricarlo
+                // anche da qui non genera chiamate API extra
+                if storeManager.isPro {
+                    Task {
+                        await coachService.loadPersonalizedTip(subscriptions: viewModel.subscriptions)
+                    }
+                }
                 // Roll dei numeri solo al primo ingresso, non a ogni cambio tab
                 if !statsRevealed {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {

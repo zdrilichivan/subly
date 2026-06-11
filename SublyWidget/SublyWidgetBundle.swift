@@ -12,5 +12,6 @@ import SwiftUI
 struct SublyWidgetBundle: WidgetBundle {
     var body: some Widget {
         NextRenewalWidget()
+        RenewalLiveActivity()
     }
 }

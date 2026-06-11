@@ -65,7 +65,7 @@ enum UITestAutopilot {
 
         let subscriptions = [
             Subscription(serviceName: "Netflix Standard", cost: 13.99, billingCycle: .monthly,
-                         nextBillingDate: days(2), category: .streaming),
+                         nextBillingDate: days(1), category: .streaming),
             Subscription(serviceName: "Spotify Individual", cost: 10.99, billingCycle: .monthly,
                          nextBillingDate: days(6), category: .music),
             Subscription(serviceName: "iCloud+ 200GB", cost: 2.99, billingCycle: .monthly,

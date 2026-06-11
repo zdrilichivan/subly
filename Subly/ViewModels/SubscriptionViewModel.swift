@@ -175,8 +175,9 @@ class SubscriptionViewModel: ObservableObject {
             userDefaults.set(encoded, forKey: Constants.UserDefaults.subscriptions)
             logger.info("✅ Saved \(self.subscriptions.count) subscriptions to cache")
         }
-        // Aggiorna lo snapshot per il widget
+        // Aggiorna lo snapshot per il widget e le Live Activity
         WidgetDataBridge.publish(subscriptions: subscriptions)
+        LiveActivityService.shared.sync(subscriptions: subscriptions)
     }
 
     /// Aggiorna automaticamente le date di rinnovo passate

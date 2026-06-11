@@ -2868,6 +2868,22 @@
         }
       }
     },
+    "Dal tuo coach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From your coach"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De tu coach"
+          }
+        }
+      }
+    },
     "Data del prossimo addebito": {
       "localizations": {
         "en": {
@@ -10576,6 +10592,22 @@
       }
     },
     "Tocca i servizi a cui sei abbonato: calcoliamo subito quanto ti costano davvero.": {},
+    "Tocca per il consiglio di oggi e le sfide di risparmio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap for today's tip and saving challenges"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca para el consejo de hoy y los retos de ahorro"
+          }
+        }
+      }
+    },
     "Tocca per scoprire come": {
       "localizations": {
         "en": {
