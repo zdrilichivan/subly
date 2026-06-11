@@ -27,3 +27,6 @@ Carthage/Build/
 
 # Archives
 *.xcarchive
+
+# Secrets (API keys, mai committare)
+Subly/Secrets.swift

@@ -17,6 +17,8 @@ struct DashboardView: View {
     @State private var showingServicePicker = false
     @State private var showingProUpgrade = false
     @State private var showingSuccessAlert = false
+    @State private var showingMilestonePromo = false
+    @State private var currentMilestone = 0
     @State private var selectedServiceForAdd: Service?
     @State private var selectedCategoryForAdd: ServiceCategory = .other
     @State private var selectedBillingCycleForAdd: BillingCycle = .monthly
@@ -107,7 +109,10 @@ struct DashboardView: View {
                 }
             }
             .sheet(isPresented: $showingProUpgrade) {
-                PaywallOnboardingView()
+                PaywallOnboardingView(source: "free_limit")
+            }
+            .sheet(isPresented: $showingMilestonePromo) {
+                MilestonePromotionView(subscriptionCount: currentMilestone) { }
             }
             .alert("Abbonamento tracciato", isPresented: $showingSuccessAlert) {
                 Button("OK") { }
@@ -147,6 +152,7 @@ struct DashboardView: View {
                         selectedServiceForAdd = nil
                         showingServicePicker = true
                     } else {
+                        AnalyticsService.shared.track(.freeLimitReached)
                         showingProUpgrade = true
                     }
                     Haptic.impact(.light)
@@ -360,8 +366,23 @@ struct DashboardView: View {
             await viewModel.addSubscription(subscription)
             selectedServiceForAdd = nil
             selectedBillingCycleForAdd = .monthly  // Reset
-            showingSuccessAlert = true
             Haptic.notification(.success)
+
+            // Milestone raggiunta? Promo Pro al posto dell'alert di conferma.
+            // Piccolo ritardo: la sheet del picker deve finire di chiudersi
+            // prima di poterne presentare un'altra.
+            if let milestone = MilestoneTracker.checkAndMarkMilestone(
+                count: viewModel.activeSubscriptionCount,
+                isPro: storeManager.isPro
+            ) {
+                currentMilestone = milestone
+                AnalyticsService.shared.track(.milestoneShown, properties: ["milestone": "\(milestone)"])
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showingMilestonePromo = true
+                }
+            } else {
+                showingSuccessAlert = true
+            }
         }
     }
 }

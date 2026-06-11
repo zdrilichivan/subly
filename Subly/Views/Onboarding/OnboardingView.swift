@@ -2,7 +2,9 @@
 //  OnboardingView.swift
 //  SublySwift
 //
-//  Vista di onboarding per il primo avvio dell'app
+//  Vista di onboarding per il primo avvio dell'app.
+//  Flusso orientato al valore: problema → selezione servizi →
+//  spesa rivelata → funzioni reali → nome → paywall personalizzato.
 //
 
 import SwiftUI
@@ -14,11 +16,53 @@ struct OnboardingView: View {
 
     @State private var currentPage = 0
     @AppStorage("userName") private var userName = ""
+    @AppStorage("estimatedYearlySpend") private var estimatedYearlySpend: Double = 0
     @State private var nameInput = ""
     @FocusState private var isNameFieldFocused: Bool
     @State private var showPaywall = false
 
-    private let totalPages = 5 // 4 info pages + 1 name page
+    /// Servizi selezionati nella pagina di quick-pick
+    @State private var selectedServices: Set<String> = []
+
+    private let totalPages = 5
+
+    /// Servizi popolari proposti nell'onboarding (presi dal catalogo reale)
+    private static let quickPickNames = [
+        "Netflix Standard",
+        "Spotify Individual",
+        "Amazon Prime Annuale",
+        "Disney+ Standard",
+        "DAZN",
+        "YouTube Premium",
+        "Apple Music Individuale",
+        "iCloud+ 200GB",
+        "ChatGPT Plus",
+        "NOW TV"
+    ]
+
+    private var quickPickServices: [Service] {
+        Self.quickPickNames.compactMap { ServiceCatalog.find(byName: $0) }
+    }
+
+    private var selectedServiceModels: [Service] {
+        quickPickServices.filter { selectedServices.contains($0.name) }
+    }
+
+    /// Spesa mensile stimata dai servizi selezionati
+    private var estimatedMonthlyCost: Double {
+        selectedServiceModels.reduce(0) { total, service in
+            guard let cost = service.typicalCost else { return total }
+            switch service.billingCycle {
+            case .weekly: return total + cost * 4.33
+            case .monthly: return total + cost
+            case .yearly: return total + cost / 12
+            }
+        }
+    }
+
+    private var estimatedYearlyCost: Double {
+        estimatedMonthlyCost * 12
+    }
 
     var body: some View {
         ZStack {
@@ -44,15 +88,15 @@ struct OnboardingView: View {
                     welcomePage
                         .tag(0)
 
-                    // Page 2: AI Email Scanning
-                    aiScanPage
+                    // Page 2: Quick-pick dei servizi
+                    servicePickPage
                         .tag(1)
 
-                    // Page 3: AI Money Coach
-                    aiCoachPage
+                    // Page 3: La tua spesa rivelata
+                    spendingRevealPage
                         .tag(2)
 
-                    // Page 4: Smart Control
+                    // Page 4: Funzioni reali (notifiche, disdetta, coach)
                     smartControlPage
                         .tag(3)
 
@@ -68,6 +112,7 @@ struct OnboardingView: View {
                     } else if newValue >= totalPages {
                         currentPage = totalPages - 1
                     }
+                    AnalyticsService.shared.track(.onboardingStepViewed, properties: ["step": "\(currentPage)"])
                 }
 
                 // Page indicators
@@ -84,24 +129,27 @@ struct OnboardingView: View {
                 VStack(spacing: Spacing.sm) {
                     if currentPage == totalPages - 1 {
                         Button {
-                            saveNameAndShowPaywall()
+                            finishOnboardingAndShowPaywall()
                         } label: {
                             Text(String(localized: "Iniziamo!"))
                         }
                         .buttonStyle(EnhancedPrimaryButtonStyle())
-                        .disabled(nameInput.trimmed.isEmpty)
-                        .opacity(nameInput.trimmed.isEmpty ? 0.5 : 1.0)
-                        .animation(.easeInOut(duration: 0.2), value: nameInput.trimmed.isEmpty)
                     } else {
                         Button {
                             // Verifica che non siamo già all'ultima pagina
                             guard currentPage < totalPages - 1 else { return }
+                            if currentPage == 1 {
+                                AnalyticsService.shared.track(.onboardingServicesSelected, properties: ["count": "\(selectedServices.count)"])
+                            }
+                            if currentPage == 2 {
+                                AnalyticsService.shared.track(.onboardingSpendingRevealed, properties: ["yearly": String(format: "%.0f", estimatedYearlyCost)])
+                            }
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 currentPage += 1
                             }
                             Haptic.selection()
                         } label: {
-                            Text(String(localized: "Continua"))
+                            Text(continueButtonTitle)
                         }
                         .buttonStyle(EnhancedPrimaryButtonStyle())
                     }
@@ -111,12 +159,32 @@ struct OnboardingView: View {
             }
             .background(Color(.systemGroupedBackground))
         }
+        .onAppear {
+            AnalyticsService.shared.track(.onboardingStarted)
+        }
         .sheet(isPresented: $showPaywall, onDismiss: {
-            // Quando la sheet viene chiusa, completa l'onboarding
+            // Quando la sheet viene chiusa, completa l'onboarding.
+            // Se l'utente ha attivato Pro, aggiunge i servizi rimasti
+            // fuori dal limite free; altrimenti programma il reminder soft
+            // (copre sia la X sia la chiusura con swipe).
+            handleLockedServicesAfterPaywall()
+            if !StoreManager.shared.isPro {
+                Task {
+                    await NotificationService.shared.scheduleTrialReminderIfNeeded()
+                }
+            }
+            AnalyticsService.shared.track(.onboardingCompleted)
             hasCompletedOnboarding = true
         }) {
-            PaywallOnboardingView()
+            PaywallOnboardingView(source: "onboarding")
         }
+    }
+
+    private var continueButtonTitle: String {
+        if currentPage == 1 && selectedServices.isEmpty {
+            return String(localized: "Non uso nessuno di questi")
+        }
+        return String(localized: "Continua")
     }
 
     // MARK: - Page 1: Welcome
@@ -180,179 +248,129 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Page 2: AI Email Scanning
+    // MARK: - Page 2: Quick-pick servizi
 
-    private var aiScanPage: some View {
-        VStack(spacing: 32) {
-            Spacer()
+    private var servicePickPage: some View {
+        VStack(spacing: 20) {
+            VStack(spacing: 12) {
+                Text(String(localized: "Quali di questi usi?"))
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
 
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.blue.opacity(0.15), Color.cyan.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue, .cyan],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                    .shadow(color: Color.blue.opacity(0.4), radius: 20, x: 0, y: 10)
-
-                Image(systemName: "sparkles")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-
-            VStack(spacing: 16) {
-                HStack(spacing: 6) {
-                    Text(String(localized: "Scansione Email"))
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Text("AI")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .clipShape(Capsule())
-                }
-
-                Text(String(localized: "La nostra AI analizza le tue email e trova TUTTI gli abbonamenti attivi in pochi secondi. Netflix, Spotify, palestra, cloud... niente sfugge."))
-                    .font(.body)
+                Text(String(localized: "Tocca i servizi a cui sei abbonato: calcoliamo subito quanto ti costano davvero."))
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
-                    .lineSpacing(4)
+            }
+            .padding(.top, 8)
+
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(quickPickServices) { service in
+                        ServicePickChip(
+                            service: service,
+                            isSelected: selectedServices.contains(service.name)
+                        ) {
+                            if selectedServices.contains(service.name) {
+                                selectedServices.remove(service.name)
+                            } else {
+                                selectedServices.insert(service.name)
+                            }
+                            Haptic.selection()
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 8)
             }
 
-            // Feature highlights
-            VStack(spacing: 12) {
-                FeatureHighlight(
-                    icon: "envelope.badge",
-                    text: String(localized: "Analizza centinaia di email in secondi")
-                )
-                FeatureHighlight(
-                    icon: "checkmark.shield",
-                    text: String(localized: "Trova abbonamenti nascosti e dimenticati")
-                )
-                FeatureHighlight(
-                    icon: "bolt.fill",
-                    text: String(localized: "Setup automatico con un tap")
-                )
+            if !selectedServices.isEmpty {
+                Text(String(localized: "Spesa stimata: \(estimatedMonthlyCost.currencyFormatted)/mese"))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.appPrimary)
+                    .transition(.opacity)
             }
-            .padding(.horizontal, 32)
+        }
+        .animation(.easeInOut(duration: 0.2), value: selectedServices)
+    }
+
+    // MARK: - Page 3: Spesa rivelata
+
+    private var spendingRevealPage: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            if selectedServices.isEmpty {
+                // Nessuna selezione: messaggio generico ma sempre orientato al valore
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.appPrimary.opacity(0.15), Color.appSecondary.opacity(0.15)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 140, height: 140)
+
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 50, weight: .semibold))
+                        .foregroundColor(.appPrimary)
+                }
+
+                VStack(spacing: 16) {
+                    Text(String(localized: "Scopriamolo insieme"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+
+                    Text(String(localized: "Aggiungi i tuoi abbonamenti dal catalogo di oltre 100 servizi e scopri quanto spendi davvero ogni anno."))
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                        .lineSpacing(4)
+                }
+            } else {
+                VStack(spacing: 8) {
+                    Text(String(localized: "I tuoi \(selectedServices.count) abbonamenti ti costano"))
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+
+                    Text(estimatedYearlyCost.currencyFormatted)
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .foregroundColor(.red)
+
+                    Text(String(localized: "all'anno"))
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(spacing: 12) {
+                    FeatureHighlight(
+                        icon: "eye.fill",
+                        text: String(localized: "\(estimatedMonthlyCost.currencyFormatted) che escono ogni mese, spesso senza accorgertene")
+                    )
+                    FeatureHighlight(
+                        icon: "bell.badge.fill",
+                        text: String(localized: "Subly ti avvisa prima di ogni rinnovo")
+                    )
+                    FeatureHighlight(
+                        icon: "scissors",
+                        text: String(localized: "E ti dà il link diretto per disdire ciò che non usi")
+                    )
+                }
+                .padding(.horizontal, 32)
+            }
 
             Spacer()
             Spacer()
         }
     }
 
-    // MARK: - Page 3: AI Money Coach
-
-    private var aiCoachPage: some View {
-        VStack(spacing: 32) {
-            Spacer()
-
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.green.opacity(0.15), Color.mint.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.green, .mint],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                    .shadow(color: Color.green.opacity(0.4), radius: 20, x: 0, y: 10)
-
-                Image(systemName: "brain.head.profile")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-
-            VStack(spacing: 16) {
-                HStack(spacing: 6) {
-                    Text(String(localized: "Money Coach"))
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Text("AI")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            LinearGradient(
-                                colors: [.green, .teal],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .clipShape(Capsule())
-                }
-
-                Text(String(localized: "Il tuo coach finanziario personale. Ogni giorno ricevi consigli smart, sfide settimanali e strategie per risparmiare senza rinunciare a nulla."))
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-                    .lineSpacing(4)
-            }
-
-            // Feature highlights
-            VStack(spacing: 12) {
-                FeatureHighlight(
-                    icon: "calendar.badge.clock",
-                    text: String(localized: "Consiglio del giorno personalizzato")
-                )
-                FeatureHighlight(
-                    icon: "target",
-                    text: String(localized: "Sfide settimanali per risparmiare")
-                )
-                FeatureHighlight(
-                    icon: "lightbulb.max",
-                    text: String(localized: "Trucchi e hack per spendere meno")
-                )
-            }
-            .padding(.horizontal, 32)
-
-            Spacer()
-            Spacer()
-        }
-    }
-
-    // MARK: - Page 4: Smart Control
+    // MARK: - Page 4: Smart Control (funzioni reali)
 
     private var smartControlPage: some View {
         VStack(spacing: 32) {
@@ -411,6 +429,10 @@ struct OnboardingView: View {
                     text: String(localized: "Link diretto alla pagina di disdetta")
                 )
                 FeatureHighlight(
+                    icon: "brain.head.profile",
+                    text: String(localized: "Money Coach con consigli quotidiani di risparmio")
+                )
+                FeatureHighlight(
                     icon: "chart.pie",
                     text: String(localized: "Statistiche chiare sulle tue spese")
                 )
@@ -462,7 +484,7 @@ struct OnboardingView: View {
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
 
-                Text(String(localized: "Iniziamo a risparmiare insieme. La tua AI è pronta ad aiutarti!"))
+                Text(String(localized: "Così possiamo salutarti per nome. Puoi anche saltare questo passaggio."))
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -470,8 +492,8 @@ struct OnboardingView: View {
                     .lineSpacing(4)
             }
 
-            // Name input field
-            TextField(String(localized: "Il tuo nome"), text: $nameInput)
+            // Name input field (facoltativo)
+            TextField(String(localized: "Il tuo nome (facoltativo)"), text: $nameInput)
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding()
@@ -485,11 +507,6 @@ struct OnboardingView: View {
                 )
                 .padding(.horizontal, 48)
                 .focused($isNameFieldFocused)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        isNameFieldFocused = true
-                    }
-                }
 
             Spacer()
             Spacer()
@@ -498,14 +515,41 @@ struct OnboardingView: View {
 
     // MARK: - Actions
 
-    private func saveNameAndShowPaywall() {
-        // Guard: verifica che il nome non sia vuoto
-        guard !nameInput.trimmed.isEmpty else { return }
-
-        userName = nameInput.trimmed
+    private func finishOnboardingAndShowPaywall() {
+        if !nameInput.trimmed.isEmpty {
+            userName = nameInput.trimmed
+        }
         isNameFieldFocused = false
 
         Task {
+            // Aggiunge gli abbonamenti selezionati nel quick-pick.
+            // Gli utenti free partono con al massimo `freeSubscriptionLimit`
+            // servizi: i rimanenti vengono mostrati come "bloccati" nel paywall
+            // e aggiunti automaticamente se l'utente attiva Pro.
+            let limit = SubscriptionViewModel.freeSubscriptionLimit
+            let isPro = StoreManager.shared.isPro
+            let unlockedServices = isPro ? selectedServiceModels : Array(selectedServiceModels.prefix(limit))
+            let lockedServices = isPro ? [] : Array(selectedServiceModels.dropFirst(limit))
+
+            for service in unlockedServices {
+                let subscription = Subscription(
+                    serviceName: service.name,
+                    cost: service.typicalCost ?? 0,
+                    billingCycle: service.billingCycle,
+                    nextBillingDate: Date(),
+                    category: service.category
+                )
+                await viewModel.addSubscription(subscription)
+            }
+
+            UserDefaults.standard.set(lockedServices.map(\.name), forKey: "onboardingLockedServices")
+
+            // Salva la spesa stimata completa per il paywall personalizzato
+            // (sovrascrive il valore parziale scritto dal viewModel)
+            if estimatedYearlyCost > 0 {
+                estimatedYearlySpend = estimatedYearlyCost
+            }
+
             _ = await notificationService.requestAuthorization()
 
             withAnimation {
@@ -514,11 +558,76 @@ struct OnboardingView: View {
         }
     }
 
-    private func completeOnboarding() {
-        withAnimation {
-            hasCompletedOnboarding = true
+    /// Se l'utente ha attivato Pro dal paywall, aggiunge i servizi che erano
+    /// rimasti fuori dal limite free; in ogni caso pulisce lo stato salvato.
+    private func handleLockedServicesAfterPaywall() {
+        let key = "onboardingLockedServices"
+        guard let names = UserDefaults.standard.stringArray(forKey: key), !names.isEmpty else {
+            UserDefaults.standard.removeObject(forKey: key)
+            return
         }
-        Haptic.notification(.success)
+        UserDefaults.standard.removeObject(forKey: key)
+        guard StoreManager.shared.isPro else { return }
+
+        Task {
+            for name in names {
+                guard let service = ServiceCatalog.find(byName: name) else { continue }
+                let subscription = Subscription(
+                    serviceName: service.name,
+                    cost: service.typicalCost ?? 0,
+                    billingCycle: service.billingCycle,
+                    nextBillingDate: Date(),
+                    category: service.category
+                )
+                await viewModel.addSubscription(subscription)
+            }
+        }
+    }
+}
+
+// MARK: - Service Pick Chip
+
+private struct ServicePickChip: View {
+    let service: Service
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                ServiceLogoView(serviceName: service.name, category: service.category, size: 32)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(service.brandName)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                    if let cost = service.typicalCost {
+                        Text("\(cost.currencyFormatted)\(service.billingCycle.shortName)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(isSelected ? .appPrimary : Color(.systemGray4))
+            }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(isSelected ? Color.appPrimary.opacity(0.1) : Color(.secondarySystemGroupedBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

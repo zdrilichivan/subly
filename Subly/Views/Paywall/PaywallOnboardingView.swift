@@ -16,23 +16,37 @@ struct PaywallOnboardingView: View {
     @Environment(\.dismiss) private var dismiss
     var isSheet: Bool = false
 
+    /// Origine del paywall per il funnel analytics
+    var source: String = "onboarding"
+
     @StateObject private var storeManager = StoreManager.shared
+
+    /// Spesa annua stimata, salvata da onboarding/viewModel per personalizzare l'header
+    @AppStorage("estimatedYearlySpend") private var estimatedYearlySpend: Double = 0
+
+    /// Servizi scelti nell'onboarding ma oltre il limite free: se presenti,
+    /// l'header li usa come leva ("sblocca gli altri N"). Solo dal funnel onboarding.
+    private var lockedServicesCount: Int {
+        guard source == "onboarding" else { return 0 }
+        return UserDefaults.standard.stringArray(forKey: "onboardingLockedServices")?.count ?? 0
+    }
 
     @State private var isPurchasing = false
     @State private var showSuccessAlert = false
     @State private var showErrorAlert = false
-    @State private var freeTrialEnabled = true
 
     // Inizializzatore per onboarding
     init(hasCompletedOnboarding: Binding<Bool>) {
         self._hasCompletedOnboarding = hasCompletedOnboarding
         self.isSheet = false
+        self.source = "onboarding"
     }
 
-    // Inizializzatore per sheet (impostazioni)
-    init() {
+    // Inizializzatore per sheet (impostazioni, promo in-app)
+    init(source: String = "settings") {
         self._hasCompletedOnboarding = .constant(false)
         self.isSheet = true
+        self.source = source
     }
 
     var body: some View {
@@ -42,6 +56,7 @@ struct PaywallOnboardingView: View {
                     // Header con X per chiudere (a sinistra)
                     HStack {
                         Button {
+                            AnalyticsService.shared.track(.paywallDismissed, properties: ["source": source])
                             completeOnboarding()
                         } label: {
                             Image(systemName: "xmark")
@@ -77,8 +92,8 @@ struct PaywallOnboardingView: View {
                     Spacer()
                         .frame(height: 16)
 
-                    // Free Trial Toggle
-                    freeTrialToggle
+                    // Trial reassurance
+                    trialReassuranceRow
                         .padding(.horizontal, 20)
 
                     Spacer()
@@ -108,6 +123,9 @@ struct PaywallOnboardingView: View {
         }
         .background(Color(.systemGray6))
         .ignoresSafeArea()
+        .onAppear {
+            AnalyticsService.shared.track(.paywallShown, properties: ["source": source])
+        }
         .alert(String(localized: "Abbonamento attivato!"), isPresented: $showSuccessAlert) {
             Button("OK") {
                 completeOnboarding()
@@ -142,10 +160,27 @@ struct PaywallOnboardingView: View {
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
 
-            Text(String(localized: "Accesso illimitato a tutte le funzioni"))
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            if lockedServicesCount > 0 {
+                // Header contestuale: l'utente ha scelto più servizi di quanti
+                // il piano free ne tracci, il paywall sblocca esattamente quelli
+                Text(String(localized: "Con il piano gratuito tracci \(SubscriptionViewModel.freeSubscriptionLimit) dei \(lockedServicesCount + SubscriptionViewModel.freeSubscriptionLimit) servizi che hai scelto. Sblocca subito gli altri \(lockedServicesCount)."))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            } else if estimatedYearlySpend > 0 {
+                // Header personalizzato: ancora il prezzo Pro alla spesa reale dell'utente
+                Text(String(localized: "Spendi circa \(estimatedYearlySpend.currencyFormatted)/anno in abbonamenti. Riprendi il controllo."))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            } else {
+                Text(String(localized: "Accesso illimitato a tutte le funzioni"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
     }
 
@@ -170,51 +205,53 @@ struct PaywallOnboardingView: View {
 
     private var planCardsSection: some View {
         HStack(spacing: 12) {
-            // Annual Plan Card
-            AnnualPlanCard(
-                savingsPercent: storeManager.savingsPercentage,
-                price: storeManager.annualPrice,
-                isSelected: storeManager.selectedPlan == .annual && !freeTrialEnabled
+            // Annual Plan Card (consigliato, preselezionato)
+            PaywallCompactPlanCard(
+                badgeText: String(localized: "RISPARMI \(storeManager.savingsPercentage)%"),
+                badgeColor: .red,
+                title: String(localized: "Annuale"),
+                priceLine: "\(storeManager.annualPrice)/" + String(localized: "anno"),
+                detailLine: "\(storeManager.annualWeeklyEquivalent)/" + String(localized: "settimana"),
+                isSelected: storeManager.selectedPlan == .annual
             ) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     storeManager.selectedPlan = .annual
-                    freeTrialEnabled = false
                 }
+                AnalyticsService.shared.track(.paywallPlanSelected, properties: ["plan": "annual", "source": source])
                 Haptic.selection()
             }
 
-            // Weekly Plan with Trial Card
-            TrialPlanCard(
-                weeklyPrice: storeManager.weeklyPrice,
-                isSelected: storeManager.selectedPlan == .weekly || freeTrialEnabled
+            // Weekly Plan Card
+            PaywallCompactPlanCard(
+                badgeText: String(localized: "FLESSIBILE"),
+                badgeColor: .appPrimary,
+                title: String(localized: "Settimanale"),
+                priceLine: "\(storeManager.weeklyPrice)/" + String(localized: "settimana"),
+                detailLine: String(localized: "disdici quando vuoi"),
+                isSelected: storeManager.selectedPlan == .weekly
             ) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     storeManager.selectedPlan = .weekly
-                    freeTrialEnabled = true
                 }
+                AnalyticsService.shared.track(.paywallPlanSelected, properties: ["plan": "weekly", "source": source])
                 Haptic.selection()
             }
         }
     }
 
-    // MARK: - Free Trial Toggle
+    // MARK: - Trial Reassurance
 
-    private var freeTrialToggle: some View {
-        HStack {
-            Text(String(localized: "Prova gratuita attiva"))
-                .font(.subheadline)
+    private var trialReassuranceRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "checkmark.shield.fill")
+                .font(.system(size: 18))
+                .foregroundColor(.green)
+
+            Text(String(localized: "3 giorni di prova gratuita inclusa. Nessun addebito se disdici prima della fine."))
+                .font(.footnote)
                 .foregroundColor(.primary)
 
             Spacer()
-
-            Toggle("", isOn: $freeTrialEnabled)
-                .labelsHidden()
-                .tint(.appPrimary)
-                .onChange(of: freeTrialEnabled) { _, newValue in
-                    if newValue {
-                        storeManager.selectedPlan = .weekly
-                    }
-                }
         }
         .padding(16)
         .background(
@@ -230,15 +267,26 @@ struct PaywallOnboardingView: View {
             Task {
                 isPurchasing = true
                 Haptic.impact(.medium)
+                AnalyticsService.shared.track(.purchaseStarted, properties: [
+                    "plan": storeManager.selectedPlan == .annual ? "annual" : "weekly",
+                    "source": source
+                ])
                 let success = await storeManager.purchase()
                 isPurchasing = false
 
                 if success {
+                    AnalyticsService.shared.track(.purchaseCompleted, properties: [
+                        "plan": storeManager.selectedPlan == .annual ? "annual" : "weekly",
+                        "source": source
+                    ])
                     Haptic.notification(.success)
                     showSuccessAlert = true
                 } else if storeManager.errorMessage != nil {
+                    AnalyticsService.shared.track(.purchaseFailed, properties: ["source": source])
                     Haptic.notification(.error)
                     showErrorAlert = true
+                } else {
+                    AnalyticsService.shared.track(.purchaseCancelled, properties: ["source": source])
                 }
             }
         } label: {
@@ -247,7 +295,7 @@ struct PaywallOnboardingView: View {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 } else {
-                    Text(freeTrialEnabled ? String(localized: "Prova Gratis") : String(localized: "Abbonati Ora"))
+                    Text(String(localized: "Inizia la prova gratuita"))
                         .fontWeight(.semibold)
                 }
             }
@@ -259,9 +307,9 @@ struct PaywallOnboardingView: View {
                 RoundedRectangle(cornerRadius: 14)
                     .fill(Color.appPrimary)
             )
-            .opacity((isPurchasing || storeManager.isLoading) ? 0.7 : 1.0)
+            .opacity((isPurchasing || storeManager.isLoading || storeManager.selectedProduct == nil) ? 0.7 : 1.0)
         }
-        .disabled(isPurchasing || storeManager.isLoading)
+        .disabled(isPurchasing || storeManager.isLoading || storeManager.selectedProduct == nil)
     }
 
     // MARK: - Disclosure Text (Apple Compliance)
@@ -275,10 +323,10 @@ struct PaywallOnboardingView: View {
     }
 
     private var disclosureString: String {
-        if freeTrialEnabled || storeManager.selectedPlan == .weekly {
+        if storeManager.selectedPlan == .weekly {
             return String(localized: "Abbonamento Settimanale Premium: prova gratuita di 3 giorni, poi \(storeManager.weeklyPrice)/settimana. Rinnovo automatico settimanale. Puoi annullare in qualsiasi momento dalle Impostazioni.")
         } else {
-            return String(localized: "Abbonamento Annuale Premium: \(storeManager.annualPrice)/anno. Rinnovo automatico annuale. Puoi annullare in qualsiasi momento dalle Impostazioni.")
+            return String(localized: "Abbonamento Annuale Premium: prova gratuita di 3 giorni, poi \(storeManager.annualPrice)/anno. Rinnovo automatico annuale. Puoi annullare in qualsiasi momento dalle Impostazioni.")
         }
     }
 
@@ -338,6 +386,7 @@ struct PaywallOnboardingView: View {
                 Task {
                     await storeManager.restorePurchases()
                     if storeManager.isPro {
+                        AnalyticsService.shared.track(.purchasesRestored, properties: ["source": source])
                         showSuccessAlert = true
                     } else if storeManager.errorMessage != nil {
                         showErrorAlert = true
@@ -388,19 +437,22 @@ private struct PaywallBenefitItem: View {
     }
 }
 
-// MARK: - Annual Plan Card
+// MARK: - Compact Plan Card
 
-private struct AnnualPlanCard: View {
-    let savingsPercent: Int
-    let price: String
+private struct PaywallCompactPlanCard: View {
+    let badgeText: String
+    let badgeColor: Color
+    let title: String
+    let priceLine: String
+    let detailLine: String
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
-                // Save badge
-                Text("SAVE \(savingsPercent)%")
+                // Badge
+                Text(badgeText)
                     .font(.caption2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -408,80 +460,26 @@ private struct AnnualPlanCard: View {
                     .padding(.vertical, 5)
                     .background(
                         Capsule()
-                            .fill(Color.red)
+                            .fill(badgeColor)
                     )
 
                 // Title
-                Text(String(localized: "Annuale"))
+                Text(title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
 
                 // Price
-                Text("\(price) " + String(localized: "all'anno"))
+                Text(priceLine)
                     .font(.caption)
+                    .foregroundColor(.secondary)
+
+                // Detail (equivalente settimanale / flessibilità)
+                Text(detailLine)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
 
                 // Selection indicator
-                Circle()
-                    .stroke(isSelected ? Color.appPrimary : Color(.systemGray4), lineWidth: 2)
-                    .frame(width: 24, height: 24)
-                    .overlay(
-                        Circle()
-                            .fill(isSelected ? Color.appPrimary : Color.clear)
-                            .frame(width: 12, height: 12)
-                    )
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .padding(.horizontal, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.appPrimary : Color.clear, lineWidth: 2)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - Trial Plan Card
-
-private struct TrialPlanCard: View {
-    let weeklyPrice: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                // FREE badge
-                Text(String(localized: "GRATIS"))
-                    .font(.caption2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        Capsule()
-                            .fill(Color.appPrimary)
-                    )
-
-                // Title
-                Text(String(localized: "Prova 3 Giorni"))
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-
-                // Price after trial (IMPORTANTE per Apple)
-                Text(String(localized: "poi \(weeklyPrice)/settimana"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                // Selection indicator (checkmark quando selezionato)
                 ZStack {
                     Circle()
                         .stroke(isSelected ? Color.appPrimary : Color(.systemGray4), lineWidth: 2)
@@ -507,6 +505,8 @@ private struct TrialPlanCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel("\(title), \(priceLine)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

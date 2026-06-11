@@ -18,11 +18,12 @@ class GeminiService {
     // MARK: - Properties
     private let logger = Logger(subsystem: "com.ivanzdrilich.Subly", category: "GeminiService")
 
-    // API Key - sostituire con la propria da https://aistudio.google.com/apikey
-    let geminiAPIKey = "CHIAVE_RIMOSSA"
+    // La chiave vive in Secrets.swift (gitignorato), vedi Secrets.swift.example
+    let geminiAPIKey = Secrets.geminiAPIKey
 
-    // Modello da usare
-    private let model = "gemini-1.5-flash"
+    // Modello da usare. gemini-1.5-flash è stato ritirato da Google (risponde 404);
+    // il free tier della chiave ha quota attiva solo sui modelli "lite".
+    private let model = "gemini-2.5-flash-lite"
 
     var baseURL: String {
         "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent"
@@ -49,6 +50,11 @@ class GeminiService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Richiesto dalla restrizione "App per iOS" sulla API key in Google Cloud:
+        // senza questo header le richieste vengono rifiutate (403)
+        if let bundleID = Bundle.main.bundleIdentifier {
+            request.setValue(bundleID, forHTTPHeaderField: "X-Ios-Bundle-Identifier")
+        }
 
         let body: [String: Any] = [
             "contents": [
