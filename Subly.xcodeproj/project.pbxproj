@@ -7,17 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AB12CD34000000000000A00E /* SublyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AB12CD34000000000000A001 /* SublyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2C39A0F82EF194F300F7BCA1 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C39A0F72EF194F300F7BCA1 /* StoreKit.framework */; };
 		2CA746F82F066F0B006D0D1F /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 2CA746F72F066F0B006D0D1F /* GoogleSignIn */; };
 		2CA746FA2F066F0B006D0D1F /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2CA746F92F066F0B006D0D1F /* GoogleSignInSwift */; };
+		AB12CD34000000000000A00E /* SublyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AB12CD34000000000000A001 /* SublyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
-
-/* Begin PBXFileReference section */
-		AB12CD34000000000000A001 /* SublyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SublyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		2C39A0922EF1694600F7BCA1 /* Subly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		2C39A0F72EF194F300F7BCA1 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-/* End PBXFileReference section */
 
 /* Begin PBXContainerItemProxy section */
 		AB12CD34000000000000A00C /* PBXContainerItemProxy */ = {
@@ -43,14 +37,13 @@
 		};
 /* End PBXCopyFilesBuildPhase section */
 
+/* Begin PBXFileReference section */
+		2C39A0922EF1694600F7BCA1 /* Subly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Subly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C39A0F72EF194F300F7BCA1 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		AB12CD34000000000000A001 /* SublyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SublyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AB12CD34000000000000A003 /* Exceptions for "SublyWidget" folder in "SublyWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = AB12CD34000000000000A004 /* SublyWidgetExtension */;
-		};
 		2C39A0E32EF16A1A00F7BCA1 /* Exceptions for "Subly" folder in "Subly" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -58,17 +51,16 @@
 			);
 			target = 2C39A0912EF1694600F7BCA1 /* Subly */;
 		};
+		AB12CD34000000000000A003 /* Exceptions for "SublyWidget" folder in "SublyWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AB12CD34000000000000A004 /* SublyWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AB12CD34000000000000A002 /* SublyWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AB12CD34000000000000A003 /* Exceptions for "SublyWidget" folder in "SublyWidgetExtension" target */,
-			);
-			path = SublyWidget;
-			sourceTree = "<group>";
-		};
 		2C39A0942EF1694600F7BCA1 /* Subly */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -77,16 +69,17 @@
 			path = Subly;
 			sourceTree = "<group>";
 		};
+		AB12CD34000000000000A002 /* SublyWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AB12CD34000000000000A003 /* Exceptions for "SublyWidget" folder in "SublyWidgetExtension" target */,
+			);
+			path = SublyWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		AB12CD34000000000000A007 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		2C39A08F2EF1694600F7BCA1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -94,6 +87,13 @@
 				2C39A0F82EF194F300F7BCA1 /* StoreKit.framework in Frameworks */,
 				2CA746F82F066F0B006D0D1F /* GoogleSignIn in Frameworks */,
 				2CA746FA2F066F0B006D0D1F /* GoogleSignInSwift in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB12CD34000000000000A007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,26 +130,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AB12CD34000000000000A004 /* SublyWidgetExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = AB12CD34000000000000A005 /* Build configuration list for PBXNativeTarget "SublyWidgetExtension" */;
-			buildPhases = (
-				AB12CD34000000000000A006 /* Sources */,
-				AB12CD34000000000000A007 /* Frameworks */,
-				AB12CD34000000000000A008 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				AB12CD34000000000000A002 /* SublyWidget */,
-			);
-			name = SublyWidgetExtension;
-			productName = SublyWidgetExtension;
-			productReference = AB12CD34000000000000A001 /* SublyWidgetExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		2C39A0912EF1694600F7BCA1 /* Subly */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2C39A09D2EF1694600F7BCA1 /* Build configuration list for PBXNativeTarget "Subly" */;
@@ -175,6 +155,26 @@
 			productName = Subly;
 			productReference = 2C39A0922EF1694600F7BCA1 /* Subly.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AB12CD34000000000000A004 /* SublyWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB12CD34000000000000A005 /* Build configuration list for PBXNativeTarget "SublyWidgetExtension" */;
+			buildPhases = (
+				AB12CD34000000000000A006 /* Sources */,
+				AB12CD34000000000000A007 /* Frameworks */,
+				AB12CD34000000000000A008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AB12CD34000000000000A002 /* SublyWidget */,
+			);
+			name = SublyWidgetExtension;
+			productName = SublyWidgetExtension;
+			productReference = AB12CD34000000000000A001 /* SublyWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -219,14 +219,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		AB12CD34000000000000A008 /* Resources */ = {
+		2C39A0902EF1694600F7BCA1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2C39A0902EF1694600F7BCA1 /* Resources */ = {
+		AB12CD34000000000000A008 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -236,14 +236,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		AB12CD34000000000000A006 /* Sources */ = {
+		2C39A08E2EF1694600F7BCA1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2C39A08E2EF1694600F7BCA1 /* Sources */ = {
+		AB12CD34000000000000A006 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -261,58 +261,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		AB12CD34000000000000A009 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SublyWidget/SublyWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
-				DEVELOPMENT_TEAM = 76RVTLGURV;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SublyWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Subly;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ivanzdrilich.Subly.SublyWidget";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		AB12CD34000000000000A00A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SublyWidget/SublyWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
-				DEVELOPMENT_TEAM = 76RVTLGURV;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SublyWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Subly;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ivanzdrilich.Subly.SublyWidget";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		2C39A09B2EF1694600F7BCA1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -441,7 +389,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Subly/Subly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 76RVTLGURV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -457,7 +405,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -477,7 +425,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Subly/Subly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 76RVTLGURV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -493,7 +441,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -506,18 +454,61 @@
 			};
 			name = Release;
 		};
+		AB12CD34000000000000A009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SublyWidget/SublyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 25;
+				DEVELOPMENT_TEAM = 76RVTLGURV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SublyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Subly;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly.SublyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AB12CD34000000000000A00A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SublyWidget/SublyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 25;
+				DEVELOPMENT_TEAM = 76RVTLGURV;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SublyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Subly;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ivanzdrilich.Subly.SublyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AB12CD34000000000000A005 /* Build configuration list for PBXNativeTarget "SublyWidgetExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AB12CD34000000000000A009 /* Debug */,
-				AB12CD34000000000000A00A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		2C39A08D2EF1694600F7BCA1 /* Build configuration list for PBXProject "Subly" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -532,6 +523,15 @@
 			buildConfigurations = (
 				2C39A09E2EF1694600F7BCA1 /* Debug */,
 				2C39A09F2EF1694600F7BCA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AB12CD34000000000000A005 /* Build configuration list for PBXNativeTarget "SublyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB12CD34000000000000A009 /* Debug */,
+				AB12CD34000000000000A00A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
