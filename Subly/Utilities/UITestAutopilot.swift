@@ -38,6 +38,7 @@ enum UITestAutopilot {
     static var onboardingPage: Int? { env["UITEST_ONBOARDING_PAGE"].flatMap(Int.init) }
     static var showPaywall: Bool { env["UITEST_SHOW_PAYWALL"] == "1" }
     static var forcePro: Bool { env["UITEST_PRO"] == "1" }
+    static var showDateSheet: Bool { env["UITEST_DATE_SHEET"] == "1" }
 
     /// Da chiamare in SublySwiftApp.init, prima che il view model carichi i dati
     static func applyOnLaunch() {
@@ -67,7 +68,7 @@ enum UITestAutopilot {
             Subscription(serviceName: "Spotify Individual", cost: 10.99, billingCycle: .monthly,
                          nextBillingDate: days(6), category: .music),
             Subscription(serviceName: "iCloud+ 200GB", cost: 2.99, billingCycle: .monthly,
-                         nextBillingDate: days(11), category: .cloud),
+                         nextBillingDate: days(11), category: .cloud, isDateEstimated: true),
             Subscription(serviceName: "Amazon Prime Annuale", cost: 49.90, billingCycle: .yearly,
                          nextBillingDate: days(40), category: .streaming),
             Subscription(serviceName: "ChatGPT Plus", cost: 22.99, billingCycle: .monthly,

@@ -713,12 +713,13 @@ struct ServiceCatalog {
     }
 
     // MARK: - Custom Service
-    static func createCustomService(name: String, category: ServiceCategory, typicalCost: Double? = nil) -> Service {
+    static func createCustomService(name: String, category: ServiceCategory, typicalCost: Double? = nil, billingCycle: BillingCycle = .monthly) -> Service {
         Service(
             name: name,
             category: category,
             iconName: category.iconName,
             typicalCost: typicalCost,
+            billingCycle: billingCycle,
             cancellationURL: nil
         )
     }

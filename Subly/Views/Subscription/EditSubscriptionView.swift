@@ -18,6 +18,7 @@ struct EditSubscriptionView: View {
     @State private var cost: String
     @State private var billingCycle: BillingCycle
     @State private var category: ServiceCategory
+    @State private var nextBillingDate: Date
 
     // UI State
     @State private var isSaving = false
@@ -29,6 +30,7 @@ struct EditSubscriptionView: View {
         _cost = State(initialValue: String(format: "%.2f", subscription.cost))
         _billingCycle = State(initialValue: subscription.billingCycle)
         _category = State(initialValue: subscription.category)
+        _nextBillingDate = State(initialValue: subscription.nextBillingDate)
     }
 
     var body: some View {
@@ -69,6 +71,22 @@ struct EditSubscriptionView: View {
                     }
                 } header: {
                     Text("Costo")
+                }
+
+                // Prossimo addebito
+                Section {
+                    DatePicker(
+                        String(localized: "Prossimo addebito"),
+                        selection: $nextBillingDate,
+                        in: Date()...,
+                        displayedComponents: .date
+                    )
+                } header: {
+                    Text(String(localized: "Rinnovo"))
+                } footer: {
+                    if subscription.isDateEstimated {
+                        Text(String(localized: "La data attuale è una stima (≈): impostandola qui diventa esatta."))
+                    }
                 }
 
                 // Category
@@ -137,7 +155,12 @@ struct EditSubscriptionView: View {
         customName != (subscription.customName ?? "") ||
         cost != String(format: "%.2f", subscription.cost) ||
         billingCycle != subscription.billingCycle ||
-        category != subscription.category
+        category != subscription.category ||
+        hasDateChanged
+    }
+
+    private var hasDateChanged: Bool {
+        !Calendar.current.isDate(nextBillingDate, inSameDayAs: subscription.nextBillingDate)
     }
 
     // MARK: - Actions
@@ -154,6 +177,11 @@ struct EditSubscriptionView: View {
         updated.cost = costValue
         updated.billingCycle = billingCycle
         updated.category = category
+        if hasDateChanged {
+            // Data impostata a mano dall'utente: non è più una stima
+            updated.nextBillingDate = nextBillingDate
+            updated.isDateEstimated = false
+        }
 
         Task {
             await viewModel.updateSubscription(updated)

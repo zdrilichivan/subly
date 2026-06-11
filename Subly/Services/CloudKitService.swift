@@ -206,6 +206,8 @@ class CloudKitService: ObservableObject {
         record["isActive"] = subscription.isActive ? 1 : 0
         record["category"] = subscription.category.rawValue
         record["isEssential"] = subscription.isEssential ? 1 : 0
+        record["sharedWith"] = subscription.sharedWith
+        record["isDateEstimated"] = subscription.isDateEstimated ? 1 : 0
         record["createdAt"] = subscription.createdAt
         record["updatedAt"] = subscription.updatedAt
 
@@ -223,6 +225,8 @@ class CloudKitService: ObservableObject {
         record["isActive"] = subscription.isActive ? 1 : 0
         record["category"] = subscription.category.rawValue
         record["isEssential"] = subscription.isEssential ? 1 : 0
+        record["sharedWith"] = subscription.sharedWith
+        record["isDateEstimated"] = subscription.isDateEstimated ? 1 : 0
         record["updatedAt"] = subscription.updatedAt
     }
 
@@ -253,6 +257,8 @@ class CloudKitService: ObservableObject {
             isActive: (record["isActive"] as? Int ?? 1) == 1,
             category: category,
             isEssential: (record["isEssential"] as? Int ?? 0) == 1,
+            sharedWith: record["sharedWith"] as? Int,
+            isDateEstimated: (record["isDateEstimated"] as? Int ?? 0) == 1,
             createdAt: record["createdAt"] as? Date ?? Date(),
             updatedAt: record["updatedAt"] as? Date ?? Date()
         )

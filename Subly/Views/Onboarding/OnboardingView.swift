@@ -544,12 +544,15 @@ struct OnboardingView: View {
             let lockedServices = isPro ? [] : Array(selectedServiceModels.dropFirst(limit))
 
             for service in unlockedServices {
+                // Nel quick-pick non chiediamo la data di addebito:
+                // stima a metà ciclo, correggibile con "Addebito arrivato"
                 let subscription = Subscription(
                     serviceName: service.name,
                     cost: service.typicalCost ?? 0,
                     billingCycle: service.billingCycle,
-                    nextBillingDate: Date(),
-                    category: service.category
+                    nextBillingDate: Subscription.estimatedNextDate(cycle: service.billingCycle),
+                    category: service.category,
+                    isDateEstimated: true
                 )
                 await viewModel.addSubscription(subscription)
             }
@@ -588,8 +591,9 @@ struct OnboardingView: View {
                     serviceName: service.name,
                     cost: service.typicalCost ?? 0,
                     billingCycle: service.billingCycle,
-                    nextBillingDate: Date(),
-                    category: service.category
+                    nextBillingDate: Subscription.estimatedNextDate(cycle: service.billingCycle),
+                    category: service.category,
+                    isDateEstimated: true
                 )
                 await viewModel.addSubscription(subscription)
             }

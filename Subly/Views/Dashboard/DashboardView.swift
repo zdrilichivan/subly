@@ -22,6 +22,7 @@ struct DashboardView: View {
     @State private var selectedServiceForAdd: Service?
     @State private var selectedCategoryForAdd: ServiceCategory = .other
     @State private var selectedBillingCycleForAdd: BillingCycle = .monthly
+    @State private var serviceForDateSheet: Service?
     @ObservedObject private var storeManager = StoreManager.shared
 
     private let insightService = InsightService.shared
@@ -104,8 +105,19 @@ struct DashboardView: View {
                 )
             }
             .onChange(of: selectedServiceForAdd) { _, newService in
-                if let service = newService {
-                    addSubscription(service)
+                guard let service = newService else { return }
+                // Reset subito: se l'utente annulla la sheet della data,
+                // ri-selezionare lo stesso servizio deve riattivare onChange
+                selectedServiceForAdd = nil
+                // Piccolo ritardo: la sheet del picker deve finire di
+                // chiudersi prima di poterne presentare un'altra
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    serviceForDateSheet = service
+                }
+            }
+            .sheet(item: $serviceForDateSheet) { service in
+                BillingDateSheet(service: service) { nextBillingDate, isEstimated in
+                    addSubscription(service, nextBillingDate: nextBillingDate, isDateEstimated: isEstimated)
                 }
             }
             .sheet(isPresented: $showingProUpgrade) {
@@ -121,6 +133,13 @@ struct DashboardView: View {
             }
             .navigationDestination(isPresented: $navigateToSettings) {
                 SettingsView()
+            }
+            .onAppear {
+                #if DEBUG
+                if UITestAutopilot.showDateSheet, serviceForDateSheet == nil {
+                    serviceForDateSheet = ServiceCatalog.find(byName: "Netflix Standard")
+                }
+                #endif
             }
         }
     }
@@ -349,23 +368,20 @@ struct DashboardView: View {
 
     // MARK: - Actions
 
-    private func addSubscription(_ service: Service) {
-        // Per servizi personalizzati (typicalCost settato dal form), usa il billing cycle selezionato
-        // Per servizi dal catalogo, usa il billing cycle del servizio
-        let billingCycle = service.typicalCost != nil ? selectedBillingCycleForAdd : service.billingCycle
-
+    private func addSubscription(_ service: Service, nextBillingDate: Date, isDateEstimated: Bool) {
+        // Il ciclo vive nel Service: i custom lo ricevono dal form
+        // (createCustomService), quelli a catalogo lo hanno di fabbrica
         let subscription = Subscription(
             serviceName: service.name,
             cost: service.typicalCost ?? 0,
-            billingCycle: billingCycle,
-            nextBillingDate: Date(),
-            category: service.category
+            billingCycle: service.billingCycle,
+            nextBillingDate: nextBillingDate,
+            category: service.category,
+            isDateEstimated: isDateEstimated
         )
 
         Task {
             await viewModel.addSubscription(subscription)
-            selectedServiceForAdd = nil
-            selectedBillingCycleForAdd = .monthly  // Reset
             Haptic.notification(.success)
 
             // Milestone raggiunta? Promo Pro al posto dell'alert di conferma.

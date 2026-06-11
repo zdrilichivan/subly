@@ -319,12 +319,14 @@ struct ServicePickerView: View {
 
     private func createCustomService() {
         let priceValue = Double(customServicePrice.replacingOccurrences(of: ",", with: "."))
+        // Il ciclo scelto nel form vive nel Service stesso: chi riceve
+        // selectedService può sempre fidarsi di service.billingCycle
         let customService = ServiceCatalog.createCustomService(
             name: customServiceName.trimmed,
             category: category,
-            typicalCost: priceValue
+            typicalCost: priceValue,
+            billingCycle: customServiceBillingCycle
         )
-        // Set the billing cycle from custom form
         billingCycle = customServiceBillingCycle
         selectService(customService)
     }

@@ -44,10 +44,17 @@ struct SubscriptionRow: View {
 
             Spacer()
 
-            // Price
-            Text(subscription.cost.currencyFormatted)
-                .font(Typography.numericSmall())
-                .foregroundColor(.primary)
+            // Price + countdown rinnovo
+            VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                Text(subscription.cost.currencyFormatted)
+                    .font(Typography.numericSmall())
+                    .foregroundColor(.primary)
+
+                Text(renewalCountdownText)
+                    .font(.caption2)
+                    .fontWeight(subscription.daysUntilRenewal <= 1 ? .bold : .medium)
+                    .foregroundColor(renewalColor)
+            }
         }
         .padding(Spacing.md)
         .background(
@@ -55,7 +62,23 @@ struct SubscriptionRow: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(subscription.displayName), \(subscription.cost.currencyFormatted)")
+        .accessibilityLabel("\(subscription.displayName), \(subscription.cost.currencyFormatted), \(renewalCountdownText)")
+    }
+
+    /// Countdown del rinnovo, con "≈" se la data è stimata
+    private var renewalCountdownText: String {
+        let prefix = subscription.isDateEstimated ? "≈ " : ""
+        return prefix + subscription.renewalText
+    }
+
+    /// Urgenza a colori: rosso se imminente, arancio entro la settimana
+    private var renewalColor: Color {
+        guard !subscription.isDateEstimated else { return .secondary }
+        switch subscription.daysUntilRenewal {
+        case ...1: return .red
+        case 2...7: return .orange
+        default: return .secondary
+        }
     }
 }
 

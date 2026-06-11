@@ -43,6 +43,11 @@ struct SubscriptionDetailView: View {
                     // Header con logo, nome e prezzo
                     compactHeader
 
+                    // Data stimata: invito a confermare l'addebito reale
+                    if currentSubscription.isDateEstimated {
+                        estimatedDateBanner
+                    }
+
                     // Info Grid - costo mensile e annuale
                     infoGrid
 
@@ -181,6 +186,66 @@ struct SubscriptionDetailView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
         )
+    }
+
+    // MARK: - Data stimata
+
+    /// Versione "viva" dell'abbonamento: la property `subscription` è uno
+    /// snapshot e non si aggiorna dopo updateSubscription
+    private var currentSubscription: Subscription {
+        viewModel.subscriptions.first(where: { $0.id == subscription.id }) ?? subscription
+    }
+
+    private var estimatedDateBanner: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "calendar.badge.exclamationmark")
+                    .foregroundColor(.orange)
+
+                Text(String(localized: "Data di rinnovo stimata: ≈ \(currentSubscription.nextBillingDate.shortFormatted)"))
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+            }
+
+            Text(String(localized: "Quando ti arriva l'addebito, toccando il pulsante la data diventa esatta e gli avvisi arrivano al momento giusto."))
+                .font(Typography.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                confirmChargeArrived()
+            } label: {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "checkmark.circle.fill")
+                    Text(String(localized: "Addebito arrivato oggi"))
+                        .fontWeight(.semibold)
+                }
+                .font(.subheadline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: ButtonHeight.md)
+                .background(Color.orange)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.sm))
+            }
+        }
+        .padding(Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.md)
+                .stroke(Color.orange.opacity(0.35), lineWidth: 1)
+        )
+    }
+
+    private func confirmChargeArrived() {
+        var updated = currentSubscription
+        updated.anchorToCharge()
+        Haptic.notification(.success)
+        Task {
+            await viewModel.updateSubscription(updated)
+        }
     }
 
     // MARK: - Info Grid
